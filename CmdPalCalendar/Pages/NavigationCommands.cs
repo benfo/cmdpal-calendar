@@ -12,16 +12,16 @@ internal sealed class NavigationCommands
 
     public NavigationCommands(Action previous, Action next, Action today, Action refresh)
     {
-        _previous = Command(previous, "");
-        _next = Command(next, "");
+        _previous = Command(previous, Glyphs.Previous);
+        _next = Command(next, Glyphs.Next);
         StepBy("day");
 
         Items =
         [
             ContextItem(_previous, VirtualKey.Left),
             ContextItem(_next, VirtualKey.Right),
-            ContextItem(Command(today, "", "Today"), VirtualKey.T),
-            ContextItem(Command(refresh, "", "Refresh"), VirtualKey.R),
+            ContextItem(Command(today, Glyphs.CalendarDay, "Today"), VirtualKey.T),
+            ContextItem(Command(refresh, Glyphs.Refresh, "Refresh"), VirtualKey.R),
         ];
     }
 

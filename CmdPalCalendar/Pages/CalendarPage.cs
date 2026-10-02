@@ -42,7 +42,7 @@ internal sealed partial class CalendarPage : DynamicListPage
         Filters = _views;
 
         Id = "CmdPalCalendar.Calendar";
-        Icon = new IconInfo("");
+        Icon = new IconInfo(Glyphs.Calendar);
         Name = "Open";
         PlaceholderText = "Filter events, or type a date (tomorrow, next fri, 27 jan)";
         ShowDetails = true;

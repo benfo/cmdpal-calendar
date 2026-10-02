@@ -15,11 +15,11 @@ internal sealed class CalendarRows(NavigationCommands navigation)
     private const int DescriptionLinesShown = 10;
     private const string MarkdownSpecials = "\\`*_{}[]<>()#+-!|";
 
-    private static readonly IconInfo CalendarIcon = new("");
-    private static readonly IconInfo LinkIcon = new("");
-    private static readonly IconInfo ErrorIcon = new("");
-    private static readonly IconInfo SettingsIcon = new("");
-    private static readonly IconInfo GoToIcon = new("");
+    private static readonly IconInfo CalendarIcon = new(Glyphs.Calendar);
+    private static readonly IconInfo LinkIcon = new(Glyphs.Link);
+    private static readonly IconInfo ErrorIcon = new(Glyphs.Error);
+    private static readonly IconInfo SettingsIcon = new(Glyphs.Settings);
+    private static readonly IconInfo GoToIcon = new(Glyphs.CalendarDay);
 
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now)
     {

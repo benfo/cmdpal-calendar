@@ -20,7 +20,7 @@ internal sealed partial class CalendarViewFilters : Filters
 
     public override IFilterItem[] GetFilters() =>
     [
-        new Filter { Id = DayId, Name = "Day", Icon = new IconInfo("") },
-        new Filter { Id = ScheduleId, Name = "Schedule", Icon = new IconInfo("") },
+        new Filter { Id = DayId, Name = "Day", Icon = new IconInfo(Glyphs.CalendarDay) },
+        new Filter { Id = ScheduleId, Name = "Schedule", Icon = new IconInfo(Glyphs.List) },
     ];
 }
