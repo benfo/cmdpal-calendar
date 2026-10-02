@@ -31,20 +31,22 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Ideas
 
-- [ ] Show tomorrow's first meeting when today is done.
 - [ ] Windows reminder with a Join button. Needs the Windows App SDK; possibly redundant with Outlook and Teams reminders.
 
 ## Engineering
 
-- [ ] Tests for link detection and the now/next split.
+- [ ] Tests for link detection and the layout (now/next split, empty states).
 - [ ] Check the trimmed Release build for Ical.Net warnings.
 - [ ] Replace the template's placeholder icons.
 
 ## Done
 
-- [x] Today's events from ICS feeds (URLs or local files), with recurrences and time zones handled by Ical.Net.
+- [x] Events from ICS feeds (URLs or local files), with recurrences and time zones handled by Ical.Net.
 - [x] Today page with Happening now / Up next / All day / Earlier today sections and a details pane.
 - [x] Open link, copy link and refresh actions. A broken feed shows under "Problems".
 - [x] Builds with just the .NET SDK. `deploy.ps1` registers the package and keeps settings.
 - [x] Hidden from the Start menu.
-- [x] Fixed command ID (`CmdPalCalendar.Today`) so pins, aliases and hotkeys survive updates.
+- [x] Fixed command ID (`CmdPalCalendar.Calendar`) so pins, aliases and hotkeys survive updates.
+- [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
+- [x] Empty days and finished days point to the next event.
+- [x] Tests for the ICS source and date parsing.
