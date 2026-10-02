@@ -4,6 +4,10 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Next up
 
+- [ ] **Caching**: calendar entries are available immediately, without waiting for the feeds to download.
+  - Save each feed's downloaded ICS to disk (LocalState) after a successful load; load from disk at startup, then refresh in the background.
+  - Keep the last good copy when a download fails, and show how old it is under "Problems".
+  - Encrypt the cache with DPAPI: it holds meeting titles, attendees and links.
 - [ ] **Times that tick**: relative times and sections update while the page is open.
 
 ## Later
@@ -13,7 +17,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [ ] **Named feeds** with a colour tag per feed.
 - [ ] **Encrypt feed URLs** (DPAPI): published-calendar links work like passwords.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Instant open**: keep the last result on disk so the page and subtitle have data right after Command Palette starts. Feeds already refresh in the background every 5 minutes.
 - [ ] **Microsoft 365 (Graph)**:
   - The default tenant policy needs admin consent for `Calendars.Read`; test that first.
   - WAM needs a parent window we create ourselves.
