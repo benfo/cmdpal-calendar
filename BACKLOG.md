@@ -22,8 +22,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Removing a calendar asks first.
   - With several calendars on, each row shows a coloured calendar tag; with one, only the details pane does.
   - The form's colour dropdown and on/off toggle show the saved values when editing.
-  - Saving a rename, colour or on/off change is instant (no feed download).
-  - Saving a new or changed address shows a progress bar and "Checking the calendar…"; clicking Save again meanwhile does nothing (no duplicate calendars).
 
 ## Next up
 
