@@ -22,7 +22,35 @@ public sealed class MeetingLinkTests
     }
 
     [Theory]
+    [InlineData("https://acme.zoom.us/j/1234567890?pwd=abc123", "zoommtg://acme.zoom.us/join?action=join&confno=1234567890&pwd=abc123")]
+    [InlineData("https://zoom.us/j/98765432101", "zoommtg://zoom.us/join?action=join&confno=98765432101")]
+    [InlineData("https://us02web.zoom.us/j/1234567890?pwd=abc&uname=Ben&tk=secret", "zoommtg://us02web.zoom.us/join?action=join&confno=1234567890&pwd=abc&uname=Ben")]
+    [InlineData("https://acme.zoomgov.com/j/1612345678", "zoommtg://acme.zoomgov.com/join?action=join&confno=1612345678")]
+    [InlineData("https://acme.zoom.com/wc/join/1234567890?pwd=x", "zoommtg://acme.zoom.com/join?action=join&confno=1234567890&pwd=x")]
+    public void Zoom_meeting_links_open_in_the_app(string url, string app)
+    {
+        var link = MeetingLink.Parse(url)!;
+
+        Assert.Equal(MeetingService.Zoom, link.Service);
+        Assert.Equal(app, link.App!.OriginalString);
+    }
+
+    [Theory]
+    [InlineData("https://acme.zoom.us/my/ben.fourie")]
+    [InlineData("https://acme.zoom.us/w/1234567890?tk=abc")]
+    [InlineData("https://acme.zoom.us/s/1234567890")]
+    [InlineData("https://acme.zoom.us/meeting/register/tJ0abc")]
+    public void Zoom_links_the_app_cannot_join_open_in_the_browser(string url)
+    {
+        var link = MeetingLink.Parse(url)!;
+
+        Assert.Equal(MeetingService.Zoom, link.Service);
+        Assert.Null(link.App);
+    }
+
+    [Theory]
     [InlineData("https://teams.microsoft.com/meetingOptions/?organizerId=x")]
+    [InlineData("https://zoom.example.com/j/1234567890")]
     [InlineData("https://example.com/agenda")]
     public void Other_links_open_in_the_browser(string url)
     {
