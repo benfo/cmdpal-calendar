@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Events;
-using CmdPalCalendar.Ics;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
@@ -15,19 +14,21 @@ namespace CmdPalCalendar.Pages;
 
 internal sealed partial class CalendarPage : ListPage
 {
-    private static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(5);
     private static readonly IconInfo CalendarIcon = new("");
     private static readonly IconInfo LinkIcon = new("");
     private static readonly IconInfo RefreshIcon = new("");
 
     private readonly CalendarSettings _settings;
+    private readonly ICalendarSource _source;
+    private readonly TimeProvider _time;
     private readonly Lock _lock = new();
-    private CalendarLoadResult? _result;
     private Task? _loading;
 
-    public CalendarPage(CalendarSettings settings)
+    public CalendarPage(CalendarSettings settings, ICalendarSource source, TimeProvider time)
     {
         _settings = settings;
+        _source = source;
+        _time = time;
         _settings.Settings.SettingsChanged += (_, _) => Refresh();
 
         Id = "CmdPalCalendar.Calendar";
@@ -40,70 +41,57 @@ internal sealed partial class CalendarPage : ListPage
 
     public override IListItem[] GetItems()
     {
-        CalendarLoadResult? result;
-        lock (_lock)
-        {
-            result = _result;
-            if (result is null || DateTimeOffset.Now - result.LoadedAt > MaxAge || result.LoadedAt.Date != DateTime.Today)
-            {
-                StartLoad();
-            }
-        }
-
         if (_settings.IcsFeeds.Count == 0)
         {
             return [OpenSettingsItem()];
         }
 
-        return result is null ? [] : BuildItems(result, DateTimeOffset.Now);
+        LoadIfStale();
+
+        var now = _time.GetLocalNow();
+        var today = DateOnly.FromDateTime(now.DateTime);
+        var entries = _source.GetEntries(today, today.AddDays(1));
+        var errors = _source.Errors;
+
+        return entries.Count == 0 && errors.Count == 0 && IsLoading ? [] : BuildItems(entries, errors, now);
     }
 
-    private void Refresh()
+    private void Refresh() => LoadIfStale(force: true);
+
+    private void LoadIfStale(bool force = false)
     {
         lock (_lock)
         {
-            _result = null;
-            StartLoad();
+            if (_loading is { IsCompleted: false } || (!force && !_source.IsStale))
+            {
+                return;
+            }
+
+            IsLoading = true;
+            _loading = Task.Run(LoadAsync);
         }
     }
 
-    private void StartLoad()
+    private async Task LoadAsync()
     {
-        if (_loading is { IsCompleted: false } || _settings.IcsFeeds.Count == 0)
+        try
         {
-            return;
+            await _source.LoadAsync(CancellationToken.None);
         }
-
-        IsLoading = true;
-        _loading = Task.Run(async () =>
+        finally
         {
-            CalendarLoadResult loaded;
-            try
-            {
-                loaded = await IcsCalendarSource.LoadTodayAsync(_settings.IcsFeeds, CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                loaded = new CalendarLoadResult([], [ex.Message], DateTimeOffset.Now);
-            }
-
-            lock (_lock)
-            {
-                _result = loaded;
-            }
-
             IsLoading = false;
             RaiseItemsChanged();
-        });
+        }
     }
 
-    private IListItem[] BuildItems(CalendarLoadResult result, DateTimeOffset now)
+    private IListItem[] BuildItems(IReadOnlyList<CalendarEntry> entries, IReadOnlyList<string> errors, DateTimeOffset now)
     {
-        var timed = result.Entries.Where(e => !e.IsAllDay).ToList();
+        var timed = entries.Where(e => !e.IsAllDay).ToList();
 
         var happeningNow = timed.Where(e => e.Start <= now && e.End > now).Select(e => ToListItem(e, now)).ToArray();
         var upNext = timed.Where(e => e.Start > now).Select(e => ToListItem(e, now)).ToArray();
-        var allDay = result.Entries.Where(e => e.IsAllDay).Select(e => ToListItem(e, now)).ToArray();
+        var allDay = entries.Where(e => e.IsAllDay).Select(e => ToListItem(e, now)).ToArray();
         var earlier = timed.Where(e => e.End <= now).Select(e => ToListItem(e, now)).ToArray();
 
         IListItem[] items =
@@ -112,10 +100,10 @@ internal sealed partial class CalendarPage : ListPage
             .. new Section("Up next", upNext),
             .. new Section("All day", allDay),
             .. new Section("Earlier today", earlier),
-            .. new Section("Problems", result.Errors.Select(ErrorItem).ToArray()),
+            .. new Section("Problems", errors.Select(ErrorItem).ToArray()),
         ];
 
-        if (result.Entries.Count == 0 && result.Errors.Count == 0)
+        if (entries.Count == 0 && errors.Count == 0)
         {
             items = [new ListItem(new NoOpCommand()) { Title = "Nothing on your calendar today", Icon = CalendarIcon, MoreCommands = [RefreshContextItem()] }];
         }

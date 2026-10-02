@@ -1,3 +1,5 @@
+using System;
+using CmdPalCalendar.Ics;
 using CmdPalCalendar.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,7 +20,7 @@ public partial class CalendarCommandProvider : CommandProvider
 
         _commands =
         [
-            new CommandItem(new CalendarPage(_settings))
+            new CommandItem(new CalendarPage(_settings, CreateSource(_settings), TimeProvider.System))
             {
                 Title = "Today's calendar",
                 Subtitle = "Your events for the rest of today",
@@ -28,4 +30,7 @@ public partial class CalendarCommandProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => _commands;
+
+    private static IcsCalendarSource CreateSource(CalendarSettings settings) =>
+        new(() => settings.IcsFeeds, new IcsFeedReader(), TimeProvider.System);
 }

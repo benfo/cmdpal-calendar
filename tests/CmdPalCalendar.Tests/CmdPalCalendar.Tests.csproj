@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\CmdPalCalendar\Events\**\*.cs" Link="Source\Events\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\CmdPalCalendar\Ics\**\*.cs" Link="Source\Ics\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\..\samples\sample.ics" Link="sample.ics" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ical.Net" />
+    <PackageReference Include="xunit.v3" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

@@ -15,8 +15,3 @@ internal sealed record CalendarEntry(
     IReadOnlyList<string> Attendees,
     string? Link,
     string Source);
-
-internal sealed record CalendarLoadResult(
-    IReadOnlyList<CalendarEntry> Entries,
-    IReadOnlyList<string> Errors,
-    DateTimeOffset LoadedAt);
