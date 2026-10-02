@@ -4,6 +4,11 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Next up
 
+- [ ] **Smarter Join next meeting**:
+  - Only consider meetings with a join link; the Calendar subtitle still shows every meeting.
+  - Join right away if the meeting is in progress or starts within 15 minutes; otherwise confirm first ("Design review starts at 14:00 (in 3 h). Join now?").
+  - With nothing to join today, open the Calendar page instead of showing a toast.
+  - Its own subtitle: "Standup in 4 min · Teams", "Next to join: Review at 14:00", "Nothing to join today".
 - [ ] **Caching**: calendar entries are available immediately, without waiting for the feeds to download.
   - Save each feed's downloaded ICS to disk (LocalState) after a successful load; load from disk at startup, then refresh in the background.
   - Keep the last good copy when a download fails, and show how old it is under "Problems".
