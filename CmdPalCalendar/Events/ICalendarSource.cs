@@ -7,7 +7,11 @@ namespace CmdPalCalendar.Events;
 
 internal interface ICalendarSource
 {
+    event EventHandler? Updated;
+
     bool IsStale { get; }
+
+    bool HasData { get; }
 
     IReadOnlyList<string> Errors { get; }
 

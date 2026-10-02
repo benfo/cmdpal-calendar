@@ -45,6 +45,7 @@ internal sealed partial class CalendarPage : DynamicListPage
         _layout = new CalendarLayout(_rows);
 
         _refresher.LoadingChanged += (_, _) => OnLoadingChanged();
+        _source.Updated += (_, _) => RaiseItemsChanged();
         _feeds.Changed += (_, _) => OnFeedsChanged();
         _views.PropChanged += (_, _) => OnViewChanged();
         Filters = _views;
@@ -133,12 +134,5 @@ internal sealed partial class CalendarPage : DynamicListPage
         RaiseItemsChanged();
     }
 
-    private void OnLoadingChanged()
-    {
-        IsLoading = _refresher.IsLoading;
-        if (!IsLoading)
-        {
-            RaiseItemsChanged();
-        }
-    }
+    private void OnLoadingChanged() => IsLoading = _refresher.IsLoading;
 }

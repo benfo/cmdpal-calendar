@@ -62,7 +62,15 @@ public sealed class CalendarRefresherTests
         private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _loads;
 
+        public event EventHandler? Updated
+        {
+            add { }
+            remove { }
+        }
+
         public bool IsStale { get; init; }
+
+        public bool HasData => false;
 
         public int Loads => _loads;
 

@@ -34,7 +34,7 @@ internal sealed partial class NextMeetingTicker : IDisposable
         _refresher = refresher;
         _time = time;
 
-        _refresher.LoadingChanged += (_, _) => Update();
+        _source.Updated += (_, _) => Update();
         _feeds.Changed += (_, _) => Update();
         _timer = time.CreateTimer(_ => Tick(), null, TimeSpan.Zero, Interval);
     }
@@ -55,7 +55,7 @@ internal sealed partial class NextMeetingTicker : IDisposable
             return;
         }
 
-        if (_refresher.IsLoading)
+        if (_refresher.IsLoading && !_source.HasData)
         {
             return;
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,17 +31,43 @@ internal sealed class IcsCalendarSource(
         time.GetUtcNow() - loadedAt > MaxAge ||
         !Addresses(_loaded.Select(f => f.Feed)).SetEquals(Addresses(feeds()));
 
+    public event EventHandler? Updated;
+
+    public bool HasData => _loaded.Count > 0;
+
     public IReadOnlyList<string> Errors =>
         Current().Select(c => c.Loaded.Error is { } error ? $"{c.Feed.Name}: {error}" : null).OfType<string>().ToList();
 
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
-        var loaded = await Task.WhenAll(feeds().Select(f => LoadFeedAsync(f, cancellationToken)));
+        if (!HasData)
+        {
+            Replace(feeds().Select(FromCache).OfType<LoadedFeed>().ToList());
+        }
 
+        Replace(await Task.WhenAll(feeds().Select(f => LoadFeedAsync(f, cancellationToken))), loadedAt: time.GetUtcNow());
+    }
+
+    private void Replace(IReadOnlyList<LoadedFeed> loaded, DateTimeOffset? loadedAt = null)
+    {
         lock (_lock)
         {
             _loaded = loaded;
-            _loadedAt = time.GetUtcNow();
+            _loadedAt = loadedAt ?? _loadedAt;
+        }
+
+        Updated?.Invoke(this, EventArgs.Empty);
+    }
+
+    private LoadedFeed? FromCache(CalendarFeed feed)
+    {
+        try
+        {
+            return cache.Load(feed) is { } copy ? new LoadedFeed(feed, IcsFeedReader.Parse(copy.Ics), null) : null;
+        }
+        catch (InvalidDataException)
+        {
+            return null;
         }
     }
 

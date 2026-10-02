@@ -128,6 +128,20 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task Shows_the_cached_copy_first_then_the_download()
+    {
+        var feed = Feed(WriteFeed(Event("standup", "Fresh standup", "20261005T090000", "20261005T091500")));
+        _cache.Save(feed, Calendar(Event("standup", "Cached standup", "20261005T090000", "20261005T091500")));
+        var source = new IcsCalendarSource(() => [feed], new IcsFeedReader(), _cache, _time);
+        var seen = new List<string>();
+        source.Updated += (_, _) => seen.Add(source.GetEntries(Monday, Monday.AddDays(1)).Single().Title);
+
+        await source.LoadAsync(CancellationToken.None);
+
+        Assert.Equal(["Cached standup", "Fresh standup"], seen);
+    }
+
+    [Fact]
     public async Task Is_stale_when_the_feeds_change()
     {
         List<CalendarFeed> feeds = [Feed(WriteFeed())];
@@ -195,10 +209,13 @@ public sealed class IcsCalendarSourceTests : IDisposable
     private string WriteFeed(params string[] events)
     {
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ics");
-        File.WriteAllText(path, $"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//tests//EN\n{string.Concat(events)}END:VCALENDAR\n");
+        File.WriteAllText(path, Calendar(events));
         _files.Add(path);
         return path;
     }
+
+    private static string Calendar(params string[] events) =>
+        $"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//tests//EN\n{string.Concat(events)}END:VCALENDAR\n";
 
     private static string Event(string uid, string summary, string start, string end, string? extra = null, string? valueType = null)
     {
