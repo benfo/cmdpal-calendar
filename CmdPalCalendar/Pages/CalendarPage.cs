@@ -28,6 +28,7 @@ internal sealed partial class CalendarPage : DynamicListPage
     private readonly LiveSubtitles _live = new();
     private readonly ITimer _ticker;
     private DateOnly? _selectedDate;
+    private DateTimeOffset _builtAt;
 
     public CalendarPage(
         CalendarFeedStore feeds,
@@ -86,6 +87,7 @@ internal sealed partial class CalendarPage : DynamicListPage
             .ToList();
         var problems = _source.Problems;
         _live.Reset();
+        _builtAt = _time.GetLocalNow();
 
         return days.All(d => d.Entries.Count == 0) && problems.Count == 0 && IsLoading
             ? []
@@ -141,7 +143,18 @@ internal sealed partial class CalendarPage : DynamicListPage
         RaiseItemsChanged();
     }
 
-    private void Tick() => _rows.UpdateTimes(_time.GetLocalNow());
+    private void Tick()
+    {
+        var now = _time.GetLocalNow();
+        if (MeetingPhases.ChangedBetween(_live.Entries, _builtAt, now))
+        {
+            RaiseItemsChanged();
+        }
+        else
+        {
+            _rows.UpdateTimes(now);
+        }
+    }
 
     private void OnLoadingChanged() => IsLoading = _refresher.IsLoading;
 }
