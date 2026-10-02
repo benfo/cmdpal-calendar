@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using CmdPalCalendar.Events;
+using CmdPalCalendar.Feeds;
 using CmdPalCalendar.Ics;
 using CmdPalCalendar.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -21,7 +23,10 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         Settings = _settings.Settings;
 
         var time = TimeProvider.System;
-        var source = new IcsCalendarSource(() => _settings.IcsFeeds, new IcsFeedReader(), time);
+        var reader = new IcsFeedReader();
+        var feeds = new CalendarFeedStore(Path.Combine(Utilities.BaseSettingsPath("CmdPalCalendar"), "calendars.json"));
+        var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));
+        var source = new IcsCalendarSource(() => _settings.IcsFeeds, reader, time);
         var refresher = new CalendarRefresher(source);
         _settings.Settings.SettingsChanged += (_, _) => refresher.Refresh(force: true);
 
@@ -29,7 +34,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         {
             Title = "Calendar",
             Subtitle = "Your events, day by day",
-            MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
+            MoreCommands = [new CommandContextItem(manage), new CommandContextItem(_settings.Settings.SettingsPage)],
         };
         var joinNext = new JoinNextMeetingItem(
             new JoinNextMeetingCommand(source, time),

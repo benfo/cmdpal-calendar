@@ -12,4 +12,7 @@ internal static class Glyphs
     public const string Previous = "\uE76B";
     public const string Next = "\uE76C";
     public const string Refresh = "\uE72C";
+    public const string Add = "\uE710";
+    public const string Edit = "\uE70F";
+    public const string Delete = "\uE74D";
 }
