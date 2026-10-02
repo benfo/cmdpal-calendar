@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <!-- Ical.Net creates its value types (Trigger, PeriodList, …) by reflection, which trimming cannot follow. -->
+    <TrimmerRootAssembly Include="Ical.Net" />
+  </ItemGroup>
+</Project>

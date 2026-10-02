@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Trimming.props" />
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>CmdPalCalendar</RootNamespace>
@@ -44,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ical.Net" />
-    <TrimmerRootAssembly Include="Ical.Net" />
     <PackageReference Include="Microsoft.CommandPalette.Extensions" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Shmuelie.WinRTServer" />

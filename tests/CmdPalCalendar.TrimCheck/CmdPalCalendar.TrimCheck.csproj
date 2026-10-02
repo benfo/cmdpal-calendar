@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Trimming.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\CmdPalCalendar\Events\**\*.cs" Link="Source\Events\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\CmdPalCalendar\Ics\**\*.cs" Link="Source\Ics\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\CmdPalCalendar\Feeds\**\*.cs" Link="Source\Feeds\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\fixtures\rich.ics" Link="rich.ics" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ical.Net" />
+  </ItemGroup>
+</Project>
