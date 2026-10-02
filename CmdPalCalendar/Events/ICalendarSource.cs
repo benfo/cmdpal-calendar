@@ -13,7 +13,7 @@ internal interface ICalendarSource
 
     bool HasData { get; }
 
-    IReadOnlyList<string> Errors { get; }
+    IReadOnlyList<CalendarProblem> Problems { get; }
 
     Task LoadAsync(CancellationToken cancellationToken);
 

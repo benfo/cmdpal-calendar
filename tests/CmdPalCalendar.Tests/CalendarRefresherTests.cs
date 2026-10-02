@@ -74,7 +74,7 @@ public sealed class CalendarRefresherTests
 
         public int Loads => _loads;
 
-        public IReadOnlyList<string> Errors => [];
+        public IReadOnlyList<CalendarProblem> Problems => [];
 
         public void Release() => _release.TrySetResult();
 

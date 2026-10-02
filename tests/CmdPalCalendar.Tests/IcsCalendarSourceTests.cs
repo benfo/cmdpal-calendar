@@ -73,7 +73,24 @@ public sealed class IcsCalendarSourceTests : IDisposable
         await source.LoadAsync(CancellationToken.None);
 
         Assert.Single(source.GetEntries(Monday, Monday.AddDays(1)));
-        Assert.Contains("missing.ics", Assert.Single(source.Errors));
+        var problem = Assert.Single(source.Problems);
+        Assert.Equal("missing.ics", problem.Calendar);
+        Assert.Null(problem.ShowingCopyFrom);
+    }
+
+    [Fact]
+    public async Task Keeps_the_last_good_copy_when_a_download_fails()
+    {
+        var feed = Feed(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.ics"));
+        _cache.Save(feed, Calendar(Event("standup", "Standup", "20261005T090000", "20261005T091500")));
+        var savedAt = _time.GetUtcNow();
+        _time.Advance(TimeSpan.FromHours(2));
+        var source = new IcsCalendarSource(() => [feed], new IcsFeedReader(), _cache, _time);
+
+        await source.LoadAsync(CancellationToken.None);
+
+        Assert.Equal("Standup", Assert.Single(source.GetEntries(Monday, Monday.AddDays(1))).Title);
+        Assert.Equal(savedAt, Assert.Single(source.Problems).ShowingCopyFrom);
     }
 
     [Fact]

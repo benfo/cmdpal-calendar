@@ -90,11 +90,13 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
             MoreCommands = _pageCommands,
         };
 
-    public ListItem Error(string error) =>
+    public ListItem Problem(CalendarProblem problem, DateTimeOffset now) =>
         new(new NoOpCommand())
         {
-            Title = "Couldn't load a calendar",
-            Subtitle = error,
+            Title = problem.ShowingCopyFrom is null ? $"Couldn't load {problem.Calendar}" : $"Couldn't refresh {problem.Calendar}",
+            Subtitle = problem.ShowingCopyFrom is { } copy
+                ? $"{problem.Message} · showing data from {TimeText.Duration(now - copy)} ago"
+                : problem.Message,
             Icon = ErrorIcon,
             MoreCommands = _pageCommands,
         };

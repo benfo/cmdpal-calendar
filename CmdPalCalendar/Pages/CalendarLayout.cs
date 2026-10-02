@@ -20,7 +20,7 @@ internal sealed class CalendarLayout(CalendarRows rows)
             : Schedule(days, content);
 
         IListItem[] goTo = content.GoTo is { } row ? [row] : [];
-        return [.. goTo, .. body, .. new Section("Problems", content.Errors.Select(rows.Error).ToArray())];
+        return [.. goTo, .. body, .. new Section("Problems", content.Problems.Select(p => rows.Problem(p, content.Now)).ToArray())];
     }
 
     private ListItem[] Empty(CalendarContent content)
@@ -75,7 +75,7 @@ internal sealed record DayEntries(DateOnly Date, IReadOnlyList<CalendarEntry> En
 
 internal sealed record CalendarContent(
     IReadOnlyList<DayEntries> Days,
-    IReadOnlyList<string> Errors,
+    IReadOnlyList<CalendarProblem> Problems,
     DateTimeOffset Now,
     string Query,
     ListItem? GoTo,

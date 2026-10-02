@@ -35,40 +35,20 @@ internal sealed class IcsCalendarSource(
 
     public bool HasData => _loaded.Count > 0;
 
-    public IReadOnlyList<string> Errors =>
-        Current().Select(c => c.Loaded.Error is { } error ? $"{c.Feed.Name}: {error}" : null).OfType<string>().ToList();
+    public IReadOnlyList<CalendarProblem> Problems =>
+        Current()
+            .Where(c => c.Loaded.Error is not null)
+            .Select(c => new CalendarProblem(c.Feed.Name, c.Loaded.Error!, c.Loaded.CopyFrom))
+            .ToList();
 
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
         if (!HasData)
         {
-            Replace(feeds().Select(FromCache).OfType<LoadedFeed>().ToList());
+            Replace(feeds().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Calendar, null, null) : null).OfType<LoadedFeed>().ToList());
         }
 
         Replace(await Task.WhenAll(feeds().Select(f => LoadFeedAsync(f, cancellationToken))), loadedAt: time.GetUtcNow());
-    }
-
-    private void Replace(IReadOnlyList<LoadedFeed> loaded, DateTimeOffset? loadedAt = null)
-    {
-        lock (_lock)
-        {
-            _loaded = loaded;
-            _loadedAt = loadedAt ?? _loadedAt;
-        }
-
-        Updated?.Invoke(this, EventArgs.Empty);
-    }
-
-    private LoadedFeed? FromCache(CalendarFeed feed)
-    {
-        try
-        {
-            return cache.Load(feed) is { } copy ? new LoadedFeed(feed, IcsFeedReader.Parse(copy.Ics), null) : null;
-        }
-        catch (InvalidDataException)
-        {
-            return null;
-        }
     }
 
     public IReadOnlyList<CalendarEntry> GetEntries(DateOnly from, DateOnly toExclusive)
@@ -109,12 +89,37 @@ internal sealed class IcsCalendarSource(
             var text = await reader.ReadAsync(feed.Location, cancellationToken);
             var calendar = IcsFeedReader.Parse(text);
             cache.Save(feed, text);
-            return new LoadedFeed(feed, calendar, null);
+            return new LoadedFeed(feed, calendar, null, null);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            return new LoadedFeed(feed, null, ex.Message);
+            return FromCache(feed) is { } copy
+                ? new LoadedFeed(feed, copy.Calendar, ex.Message, copy.SavedAt)
+                : new LoadedFeed(feed, null, ex.Message, null);
         }
+    }
+
+    private (Calendar Calendar, DateTimeOffset SavedAt)? FromCache(CalendarFeed feed)
+    {
+        try
+        {
+            return cache.Load(feed) is { } copy ? (IcsFeedReader.Parse(copy.Ics), copy.SavedAt) : null;
+        }
+        catch (InvalidDataException)
+        {
+            return null;
+        }
+    }
+
+    private void Replace(IReadOnlyList<LoadedFeed> loaded, DateTimeOffset? loadedAt = null)
+    {
+        lock (_lock)
+        {
+            _loaded = loaded;
+            _loadedAt = loadedAt ?? _loadedAt;
+        }
+
+        Updated?.Invoke(this, EventArgs.Empty);
     }
 
     private static HashSet<(string Id, string Location)> Addresses(IEnumerable<CalendarFeed> feeds) =>
@@ -129,5 +134,5 @@ internal sealed class IcsCalendarSource(
     private static bool IsCancelled(CalendarEvent ev) =>
         string.Equals(ev.Status, "CANCELLED", StringComparison.OrdinalIgnoreCase);
 
-    private sealed record LoadedFeed(CalendarFeed Feed, Calendar? Calendar, string? Error);
+    private sealed record LoadedFeed(CalendarFeed Feed, Calendar? Calendar, string? Error, DateTimeOffset? CopyFrom);
 }

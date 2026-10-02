@@ -78,12 +78,12 @@ internal sealed partial class CalendarPage : DynamicListPage
             .Select(i => SelectedDate.AddDays(i))
             .Select(d => new DayEntries(d, EntriesOn(d)))
             .ToList();
-        var errors = _source.Errors;
+        var problems = _source.Problems;
 
-        return days.All(d => d.Entries.Count == 0) && errors.Count == 0 && IsLoading
+        return days.All(d => d.Entries.Count == 0) && problems.Count == 0 && IsLoading
             ? []
             : _layout.Build(new CalendarContent(
-                days, errors, _time.GetLocalNow(), SearchText, GoToRow(), NextAfter(days[^1].Date), date => GoTo(date), _feeds.EnabledFeeds.Count > 1));
+                days, problems, _time.GetLocalNow(), SearchText, GoToRow(), NextAfter(days[^1].Date), date => GoTo(date), _feeds.EnabledFeeds.Count > 1));
     }
 
     private CalendarEntry? NextAfter(DateOnly date) =>
