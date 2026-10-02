@@ -1,0 +1,87 @@
+using CmdPalCalendar.Feeds;
+
+namespace CmdPalCalendar.Tests;
+
+public sealed class CalendarFeedStoreTests : IDisposable
+{
+    private readonly string _path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}", "calendars.json");
+
+    [Fact]
+    public void Starts_empty_without_a_file()
+    {
+        Assert.Empty(new CalendarFeedStore(_path).Feeds);
+    }
+
+    [Fact]
+    public void Saves_and_reloads_calendars()
+    {
+        var store = new CalendarFeedStore(_path);
+        var work = CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Purple);
+
+        store.Add(work);
+        store.Add(CalendarFeed.Create("Family", @"C:\cal\family.ics", CalendarColor.Green));
+
+        var reloaded = new CalendarFeedStore(_path).Feeds;
+        Assert.Equal(["Work", "Family"], reloaded.Select(f => f.Name));
+        Assert.Equal(work, reloaded[0]);
+    }
+
+    [Fact]
+    public void Updates_and_removes_by_id()
+    {
+        var store = new CalendarFeedStore(_path);
+        var work = CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Blue);
+        var family = CalendarFeed.Create("Family", "https://example.com/family.ics", CalendarColor.Green);
+        store.Add(work);
+        store.Add(family);
+
+        store.Update(work with { Name = "Office", Enabled = false });
+        store.Remove(family.Id);
+
+        var feed = Assert.Single(new CalendarFeedStore(_path).Feeds);
+        Assert.Equal("Office", feed.Name);
+        Assert.False(feed.Enabled);
+        Assert.Empty(store.EnabledFeeds);
+    }
+
+    [Fact]
+    public void Raises_changed_after_saving()
+    {
+        var store = new CalendarFeedStore(_path);
+        var raised = 0;
+        store.Changed += (_, _) => raised++;
+
+        store.Add(CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Blue));
+
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public void Suggests_colours_in_turn()
+    {
+        var store = new CalendarFeedStore(_path);
+        Assert.Equal(CalendarColor.Blue, store.NextColor);
+
+        store.Add(CalendarFeed.Create("Work", "https://example.com/work.ics", store.NextColor));
+
+        Assert.Equal(CalendarColor.Purple, store.NextColor);
+    }
+
+    [Fact]
+    public void Ignores_a_corrupt_file()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        File.WriteAllText(_path, "{ not json");
+
+        Assert.Empty(new CalendarFeedStore(_path).Feeds);
+    }
+
+    public void Dispose()
+    {
+        var directory = Path.GetDirectoryName(_path)!;
+        if (Directory.Exists(directory))
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+}

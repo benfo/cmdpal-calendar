@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="..\..\CmdPalCalendar\Events\**\*.cs" Link="Source\Events\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\CmdPalCalendar\Ics\**\*.cs" Link="Source\Ics\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\CmdPalCalendar\Feeds\**\*.cs" Link="Source\Feeds\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\..\samples\sample.ics" Link="sample.ics" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
