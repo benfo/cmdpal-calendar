@@ -17,6 +17,16 @@ if (-not $isAdmin) {
     return
 }
 
+function Get-PackageVersion([string] $msix) {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [IO.Compression.ZipFile]::OpenRead($msix)
+    try {
+        $reader = [IO.StreamReader]::new($zip.GetEntry('AppxManifest.xml').Open())
+        try { ([xml]$reader.ReadToEnd()).Package.Identity.Version } finally { $reader.Dispose() }
+    }
+    finally { $zip.Dispose() }
+}
+
 $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
 $work = Join-Path ([IO.Path]::GetTempPath()) 'CmdPalCalendar-install'
 New-Item -ItemType Directory -Force $work | Out-Null
@@ -29,14 +39,22 @@ try {
     Invoke-WebRequest "$release/CmdPalCalendar.cer" -OutFile $certificate -UseBasicParsing
     Invoke-WebRequest "$release/CmdPalCalendar_$arch.msix" -OutFile $package -UseBasicParsing
 
+    $latest = Get-PackageVersion $package
+    $current = (Get-AppxPackage CmdPalCalendar).Version
+    if ($current -eq $latest) {
+        Write-Host "Calendar for Command Palette $latest is already installed and up to date." -ForegroundColor Green
+        return
+    }
+
     Write-Host 'Trusting the signing certificate...'
     Import-Certificate -FilePath $certificate -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
 
     Write-Host 'Installing...'
+    Get-Process CmdPalCalendar -ErrorAction SilentlyContinue | Stop-Process -Force
     Add-AppxPackage -Path $package -ForceUpdateFromAnyVersion
 
-    $installed = Get-AppxPackage CmdPalCalendar
-    Write-Host "Installed Calendar for Command Palette $($installed.Version)." -ForegroundColor Green
+    $message = if ($current) { "Updated Calendar for Command Palette from $current to $latest." } else { "Installed Calendar for Command Palette $latest." }
+    Write-Host $message -ForegroundColor Green
 
     if (-not (Get-AppxPackage Microsoft.CommandPalette)) {
         Write-Host 'Command Palette was not found. Install PowerToys (https://aka.ms/installpowertoys), then open Command Palette.' -ForegroundColor Yellow
