@@ -28,7 +28,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
 
         return new ListItem(command)
         {
-            Title = entry.Title,
+            Title = entry.IsAllDay ? entry.Title : $"{TimeText.Clock(entry.Start)}  {entry.Title}",
             Subtitle = Subtitle(entry, now),
             Icon = link is null or { Service: MeetingService.Other } ? CalendarIcon : MeetingIcon,
             Tags = Tags(entry, link, showCalendar),
@@ -116,7 +116,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
             return entry.Location ?? entry.Source;
         }
 
-        IEnumerable<string?> parts = [TimeText.Range(entry), now is { } at ? Relative(entry, at) : null, entry.Location];
+        IEnumerable<string?> parts = [now is { } at ? Relative(entry, at) : null, entry.Location];
         return string.Join(" · ", parts.OfType<string>());
     }
 
