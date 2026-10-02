@@ -9,7 +9,7 @@ internal static partial class MeetingLinkFinder
     {
         var urls = texts
             .Where(t => !string.IsNullOrEmpty(t))
-            .SelectMany(t => UrlRegex().Matches(t!).Select(m => m.Value.TrimEnd('.', ',', ';', ')', '>')))
+            .SelectMany(t => UrlRegex().Matches(t!).Select(m => LinkUnwrapper.Unwrap(m.Value.TrimEnd('.', ',', ';', ')', '>'))))
             .ToList();
 
         return urls.FirstOrDefault(u => MeetingHostRegex().IsMatch(u)) ?? urls.FirstOrDefault();
