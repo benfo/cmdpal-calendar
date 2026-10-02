@@ -31,24 +31,23 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Subtitle = Subtitle(entry, now),
             Icon = CalendarIcon,
             Details = Details(entry),
-            MoreCommands = [.. LinkCommands(link), .. navigation.Items],
+            MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. navigation.Items],
         };
     }
 
-    private static IContextItem[] LinkCommands(MeetingLink? link)
+    private static IContextItem[] MeetingCommands(MeetingLink? link, MeetingCredentials? credentials)
     {
-        if (link is null)
-        {
-            return [];
-        }
-
-        var web = link.Web.OriginalString;
-        IContextItem[] browser = link.App is null
+        IContextItem[] browser = link?.App is null
             ? []
-            : [new CommandContextItem(new OpenUrlCommand(web) { Name = "Join in browser", Result = CommandResult.Dismiss() })];
+            : [new CommandContextItem(new OpenUrlCommand(link.Web.OriginalString) { Name = "Join in browser", Result = CommandResult.Dismiss() })];
+        IContextItem[] copyLink = link is null ? [] : [Copy("Copy link", link.Web.OriginalString)];
+        IContextItem[] copyCredentials = credentials is null ? [] : [Copy("Copy meeting ID and passcode", credentials.ToString())];
 
-        return [.. browser, new CommandContextItem(new CopyTextCommand(web) { Name = "Copy link" }), new Separator()];
+        IContextItem[] commands = [.. browser, .. copyLink, .. copyCredentials];
+        return commands.Length == 0 ? [] : [.. commands, new Separator()];
     }
+
+    private static CommandContextItem Copy(string name, string text) => new(new CopyTextCommand(text) { Name = name });
 
     public ListItem Message(string title, string subtitle = "", ICommand? command = null) =>
         new(command ?? new NoOpCommand())
