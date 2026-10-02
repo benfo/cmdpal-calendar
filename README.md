@@ -13,7 +13,7 @@ Open Command Palette and pick **Calendar**. It opens on today, grouped into **Ha
 
 ## Install
 
-You need [PowerToys](https://aka.ms/installpowertoys) with Command Palette. Then, in an **administrator** PowerShell:
+You need [PowerToys](https://aka.ms/installpowertoys) with Command Palette. Then, in PowerShell (it asks for administrator rights, and continues in an administrator window):
 
 ```powershell
 irm https://github.com/benfo/cmdpal-calendar/releases/latest/download/install.ps1 | iex

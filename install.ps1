@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
   Installs or updates Calendar for Command Palette from the latest GitHub release.
-  Run in an admin PowerShell:
+  Run in PowerShell (it asks for administrator rights):
     irm https://github.com/benfo/cmdpal-calendar/releases/latest/download/install.ps1 | iex
 #>
 $ErrorActionPreference = 'Stop'
@@ -12,7 +12,9 @@ $release = 'https://github.com/benfo/cmdpal-calendar/releases/latest/download'
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
     [Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    throw 'Run this in an administrator PowerShell: it needs to trust the signing certificate once.'
+    Write-Host 'Asking for administrator rights to trust the signing certificate...'
+    Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-NoExit', '-Command', "irm $release/install.ps1 | iex"
+    return
 }
 
 $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
