@@ -39,9 +39,13 @@ try {
         $arch = $platform.ToLowerInvariant()
         $packageDir = Join-Path $artifacts "build-$arch"
 
-        dotnet publish (Join-Path $root 'CmdPalCalendar\CmdPalCalendar.csproj') -c Release -p:Platform=$platform -r "win-$arch" `
-            -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -p:AppxPackageDir="$packageDir\"
-        if ($LASTEXITCODE -ne 0) { throw "Build failed for $platform." }
+        foreach ($attempt in 1..2) {
+            dotnet publish (Join-Path $root 'CmdPalCalendar\CmdPalCalendar.csproj') -c Release -p:Platform=$platform -r "win-$arch" `
+                -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -p:AppxPackageDir="$packageDir\"
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq 2) { throw "Build failed for $platform." }
+            Write-Warning "Build failed for $platform; retrying once (the trimmer occasionally crashes on build machines)."
+        }
 
         $msix = Get-ChildItem $packageDir -Recurse -Filter '*.msix' | Select-Object -First 1
         $target = Join-Path $artifacts "CmdPalCalendar_$arch.msix"
