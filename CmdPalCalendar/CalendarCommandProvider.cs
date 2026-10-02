@@ -15,7 +15,7 @@ public partial class CalendarCommandProvider : CommandProvider
     {
         Id = "CmdPalCalendar";
         DisplayName = "Calendar";
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = new IconInfo(Glyphs.Calendar);
         Settings = _settings.Settings;
 
         _commands =
