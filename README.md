@@ -15,6 +15,8 @@ Open Command Palette and pick **Calendar**. It opens on today, grouped into **Ha
 
 Press Ctrl+K on **Calendar** and choose **Manage calendars**, then **Add a calendar**. Enter an `https://` or `webcal://` address, or the path to a local `.ics` file. The form checks the calendar before saving, and fills in its name if you leave it blank. Each calendar has a name and a colour (shown as a tag on its events) and can be turned off without removing it. The list is saved in `calendars.json` in the extension's settings folder.
 
+Calendars refresh in the background every 5 minutes. The last downloaded copy of each one is kept in the `cache` folder next to it, encrypted for your Windows account, so events show as soon as Command Palette starts and stay visible when a calendar can't be reached ("Problems" then says how old the copy is).
+
 - **Outlook:** Settings > Calendar > Shared calendars > Publish a calendar. To get join links, publish with all details. Work tenants may block publishing.
 - **Google:** Settings > your calendar > Integrate calendar > Secret address in iCal format. It can lag by a few hours.
 - **Try it without a calendar:** use `samples/sample.ics`, which has events on weekdays.

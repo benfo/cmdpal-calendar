@@ -15,6 +15,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - A day with only in-person meetings says "Nothing to join today", and Enter opens the calendar.
   - A hotkey or alias on Join next meeting still works after its subtitle has changed a few times.
 - [ ] **Next meeting subtitle**: the Calendar subtitle switches to the next meeting once it starts in under 5 minutes, and the rule feels right with a real calendar.
+- [ ] **Caching**:
+  - After restarting Command Palette (or Reload), events and the Calendar subtitle appear right away instead of after the download.
+  - With the network off (or a calendar's address broken), its events stay, and "Problems" shows "Couldn't refresh … · showing data from … ago".
+  - `cache/` in the extension's LocalState holds one `.ics.bin` per calendar, unreadable as text.
 - [ ] **Manage calendars**:
   - After Reload, the three feeds from the old settings text box show up as calendars (named after their host, coloured blue, purple and green), and the Settings page is gone.
   - Adding a calendar: a bad address shows an error in the form; a blank name uses the calendar's own name.
@@ -25,10 +29,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
-- [ ] **Caching**: calendar entries are available immediately, without waiting for the feeds to download.
-  - Save each feed's downloaded ICS to disk (LocalState) after a successful load; load from disk at startup, then refresh in the background.
-  - Keep the last good copy when a download fails, and show how old it is under "Problems".
-  - Encrypt the cache with DPAPI: it holds meeting titles, attendees and links.
 - [ ] **Times that tick**: relative times and sections update while the page is open.
 
 ## Later
@@ -68,6 +68,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [x] Builds with just the .NET SDK. `deploy.ps1` registers the package and keeps settings.
 - [x] Hidden from the Start menu.
 - [x] Manage calendars page (Ctrl+K on Calendar or any row): add, edit, turn off and remove ICS calendars, each with a name and colour, checked before saving and stored in `calendars.json`. The old settings text box is imported once and the Settings page removed. Events show their calendar as a coloured tag.
+- [x] Caching: each calendar's last download is kept in `cache/`, encrypted with DPAPI. Events show at startup before the download finishes, and the last good copy stays visible when a download fails, with its age under "Problems". Copies of removed or turned-off calendars are deleted.
 - [x] Calendar icon and logos instead of the template placeholders.
 - [x] Fixed command ID (`CmdPalCalendar.Calendar`) so pins, aliases and hotkeys survive updates.
 - [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
