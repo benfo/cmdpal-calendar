@@ -10,11 +10,10 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Dock band** "Standup · 7m"; clicking it joins. Copy the built-in `NowDockBand` timer pattern. Watch PowerToys #50367: bands can die after an RDP or session switch.
-- [ ] **Next meeting** in the command subtitle, plus a "Join next meeting" command.
 - [ ] **Named feeds** with a colour tag per feed.
 - [ ] **Encrypt feed URLs** (DPAPI): published-calendar links work like passwords.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Background refresh** with the last result kept on disk, so the page opens instantly.
+- [ ] **Instant open**: keep the last result on disk so the page and subtitle have data right after Command Palette starts. Feeds already refresh in the background every 5 minutes.
 - [ ] **Microsoft 365 (Graph)**:
   - The default tenant policy needs admin consent for `Calendars.Read`; test that first.
   - WAM needs a parent window we create ourselves.
@@ -46,3 +45,4 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [x] Empty days and finished days point to the next event.
 - [x] Tests for the ICS source and date parsing.
 - [x] Join in the Teams or Zoom app (Safe Links, Google and Proofpoint redirects unwrapped; falls back to the browser), with Join in browser, Copy link and Copy meeting ID and passcode in Ctrl+K, and the service shown on each row.
+- [x] Current or next meeting in the command subtitle ("Next: Standup in 7 min", "Now: Review · until 10:45"), updated every 30 seconds, plus a "Join next meeting" command (`CmdPalCalendar.JoinNext`) for a hotkey.
