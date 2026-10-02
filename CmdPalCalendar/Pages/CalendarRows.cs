@@ -107,38 +107,19 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             return entry.Location ?? entry.Source;
         }
 
-        IEnumerable<string?> parts = [TimeRange(entry), now is { } at ? Relative(entry, at) : null, entry.Location];
+        IEnumerable<string?> parts = [TimeText.Range(entry), now is { } at ? Relative(entry, at) : null, entry.Location];
         return string.Join(" · ", parts.OfType<string>());
     }
 
-    private static string TimeRange(CalendarEntry entry) => $"{entry.Start:HH:mm}–{entry.End:HH:mm}";
-
     private static string Relative(CalendarEntry entry, DateTimeOffset now) =>
         entry.End <= now ? "ended"
-        : entry.Start <= now ? $"started {Duration(now - entry.Start)} ago"
-        : $"in {Duration(entry.Start - now)}";
-
-    private static string Duration(TimeSpan span)
-    {
-        var minutes = (int)Math.Round(span.TotalMinutes);
-        if (minutes < 1)
-        {
-            return "less than a minute";
-        }
-
-        if (minutes < 60)
-        {
-            return $"{minutes} min";
-        }
-
-        var (hours, rest) = Math.DivRem(minutes, 60);
-        return rest == 0 ? $"{hours} h" : $"{hours} h {rest} min";
-    }
+        : entry.Start <= now ? $"started {TimeText.Duration(now - entry.Start)} ago"
+        : $"in {TimeText.Duration(entry.Start - now)}";
 
     private static Details Details(CalendarEntry entry)
     {
         var body = new StringBuilder();
-        body.AppendLine(entry.IsAllDay ? "**All day**" : $"**{TimeRange(entry)}**").AppendLine();
+        body.AppendLine(entry.IsAllDay ? "**All day**" : $"**{TimeText.Range(entry)}**").AppendLine();
         AppendField(body, "Where", entry.Location);
         AppendField(body, "Organizer", entry.Organizer);
         AppendField(body, "Attendees", Attendees(entry.Attendees));
