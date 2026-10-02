@@ -49,6 +49,18 @@ public sealed class MeetingLinkTests
     }
 
     [Theory]
+    [InlineData("https://meet.google.com/abc-defg-hij", "Meet")]
+    [InlineData("https://acme.webex.com/meet/ben", "Webex")]
+    [InlineData("https://acme.webex.com/acme/j.php?MTID=m123", "Webex")]
+    public void Browser_only_services_are_recognised(string url, string service)
+    {
+        var link = MeetingLink.Parse(url)!;
+
+        Assert.Equal(service, link.Service.ToString());
+        Assert.Null(link.App);
+    }
+
+    [Theory]
     [InlineData("https://teams.microsoft.com/meetingOptions/?organizerId=x")]
     [InlineData("https://zoom.example.com/j/1234567890")]
     [InlineData("https://example.com/agenda")]

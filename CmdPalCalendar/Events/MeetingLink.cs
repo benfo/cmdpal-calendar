@@ -9,6 +9,8 @@ internal enum MeetingService
     Other,
     Teams,
     Zoom,
+    Meet,
+    Webex,
 }
 
 internal sealed partial record MeetingLink(MeetingService Service, Uri Web, Uri? App)
@@ -28,6 +30,16 @@ internal sealed partial record MeetingLink(MeetingService Service, Uri Web, Uri?
         if (ZoomHostRegex().IsMatch(web.Host))
         {
             return new MeetingLink(MeetingService.Zoom, web, ZoomApp(web));
+        }
+
+        if (string.Equals(web.Host, "meet.google.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return new MeetingLink(MeetingService.Meet, web, null);
+        }
+
+        if (WebexHostRegex().IsMatch(web.Host))
+        {
+            return new MeetingLink(MeetingService.Webex, web, null);
         }
 
         return new MeetingLink(MeetingService.Other, web, null);
@@ -55,6 +67,9 @@ internal sealed partial record MeetingLink(MeetingService Service, Uri Web, Uri?
 
     [GeneratedRegex(@"^([\w-]+\.)?zoom(gov)?\.(us|com)$", RegexOptions.IgnoreCase)]
     private static partial Regex ZoomHostRegex();
+
+    [GeneratedRegex(@"^([\w-]+\.)?webex\.com$", RegexOptions.IgnoreCase)]
+    private static partial Regex WebexHostRegex();
 
     [GeneratedRegex(@"^/(j|wc/join)/(?<id>\d{9,11})/?$")]
     private static partial Regex ZoomMeetingPathRegex();
