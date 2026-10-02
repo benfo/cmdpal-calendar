@@ -14,7 +14,7 @@ public sealed class LegacyFeedImportTests : IDisposable
     public void Imports_each_feed_line_once_and_removes_the_old_setting()
     {
         WriteSettings("""{ "CmdPalCalendar.IcsFeeds": "https://calendar.google.com/a.ics\rhttps://outlook.office365.com/b.ics\r\rhttps://calendar.google.com/a.ics", "Other": 1 }""");
-        var store = new CalendarFeedStore(CalendarsPath);
+        var store = new CalendarFeedStore(CalendarsPath, new PlainProtector());
 
         LegacyFeedImport.Run(SettingsPath, store);
         LegacyFeedImport.Run(SettingsPath, store);
@@ -29,7 +29,7 @@ public sealed class LegacyFeedImportTests : IDisposable
     public void Leaves_existing_calendars_alone()
     {
         WriteSettings("""{ "CmdPalCalendar.IcsFeeds": "https://calendar.google.com/a.ics" }""");
-        var store = new CalendarFeedStore(CalendarsPath);
+        var store = new CalendarFeedStore(CalendarsPath, new PlainProtector());
         store.Add(CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Red));
 
         LegacyFeedImport.Run(SettingsPath, store);
@@ -40,7 +40,7 @@ public sealed class LegacyFeedImportTests : IDisposable
     [Fact]
     public void Does_nothing_without_a_settings_file()
     {
-        var store = new CalendarFeedStore(CalendarsPath);
+        var store = new CalendarFeedStore(CalendarsPath, new PlainProtector());
 
         LegacyFeedImport.Run(SettingsPath, store);
 

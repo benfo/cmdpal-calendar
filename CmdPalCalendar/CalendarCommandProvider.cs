@@ -22,12 +22,13 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         Icon = new IconInfo(Glyphs.Calendar);
 
         var directory = Utilities.BaseSettingsPath("CmdPalCalendar");
-        var feeds = new CalendarFeedStore(Path.Combine(directory, "calendars.json"));
+        var protector = new DpapiSecretProtector();
+        var feeds = new CalendarFeedStore(Path.Combine(directory, "calendars.json"), protector);
         LegacyFeedImport.Run(Path.Combine(directory, "settings.json"), feeds);
 
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
-        var cache = new IcsFeedCache(Path.Combine(directory, "cache"), new DpapiSecretProtector(), time);
+        var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
         var source = new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time);
         var refresher = new CalendarRefresher(source);
         var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));

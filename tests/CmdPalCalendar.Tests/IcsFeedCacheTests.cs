@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using CmdPalCalendar.Feeds;
 using CmdPalCalendar.Ics;
@@ -82,12 +81,5 @@ public sealed class IcsFeedCacheTests : IDisposable
         public byte[] Protect(byte[] data) => [.. data.Reverse()];
 
         public byte[] Unprotect(byte[] data) => [.. data.Reverse()];
-    }
-
-    private sealed class FailingProtector : ISecretProtector
-    {
-        public byte[] Protect(byte[] data) => data;
-
-        public byte[] Unprotect(byte[] data) => throw new CryptographicException("Wrong user");
     }
 }

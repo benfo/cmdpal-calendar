@@ -6,7 +6,7 @@ namespace CmdPalCalendar.Platform;
 
 internal sealed class DpapiSecretProtector : ISecretProtector
 {
-    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("CmdPalCalendar.Cache");
+    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("CmdPalCalendar");
 
     public byte[] Protect(byte[] data) => ProtectedData.Protect(data, Entropy, DataProtectionScope.CurrentUser);
 
