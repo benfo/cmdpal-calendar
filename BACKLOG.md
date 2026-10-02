@@ -15,7 +15,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - A day with only in-person meetings says "Nothing to join today", and Enter opens the calendar.
   - A hotkey or alias on Join next meeting still works after its subtitle has changed a few times.
 - [ ] **Next meeting subtitle**: the Calendar subtitle switches to the next meeting once it starts in under 5 minutes, and the rule feels right with a real calendar.
-- [ ] **Times that tick**: leave the page open on today; "in N min" counts down without the selection jumping, and a meeting moves from Up next to Happening now (and to Earlier today) at its start and end time.
 - [ ] **Encrypted addresses**: after Reload, `calendars.json` shows `protectedLocation` instead of the calendar URLs, and all calendars still load and can be edited.
 - [ ] **Caching**:
   - After restarting Command Palette (or Reload), events and the Calendar subtitle appear right away instead of after the download.
