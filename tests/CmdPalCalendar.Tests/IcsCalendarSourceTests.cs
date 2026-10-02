@@ -72,6 +72,22 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task Notes_come_from_the_html_description_when_there_is_one()
+    {
+        var source = await LoadAsync(Event(
+            "review",
+            "Review",
+            "20261005T090000",
+            "20261005T100000",
+            "DESCRIPTION:Agenda plain\nX-ALT-DESC;FMTTYPE=text/html:<html><body><b>Agenda</b> rich</body></html>"));
+
+        var entry = Assert.Single(source.GetEntries(Monday, Monday.AddDays(1)));
+
+        Assert.Equal("Agenda plain", entry.Description);
+        Assert.Equal("**Agenda** rich", entry.Notes);
+    }
+
+    [Fact]
     public async Task Sample_feed_has_weekday_events_only()
     {
         var source = Source(Path.Combine(AppContext.BaseDirectory, "sample.ics"));

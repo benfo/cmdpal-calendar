@@ -24,7 +24,8 @@ internal static class IcsEntryMapper
             Organizer: ev.Organizer is { } organizer ? NameOrAddress(organizer.CommonName, organizer.Value) : null,
             Attendees: ev.Attendees.Select(a => NameOrAddress(a.CommonName, a.Value)).OfType<string>().ToList(),
             Link: MeetingLinkFinder.Find(ev.Location, ev.Url?.ToString(), ev.Description),
-            Source: source);
+            Source: source,
+            Notes: EventNotes.From(ev.Description, ev.Properties.Get<string>("X-ALT-DESC")));
     }
 
     private static DateTimeOffset ToLocal(CalDateTime value)

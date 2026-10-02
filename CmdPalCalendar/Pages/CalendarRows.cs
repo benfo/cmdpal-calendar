@@ -12,8 +12,6 @@ namespace CmdPalCalendar.Pages;
 internal sealed class CalendarRows(NavigationCommands navigation)
 {
     private const int AttendeesShown = 8;
-    private const int DescriptionLinesShown = 10;
-    private const string MarkdownSpecials = "\\`*_{}[]<>()#+-!|";
 
     private static readonly IconInfo CalendarIcon = new(Glyphs.Calendar);
     private static readonly IconInfo MeetingIcon = new(Glyphs.Video);
@@ -124,15 +122,9 @@ internal sealed class CalendarRows(NavigationCommands navigation)
         AppendField(body, "Organizer", entry.Organizer);
         AppendField(body, "Attendees", Attendees(entry.Attendees));
 
-        if (entry.Description is { } description)
+        if (entry.Notes is { } notes)
         {
-            var lines = description
-                .Split('\n')
-                .Select(l => l.TrimEnd('\r'))
-                .Where(l => !string.IsNullOrWhiteSpace(l))
-                .Take(DescriptionLinesShown)
-                .Select(Escape);
-            body.AppendLine().AppendLine(string.Join("  \n", lines));
+            body.AppendLine().AppendLine(notes);
         }
 
         return new Details
@@ -147,7 +139,7 @@ internal sealed class CalendarRows(NavigationCommands navigation)
     {
         if (value is not null)
         {
-            body.AppendLine(CultureInfo.CurrentCulture, $"**{label}:** {Escape(value)}  ");
+            body.AppendLine(CultureInfo.CurrentCulture, $"**{label}:** {MarkdownText.Escape(value)}  ");
         }
     }
 
@@ -161,7 +153,4 @@ internal sealed class CalendarRows(NavigationCommands navigation)
         var shown = string.Join(", ", attendees.Take(AttendeesShown));
         return attendees.Count > AttendeesShown ? $"{shown} +{attendees.Count - AttendeesShown} more" : shown;
     }
-
-    private static string Escape(string text) =>
-        string.Concat(text.Select(c => MarkdownSpecials.Contains(c) ? $"\\{c}" : c.ToString()));
 }

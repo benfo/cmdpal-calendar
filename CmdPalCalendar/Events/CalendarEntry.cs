@@ -14,7 +14,8 @@ internal sealed record CalendarEntry(
     string? Organizer,
     IReadOnlyList<string> Attendees,
     string? Link,
-    string Source)
+    string Source,
+    string? Notes = null)
 {
     public bool Matches(string query) =>
         string.IsNullOrWhiteSpace(query) ||
