@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "CmdPalCalendar (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
+    },
+    "CmdPalCalendar (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

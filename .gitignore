@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+*.user
+*.msix
+AppPackages/
+# Note: Properties/launchSettings.json and *.pubxml are intentionally tracked (needed to deploy).
