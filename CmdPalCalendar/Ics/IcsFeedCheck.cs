@@ -41,6 +41,10 @@ internal sealed class IcsFeedCheck(IcsFeedReader reader)
         {
             return Failed(ex.Message + ".");
         }
+        catch (Exception ex)
+        {
+            return Failed($"Couldn't read that calendar ({ex.Message}).");
+        }
     }
 
     private static IcsFeedCheckResult Failed(string error) => new(null, error);
