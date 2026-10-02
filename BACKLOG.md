@@ -6,6 +6,7 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
+- [ ] **Installing a release**: on a PC without the development build, `irm …/install.ps1 | iex` in an admin PowerShell trusts the certificate, installs the right package, and Calendar works after Reload; running it again after a new release updates in place and keeps the calendars.
 - [ ] **Formatted notes**:
   - An Outlook invite with a long agenda shows in full, formatted, without the Teams footer.
   - A Google invite with bold text and links shows them formatted and clickable.
@@ -30,6 +31,14 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
+- [ ] **Microsoft Store** (unlisted at first, public later; replaces the self-signed sideload):
+  - Register a free individual developer account at storedeveloper.microsoft.com (ID and selfie check).
+  - Reserve the app name in Partner Center; "Calendar" is likely taken, so something like "Calendar for Command Palette".
+  - Put the identity Partner Center assigns (package name and `CN=…` publisher) into a Store build: an unsigned `.msixupload` for x64 and ARM64, made alongside the sideload packages.
+  - First submission by hand, unlisted (available by direct link only); a short privacy statement (calendar data stays on the PC).
+  - Then automate submissions on each tag with the `msstore` CLI (needs an Entra app linked to Partner Center).
+  - Friends move from the sideload to the Store version: uninstall, install from the Store link, re-add calendars (different package identity).
+- [ ] **Extension Gallery**: once it's on the Store, add `extensions/benfo/cmdpal-calendar/extension.json` via a PR to `microsoft/CmdPal-Extensions`.
 
 ## Later
 
@@ -57,7 +66,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 ## Engineering
 
 - [ ] Tests for link detection and the layout (now/next split, empty states).
-- [ ] Check the trimmed Release build for Ical.Net warnings.
 
 ## Done
 
@@ -70,6 +78,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [x] Caching: each calendar's last download is kept in `cache/`, encrypted with DPAPI. Events show at startup before the download finishes, and the last good copy stays visible when a download fails, with its age under "Problems". Copies of removed or turned-off calendars are deleted.
 - [x] Calendar addresses encrypted in `calendars.json` with DPAPI (names, colours and on/off stay readable); plain addresses from older files are encrypted on first load.
 - [x] Times that tick: with the page open, "in 7 min" / "started 3 min ago" update every 30 seconds in place (selection and scroll stay put), and the sections are rebuilt when a meeting starts or ends, or at midnight.
+- [x] Releases: pushing a `v*` tag builds trimmed, self-contained x64 and ARM64 packages, signs them with a self-signed `CN=ben.fourie` certificate, and publishes a GitHub release that installs with one command (`install.ps1`). The trimmed build was checked: Ical.Net works, time zones included. CI builds and tests every push. MIT licence.
 - [x] Calendar icon and logos instead of the template placeholders.
 - [x] Fixed command ID (`CmdPalCalendar.Calendar`) so pins, aliases and hotkeys survive updates.
 - [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
