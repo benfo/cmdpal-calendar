@@ -10,16 +10,16 @@ internal sealed partial class NextMeetingTicker : IDisposable
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan CountdownWindow = TimeSpan.FromHours(1);
 
-    private readonly CommandItem _item;
+    private readonly CommandItem[] _items;
     private readonly CalendarSettings _settings;
     private readonly ICalendarSource _source;
     private readonly CalendarRefresher _refresher;
     private readonly TimeProvider _time;
     private readonly ITimer _timer;
 
-    public NextMeetingTicker(CommandItem item, CalendarSettings settings, ICalendarSource source, CalendarRefresher refresher, TimeProvider time)
+    public NextMeetingTicker(CalendarSettings settings, ICalendarSource source, CalendarRefresher refresher, TimeProvider time, params CommandItem[] items)
     {
-        _item = item;
+        _items = items;
         _settings = settings;
         _source = source;
         _refresher = refresher;
@@ -41,7 +41,7 @@ internal sealed partial class NextMeetingTicker : IDisposable
     {
         if (_settings.IcsFeeds.Count == 0)
         {
-            _item.Subtitle = "Add an ICS feed in settings";
+            SetSubtitle("Add an ICS feed in settings");
             return;
         }
 
@@ -52,7 +52,15 @@ internal sealed partial class NextMeetingTicker : IDisposable
 
         var now = _time.GetLocalNow();
         var today = DateOnly.FromDateTime(now.DateTime);
-        _item.Subtitle = Describe(UpcomingMeeting.Find(_source.GetEntries(today, today.AddDays(1)), now), now);
+        SetSubtitle(Describe(UpcomingMeeting.Find(_source.GetEntries(today, today.AddDays(1)), now), now));
+    }
+
+    private void SetSubtitle(string text)
+    {
+        foreach (var item in _items)
+        {
+            item.Subtitle = text;
+        }
     }
 
     private static string Describe(CalendarEntry? meeting, DateTimeOffset now) => meeting switch

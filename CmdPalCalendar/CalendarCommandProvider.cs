@@ -31,8 +31,12 @@ public sealed partial class CalendarCommandProvider : CommandProvider
             Subtitle = "Your events, day by day",
             MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
         };
-        _ticker = new NextMeetingTicker(calendar, _settings, source, refresher, time);
-        _commands = [calendar];
+        var joinNext = new CommandItem(new JoinNextMeetingCommand(source, time))
+        {
+            Title = "Join next meeting",
+        };
+        _ticker = new NextMeetingTicker(_settings, source, refresher, time, calendar, joinNext);
+        _commands = [calendar, joinNext];
     }
 
     public override ICommandItem[] TopLevelCommands() => _commands;
