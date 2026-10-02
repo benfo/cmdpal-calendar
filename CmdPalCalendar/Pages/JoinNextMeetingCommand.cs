@@ -14,7 +14,7 @@ internal sealed partial class JoinNextMeetingCommand : InvokableCommand
     {
         _source = source;
         _time = time;
-        Id = "CmdPalCalendar.JoinNext";
+        Id = JoinNextMeetingItem.CommandId;
         Name = "Join";
         Icon = new IconInfo(Glyphs.Video);
     }

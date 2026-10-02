@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using CmdPalCalendar.Events;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -12,7 +11,7 @@ internal sealed partial class NextMeetingTicker : IDisposable
     private static readonly TimeSpan CountdownWindow = TimeSpan.FromHours(1);
 
     private readonly CommandItem _calendar;
-    private readonly CommandItem _joinNext;
+    private readonly JoinNextMeetingItem _joinNext;
     private readonly CalendarSettings _settings;
     private readonly ICalendarSource _source;
     private readonly CalendarRefresher _refresher;
@@ -21,7 +20,7 @@ internal sealed partial class NextMeetingTicker : IDisposable
 
     public NextMeetingTicker(
         CommandItem calendar,
-        CommandItem joinNext,
+        JoinNextMeetingItem joinNext,
         CalendarSettings settings,
         ICalendarSource source,
         CalendarRefresher refresher,
@@ -64,7 +63,7 @@ internal sealed partial class NextMeetingTicker : IDisposable
         var entries = _source.GetEntries(today, today.AddDays(1));
 
         _calendar.Subtitle = DescribeNext(UpcomingMeeting.Find(entries, now), now);
-        _joinNext.Subtitle = DescribeJoinable(UpcomingMeeting.FindJoinable(entries, now), now);
+        _joinNext.Show(UpcomingMeeting.FindJoinable(entries, now), now);
     }
 
     private static string DescribeNext(CalendarEntry? meeting, DateTimeOffset now) => meeting switch
@@ -74,19 +73,4 @@ internal sealed partial class NextMeetingTicker : IDisposable
         _ when meeting.Start - now < CountdownWindow => $"Next: {meeting.Title} in {TimeText.Duration(meeting.Start - now)}",
         _ => $"Next: {meeting.Title} at {TimeText.Clock(meeting.Start)}",
     };
-
-    private static string DescribeJoinable(CalendarEntry? meeting, DateTimeOffset now)
-    {
-        if (meeting is null)
-        {
-            return "Nothing to join today";
-        }
-
-        var service = MeetingServiceText.Name(MeetingLink.Parse(meeting.Link)!.Service);
-        IEnumerable<string> parts = meeting.Start <= now ? [$"Now: {meeting.Title}", service!]
-            : UpcomingMeeting.IsJoinableNow(meeting, now) ? [$"{meeting.Title} in {TimeText.Duration(meeting.Start - now)}", service!]
-            : [$"Next to join: {meeting.Title} at {TimeText.Clock(meeting.Start)}"];
-
-        return string.Join(" · ", parts);
-    }
 }

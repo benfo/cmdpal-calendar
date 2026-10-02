@@ -31,10 +31,9 @@ public sealed partial class CalendarCommandProvider : CommandProvider
             Subtitle = "Your events, day by day",
             MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
         };
-        var joinNext = new CommandItem(new JoinNextMeetingCommand(source, time))
-        {
-            Title = "Join next meeting",
-        };
+        var joinNext = new JoinNextMeetingItem(
+            new JoinNextMeetingCommand(source, time),
+            new CalendarPage(_settings, source, refresher, time, JoinNextMeetingItem.CommandId));
         _ticker = new NextMeetingTicker(calendar, joinNext, _settings, source, refresher, time);
         _commands = [calendar, joinNext];
     }

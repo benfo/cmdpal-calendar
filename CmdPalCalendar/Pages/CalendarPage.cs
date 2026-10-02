@@ -9,6 +9,7 @@ namespace CmdPalCalendar.Pages;
 
 internal sealed partial class CalendarPage : DynamicListPage
 {
+    public const string DefaultId = "CmdPalCalendar.Calendar";
     public const int LookAheadDays = 60;
     private const int ScheduleDays = 7;
 
@@ -22,7 +23,7 @@ internal sealed partial class CalendarPage : DynamicListPage
     private readonly CalendarLayout _layout;
     private DateOnly? _selectedDate;
 
-    public CalendarPage(CalendarSettings settings, ICalendarSource source, CalendarRefresher refresher, TimeProvider time)
+    public CalendarPage(CalendarSettings settings, ICalendarSource source, CalendarRefresher refresher, TimeProvider time, string id = DefaultId)
     {
         _settings = settings;
         _source = source;
@@ -40,7 +41,7 @@ internal sealed partial class CalendarPage : DynamicListPage
         _views.PropChanged += (_, _) => OnViewChanged();
         Filters = _views;
 
-        Id = "CmdPalCalendar.Calendar";
+        Id = id;
         Icon = new IconInfo(Glyphs.Calendar);
         Name = "Open";
         PlaceholderText = "Filter events, or type a date (tomorrow, next fri, 27 jan)";
