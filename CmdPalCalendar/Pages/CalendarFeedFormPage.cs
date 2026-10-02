@@ -57,7 +57,7 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
                 return CommandResult.KeepOpen();
             }
 
-            var finalName = name.Length > 0 ? name : result.CalendarName ?? IcsFeedReader.DisplayName(location);
+            var finalName = name.Length > 0 ? name : result.CalendarName ?? CalendarFeed.Describe(location);
             if (_feed is null)
             {
                 _store.Add(CalendarFeed.Create(finalName, location, color) with { Enabled = enabled });

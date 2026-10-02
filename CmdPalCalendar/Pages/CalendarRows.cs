@@ -9,7 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace CmdPalCalendar.Pages;
 
-internal sealed class CalendarRows(NavigationCommands navigation)
+internal sealed class CalendarRows(NavigationCommands navigation, ICommand manage)
 {
     private const int AttendeesShown = 8;
 
@@ -18,6 +18,8 @@ internal sealed class CalendarRows(NavigationCommands navigation)
     private static readonly IconInfo ErrorIcon = new(Glyphs.Error);
     private static readonly IconInfo SettingsIcon = new(Glyphs.Settings);
     private static readonly IconInfo GoToIcon = new(Glyphs.CalendarDay);
+
+    private readonly IContextItem[] _pageCommands = [.. navigation.Items, new CommandContextItem(manage)];
 
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now)
     {
@@ -31,7 +33,7 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Icon = link is null or { Service: MeetingService.Other } ? CalendarIcon : MeetingIcon,
             Tags = link is not null && MeetingServiceText.Name(link.Service) is { } service ? [new Tag(service)] : [],
             Details = Details(entry),
-            MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. navigation.Items],
+            MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. _pageCommands],
         };
     }
 
@@ -55,7 +57,7 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Title = title,
             Subtitle = subtitle,
             Icon = CalendarIcon,
-            MoreCommands = navigation.Items,
+            MoreCommands = _pageCommands,
         };
 
     public ListItem PointToNext(string title, CalendarEntry? next, DateOnly today, Action<DateOnly> goTo)
@@ -78,7 +80,7 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Title = $"Go to {DateText.Long(date)}",
             Subtitle = eventCount switch { 0 => "No events", 1 => "1 event", _ => $"{eventCount} events" },
             Icon = GoToIcon,
-            MoreCommands = navigation.Items,
+            MoreCommands = _pageCommands,
         };
 
     public ListItem Error(string error) =>
@@ -87,14 +89,16 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Title = "Couldn't load a calendar",
             Subtitle = error,
             Icon = ErrorIcon,
-            MoreCommands = navigation.Items,
+            MoreCommands = _pageCommands,
         };
 
-    public static ListItem Settings(ICommand settingsPage) =>
-        new(settingsPage)
+    public ListItem NoCalendars(bool allTurnedOff) =>
+        new(manage)
         {
-            Title = "Add an ICS feed in settings",
-            Subtitle = "Paste a published calendar URL (Outlook, Google, etc.) to see your events",
+            Title = allTurnedOff ? "All calendars are turned off" : "Add a calendar",
+            Subtitle = allTurnedOff
+                ? "Turn one on in Manage calendars"
+                : "Add a published calendar (Outlook, Google, etc.) to see your events",
             Icon = SettingsIcon,
         };
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CmdPalCalendar.Events;
+using CmdPalCalendar.Feeds;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -13,7 +14,7 @@ internal sealed partial class CalendarPage : DynamicListPage
     public const int LookAheadDays = 60;
     private const int ScheduleDays = 7;
 
-    private readonly CalendarSettings _settings;
+    private readonly CalendarFeedStore _feeds;
     private readonly ICalendarSource _source;
     private readonly CalendarRefresher _refresher;
     private readonly TimeProvider _time;
@@ -23,9 +24,15 @@ internal sealed partial class CalendarPage : DynamicListPage
     private readonly CalendarLayout _layout;
     private DateOnly? _selectedDate;
 
-    public CalendarPage(CalendarSettings settings, ICalendarSource source, CalendarRefresher refresher, TimeProvider time, string id = DefaultId)
+    public CalendarPage(
+        CalendarFeedStore feeds,
+        ICalendarSource source,
+        CalendarRefresher refresher,
+        ManageCalendarsPage manage,
+        TimeProvider time,
+        string id = DefaultId)
     {
-        _settings = settings;
+        _feeds = feeds;
         _source = source;
         _refresher = refresher;
         _time = time;
@@ -34,10 +41,11 @@ internal sealed partial class CalendarPage : DynamicListPage
             next: () => GoTo(SelectedDate.AddDays(DaysShown)),
             today: () => GoTo(Today),
             refresh: () => _refresher.Refresh(force: true));
-        _rows = new CalendarRows(_navigation);
+        _rows = new CalendarRows(_navigation, manage);
         _layout = new CalendarLayout(_rows);
 
         _refresher.LoadingChanged += (_, _) => OnLoadingChanged();
+        _feeds.Changed += (_, _) => OnFeedsChanged();
         _views.PropChanged += (_, _) => OnViewChanged();
         Filters = _views;
 
@@ -57,9 +65,9 @@ internal sealed partial class CalendarPage : DynamicListPage
 
     public override IListItem[] GetItems()
     {
-        if (_settings.IcsFeeds.Count == 0)
+        if (_feeds.EnabledFeeds.Count == 0)
         {
-            return [CalendarRows.Settings(_settings.Settings.SettingsPage)];
+            return [_rows.NoCalendars(allTurnedOff: _feeds.Feeds.Count > 0)];
         }
 
         _refresher.Refresh();
@@ -118,6 +126,12 @@ internal sealed partial class CalendarPage : DynamicListPage
         Title = DaysShown == 1
             ? DateText.Title(SelectedDate, Today)
             : DateText.Span(SelectedDate, SelectedDate.AddDays(DaysShown - 1));
+
+    private void OnFeedsChanged()
+    {
+        _refresher.Refresh();
+        RaiseItemsChanged();
+    }
 
     private void OnLoadingChanged()
     {

@@ -12,7 +12,6 @@ namespace CmdPalCalendar;
 public sealed partial class CalendarCommandProvider : CommandProvider
 {
     private readonly ICommandItem[] _commands;
-    private readonly CalendarSettings _settings = new();
     private readonly NextMeetingTicker _ticker;
 
     public CalendarCommandProvider()
@@ -20,26 +19,27 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         Id = "CmdPalCalendar";
         DisplayName = "Calendar";
         Icon = new IconInfo(Glyphs.Calendar);
-        Settings = _settings.Settings;
+
+        var directory = Utilities.BaseSettingsPath("CmdPalCalendar");
+        var feeds = new CalendarFeedStore(Path.Combine(directory, "calendars.json"));
+        LegacyFeedImport.Run(Path.Combine(directory, "settings.json"), feeds);
 
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
-        var feeds = new CalendarFeedStore(Path.Combine(Utilities.BaseSettingsPath("CmdPalCalendar"), "calendars.json"));
-        var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));
-        var source = new IcsCalendarSource(() => _settings.IcsFeeds, reader, time);
+        var source = new IcsCalendarSource(() => feeds.EnabledFeeds, reader, time);
         var refresher = new CalendarRefresher(source);
-        _settings.Settings.SettingsChanged += (_, _) => refresher.Refresh(force: true);
+        var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));
 
-        var calendar = new CommandItem(new CalendarPage(_settings, source, refresher, time))
+        var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time))
         {
             Title = "Calendar",
             Subtitle = "Your events, day by day",
-            MoreCommands = [new CommandContextItem(manage), new CommandContextItem(_settings.Settings.SettingsPage)],
+            MoreCommands = [new CommandContextItem(manage)],
         };
         var joinNext = new JoinNextMeetingItem(
             new JoinNextMeetingCommand(source, time),
-            new CalendarPage(_settings, source, refresher, time, JoinNextMeetingItem.CommandId));
-        _ticker = new NextMeetingTicker(calendar, joinNext, _settings, source, refresher, time);
+            new CalendarPage(feeds, source, refresher, manage, time, JoinNextMeetingItem.CommandId));
+        _ticker = new NextMeetingTicker(calendar, joinNext, feeds, source, refresher, time);
         _commands = [calendar, joinNext];
     }
 

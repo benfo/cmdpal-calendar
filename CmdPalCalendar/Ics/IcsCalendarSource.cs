@@ -4,13 +4,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Events;
+using CmdPalCalendar.Feeds;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 
 namespace CmdPalCalendar.Ics;
 
-internal sealed class IcsCalendarSource(Func<IReadOnlyList<string>> feeds, IcsFeedReader reader, TimeProvider time)
+internal sealed class IcsCalendarSource(Func<IReadOnlyList<CalendarFeed>> feeds, IcsFeedReader reader, TimeProvider time)
     : ICalendarSource
 {
     private static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(5);
@@ -18,25 +19,23 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<string>> feeds, IcsFe
 
     private readonly Lock _lock = new();
     private IReadOnlyList<LoadedFeed> _loaded = [];
-    private IReadOnlyList<string> _loadedFeeds = [];
     private DateTimeOffset? _loadedAt;
 
     public bool IsStale =>
         _loadedAt is not { } loadedAt ||
         time.GetUtcNow() - loadedAt > MaxAge ||
-        !_loadedFeeds.SequenceEqual(feeds(), StringComparer.OrdinalIgnoreCase);
+        !Addresses(_loaded.Select(f => f.Feed)).SetEquals(Addresses(feeds()));
 
-    public IReadOnlyList<string> Errors => _loaded.Select(f => f.Error).OfType<string>().ToList();
+    public IReadOnlyList<string> Errors =>
+        Current().Select(c => c.Loaded.Error is { } error ? $"{c.Feed.Name}: {error}" : null).OfType<string>().ToList();
 
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
-        var current = feeds().ToArray();
-        var loaded = await Task.WhenAll(current.Select(f => LoadFeedAsync(f, cancellationToken)));
+        var loaded = await Task.WhenAll(feeds().Select(f => LoadFeedAsync(f, cancellationToken)));
 
         lock (_lock)
         {
             _loaded = loaded;
-            _loadedFeeds = current;
             _loadedAt = time.GetUtcNow();
         }
     }
@@ -50,12 +49,12 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<string>> feeds, IcsFe
 
         lock (_lock)
         {
-            return _loaded
-                .Where(f => f.Calendar is not null)
-                .SelectMany(f => f.Calendar!.GetOccurrences<CalendarEvent>(expandFrom)
+            return Current()
+                .Where(c => c.Loaded.Calendar is not null)
+                .SelectMany(c => c.Loaded.Calendar!.GetOccurrences<CalendarEvent>(expandFrom)
                     .TakeWhileBefore(expandTo)
                     .Where(o => o.Source is CalendarEvent ev && !IsCancelled(ev))
-                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, f.Name)))
+                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, c.Feed.Name)))
                 .Where(e => e.Start < rangeEnd && e.End > rangeStart)
                 .DistinctBy(e => (e.Uid, e.Start))
                 .OrderBy(e => e.Start)
@@ -64,19 +63,28 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<string>> feeds, IcsFe
         }
     }
 
-    private async Task<LoadedFeed> LoadFeedAsync(string feed, CancellationToken cancellationToken)
+    private IEnumerable<(CalendarFeed Feed, LoadedFeed Loaded)> Current()
     {
-        var name = IcsFeedReader.DisplayName(feed);
+        var loaded = _loaded.ToDictionary(f => f.Feed.Id);
+        return feeds()
+            .Where(f => loaded.ContainsKey(f.Id) && loaded[f.Id].Feed.Location == f.Location)
+            .Select(f => (f, loaded[f.Id]));
+    }
+
+    private async Task<LoadedFeed> LoadFeedAsync(CalendarFeed feed, CancellationToken cancellationToken)
+    {
         try
         {
-            var calendar = await reader.ReadCalendarAsync(feed, cancellationToken);
-            return new LoadedFeed(name, calendar, null);
+            return new LoadedFeed(feed, await reader.ReadCalendarAsync(feed.Location, cancellationToken), null);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            return new LoadedFeed(name, null, $"{name}: {ex.Message}");
+            return new LoadedFeed(feed, null, ex.Message);
         }
     }
+
+    private static HashSet<(string Id, string Location)> Addresses(IEnumerable<CalendarFeed> feeds) =>
+        feeds.Select(f => (f.Id, f.Location)).ToHashSet();
 
     private static DateTimeOffset StartOfDay(DateOnly date)
     {
@@ -87,5 +95,5 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<string>> feeds, IcsFe
     private static bool IsCancelled(CalendarEvent ev) =>
         string.Equals(ev.Status, "CANCELLED", StringComparison.OrdinalIgnoreCase);
 
-    private sealed record LoadedFeed(string Name, Calendar? Calendar, string? Error);
+    private sealed record LoadedFeed(CalendarFeed Feed, Calendar? Calendar, string? Error);
 }

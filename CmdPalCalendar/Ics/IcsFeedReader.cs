@@ -14,16 +14,6 @@ internal sealed class IcsFeedReader(HttpClient http)
     {
     }
 
-    public static string DisplayName(string feed)
-    {
-        if (File.Exists(feed))
-        {
-            return Path.GetFileName(feed);
-        }
-
-        return Uri.TryCreate(feed, UriKind.Absolute, out var uri) ? uri.Host : feed;
-    }
-
     public async Task<Calendar> ReadCalendarAsync(string feed, CancellationToken cancellationToken)
     {
         var text = await ReadAsync(feed, cancellationToken);

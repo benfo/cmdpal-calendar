@@ -1,3 +1,4 @@
+using CmdPalCalendar.Feeds;
 using CmdPalCalendar.Ics;
 
 namespace CmdPalCalendar.Tests;
@@ -114,13 +115,38 @@ public sealed class IcsCalendarSourceTests : IDisposable
     [Fact]
     public async Task Is_stale_when_the_feeds_change()
     {
-        List<string> feeds = [WriteFeed()];
+        List<CalendarFeed> feeds = [Feed(WriteFeed())];
         var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _time);
         await source.LoadAsync(CancellationToken.None);
 
-        feeds.Add(WriteFeed());
+        feeds.Add(Feed(WriteFeed()));
 
         Assert.True(source.IsStale);
+    }
+
+    [Fact]
+    public async Task Renaming_a_calendar_shows_without_reloading()
+    {
+        List<CalendarFeed> feeds = [Feed(WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500")))];
+        var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _time);
+        await source.LoadAsync(CancellationToken.None);
+
+        feeds[0] = feeds[0] with { Name = "Work" };
+
+        Assert.False(source.IsStale);
+        Assert.Equal("Work", Assert.Single(source.GetEntries(Monday, Monday.AddDays(1))).Source);
+    }
+
+    [Fact]
+    public async Task Turned_off_calendars_are_hidden_without_reloading()
+    {
+        List<CalendarFeed> feeds = [Feed(WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500")))];
+        var source = new IcsCalendarSource(() => feeds.Where(f => f.Enabled).ToList(), new IcsFeedReader(), _time);
+        await source.LoadAsync(CancellationToken.None);
+
+        feeds[0] = feeds[0] with { Enabled = false };
+
+        Assert.Empty(source.GetEntries(Monday, Monday.AddDays(1)));
     }
 
     public void Dispose()
@@ -138,7 +164,13 @@ public sealed class IcsCalendarSourceTests : IDisposable
         return source;
     }
 
-    private IcsCalendarSource Source(params string[] feeds) => new(() => feeds, new IcsFeedReader(), _time);
+    private IcsCalendarSource Source(params string[] paths)
+    {
+        var feeds = paths.Select(Feed).ToList();
+        return new IcsCalendarSource(() => feeds, new IcsFeedReader(), _time);
+    }
+
+    private static CalendarFeed Feed(string path) => CalendarFeed.Create(CalendarFeed.Describe(path), path, CalendarColor.Blue);
 
     private string WriteFeed(params string[] events)
     {
