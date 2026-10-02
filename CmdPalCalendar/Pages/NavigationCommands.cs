@@ -5,19 +5,37 @@ using Windows.System;
 
 namespace CmdPalCalendar.Pages;
 
-internal sealed class NavigationCommands(Action previous, Action next, Action today, Action refresh)
+internal sealed class NavigationCommands
 {
-    public IContextItem[] Items { get; } =
-    [
-        Create("Previous day", "", VirtualKey.Left, previous),
-        Create("Next day", "", VirtualKey.Right, next),
-        Create("Today", "", VirtualKey.T, today),
-        Create("Refresh", "", VirtualKey.R, refresh),
-    ];
+    private readonly AnonymousCommand _previous;
+    private readonly AnonymousCommand _next;
 
-    private static CommandContextItem Create(string name, string glyph, VirtualKey key, Action action) =>
-        new(new AnonymousCommand(action) { Name = name, Icon = new IconInfo(glyph), Result = CommandResult.KeepOpen() })
-        {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: key),
-        };
+    public NavigationCommands(Action previous, Action next, Action today, Action refresh)
+    {
+        _previous = Command(previous, "");
+        _next = Command(next, "");
+        StepBy("day");
+
+        Items =
+        [
+            ContextItem(_previous, VirtualKey.Left),
+            ContextItem(_next, VirtualKey.Right),
+            ContextItem(Command(today, "", "Today"), VirtualKey.T),
+            ContextItem(Command(refresh, "", "Refresh"), VirtualKey.R),
+        ];
+    }
+
+    public IContextItem[] Items { get; }
+
+    public void StepBy(string unit)
+    {
+        _previous.Name = $"Previous {unit}";
+        _next.Name = $"Next {unit}";
+    }
+
+    private static AnonymousCommand Command(Action action, string glyph, string name = "") =>
+        new(action) { Name = name, Icon = new IconInfo(glyph), Result = CommandResult.KeepOpen() };
+
+    private static CommandContextItem ContextItem(ICommand command, VirtualKey key) =>
+        new(command) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: key) };
 }
