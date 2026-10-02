@@ -72,6 +72,17 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task Sample_feed_has_weekday_events_only()
+    {
+        var source = Source(Path.Combine(AppContext.BaseDirectory, "sample.ics"));
+        await source.LoadAsync(CancellationToken.None);
+        var saturday = Monday.AddDays(-2);
+
+        Assert.Empty(source.GetEntries(saturday, Monday));
+        Assert.Equal(5, source.GetEntries(Monday, Monday.AddDays(1)).Count);
+    }
+
+    [Fact]
     public async Task Is_stale_until_loaded_and_again_after_five_minutes()
     {
         var source = Source(WriteFeed());

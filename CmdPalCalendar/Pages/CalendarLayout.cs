@@ -16,27 +16,39 @@ internal sealed class CalendarLayout(CalendarRows rows)
             .ToList();
 
         IListItem[] body = days.All(d => d.Entries.Count == 0) ? Empty(content)
-            : days.Count == 1 ? Day(days[0], content.Now)
+            : days.Count == 1 ? Day(days[0], content)
             : Schedule(days, content.Now);
 
         IListItem[] goTo = content.GoTo is { } row ? [row] : [];
         return [.. goTo, .. body, .. new Section("Problems", content.Errors.Select(rows.Error).ToArray())];
     }
 
-    private ListItem[] Empty(CalendarContent content) =>
-        !string.IsNullOrWhiteSpace(content.Query) ? content.GoTo is null ? [rows.Message($"No events match '{content.Query.Trim()}'")] : []
-        : [rows.Message($"Nothing on {DateText.Span(content.Days[0].Date, content.Days[^1].Date)}")];
-
-    private IListItem[] Day(DayEntries day, DateTimeOffset now)
+    private ListItem[] Empty(CalendarContent content)
     {
+        if (!content.IsFiltered)
+        {
+            return [PointToNext($"Nothing on {DateText.Span(content.Days[0].Date, content.Days[^1].Date)}", content)];
+        }
+
+        return content.GoTo is null ? [rows.Message($"No events match '{content.Query.Trim()}'")] : [];
+    }
+
+    private IListItem[] Day(DayEntries day, CalendarContent content)
+    {
+        var now = content.Now;
         if (!IsToday(day.Date, now))
         {
             return [.. new Section("All day", Rows(day.Entries.Where(e => e.IsAllDay), null)), .. Rows(day.Entries.Where(e => !e.IsAllDay), null)];
         }
 
         var timed = day.Entries.Where(e => !e.IsAllDay).ToList();
+        IListItem[] finished = !content.IsFiltered && timed.All(e => e.End <= now)
+            ? [PointToNext("That's it for today", content)]
+            : [];
+
         return
         [
+            .. finished,
             .. new Section("Happening now", Rows(timed.Where(e => e.Start <= now && e.End > now), now)),
             .. new Section("Up next", Rows(timed.Where(e => e.Start > now), now)),
             .. new Section("All day", Rows(day.Entries.Where(e => e.IsAllDay), now)),
@@ -49,6 +61,9 @@ internal sealed class CalendarLayout(CalendarRows rows)
                 DateText.Title(d.Date, DateOnly.FromDateTime(now.DateTime)),
                 Rows(d.Entries.OrderBy(e => !e.IsAllDay), IsToday(d.Date, now) ? now : null)))
             .ToArray();
+
+    private ListItem PointToNext(string title, CalendarContent content) =>
+        rows.PointToNext(title, content.Next, DateOnly.FromDateTime(content.Now.DateTime), content.GoToDate);
 
     private ListItem[] Rows(IEnumerable<CalendarEntry> entries, DateTimeOffset? now) =>
         entries.Select(e => rows.Entry(e, now)).ToArray();
@@ -63,4 +78,9 @@ internal sealed record CalendarContent(
     IReadOnlyList<string> Errors,
     DateTimeOffset Now,
     string Query,
-    ListItem? GoTo);
+    ListItem? GoTo,
+    CalendarEntry? Next,
+    Action<DateOnly> GoToDate)
+{
+    public bool IsFiltered => !string.IsNullOrWhiteSpace(Query);
+}

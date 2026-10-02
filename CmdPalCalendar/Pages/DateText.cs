@@ -17,6 +17,13 @@ internal static class DateText
         _ => Long(date),
     };
 
+    public static string Relative(DateOnly date, DateOnly today) => (date.DayNumber - today.DayNumber) switch
+    {
+        0 => "Today",
+        1 => "Tomorrow",
+        _ => Short(date),
+    };
+
     public static string Span(DateOnly first, DateOnly last) =>
         first == last ? Long(first)
         : first.Month == last.Month ? $"{Format(first, "ddd d")} – {Short(last)}"

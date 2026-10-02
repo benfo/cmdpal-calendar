@@ -11,6 +11,7 @@ namespace CmdPalCalendar.Pages;
 
 internal sealed partial class CalendarPage : DynamicListPage
 {
+    public const int LookAheadDays = 60;
     private const int ScheduleDays = 7;
 
     private readonly CalendarSettings _settings;
@@ -73,8 +74,17 @@ internal sealed partial class CalendarPage : DynamicListPage
 
         return days.All(d => d.Entries.Count == 0) && errors.Count == 0 && IsLoading
             ? []
-            : _layout.Build(new CalendarContent(days, errors, _time.GetLocalNow(), SearchText, GoToRow()));
+            : _layout.Build(new CalendarContent(
+                days, errors, _time.GetLocalNow(), SearchText, GoToRow(), NextAfter(days[^1].Date), date => GoTo(date)));
     }
+
+    private CalendarEntry? NextAfter(DateOnly date) =>
+        _source.GetEntries(date.AddDays(1), date.AddDays(1 + LookAheadDays))
+            .Where(e => DateOnly.FromDateTime(e.Start.DateTime) > date)
+            .OrderBy(e => e.Start.Date)
+            .ThenBy(e => e.IsAllDay)
+            .ThenBy(e => e.Start)
+            .FirstOrDefault();
 
     private void OnViewChanged()
     {

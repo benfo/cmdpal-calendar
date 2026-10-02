@@ -50,6 +50,20 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             MoreCommands = navigation.Items,
         };
 
+    public ListItem PointToNext(string title, CalendarEntry? next, DateOnly today, Action<DateOnly> goTo)
+    {
+        if (next is null)
+        {
+            return Message(title, $"Nothing in the next {CalendarPage.LookAheadDays} days");
+        }
+
+        var date = DateOnly.FromDateTime(next.Start.DateTime);
+        var time = next.IsAllDay ? "all day" : $"{next.Start:HH:mm}";
+        var go = new AnonymousCommand(() => goTo(date)) { Name = $"Go to {DateText.Short(date)}", Result = CommandResult.KeepOpen() };
+
+        return Message(title, $"Next: {DateText.Relative(date, today)} · {next.Title} {time}", go);
+    }
+
     public ListItem GoTo(DateOnly date, int eventCount, Action go) =>
         new(new AnonymousCommand(go) { Name = "Go", Result = CommandResult.KeepOpen() })
         {
