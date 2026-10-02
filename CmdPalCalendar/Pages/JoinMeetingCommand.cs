@@ -15,12 +15,7 @@ internal sealed partial class JoinMeetingCommand : InvokableCommand
     public JoinMeetingCommand(MeetingLink link)
     {
         _link = link;
-        Name = link.Service switch
-        {
-            MeetingService.Teams => "Join Teams meeting",
-            MeetingService.Zoom => "Join Zoom meeting",
-            _ => "Open link",
-        };
+        Name = MeetingServiceText.JoinLabel(link.Service);
         Icon = new IconInfo(link.Service == MeetingService.Other ? Glyphs.Link : Glyphs.Video);
     }
 

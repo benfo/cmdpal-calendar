@@ -16,6 +16,7 @@ internal sealed class CalendarRows(NavigationCommands navigation)
     private const string MarkdownSpecials = "\\`*_{}[]<>()#+-!|";
 
     private static readonly IconInfo CalendarIcon = new(Glyphs.Calendar);
+    private static readonly IconInfo MeetingIcon = new(Glyphs.Video);
     private static readonly IconInfo ErrorIcon = new(Glyphs.Error);
     private static readonly IconInfo SettingsIcon = new(Glyphs.Settings);
     private static readonly IconInfo GoToIcon = new(Glyphs.CalendarDay);
@@ -29,7 +30,8 @@ internal sealed class CalendarRows(NavigationCommands navigation)
         {
             Title = entry.Title,
             Subtitle = Subtitle(entry, now),
-            Icon = CalendarIcon,
+            Icon = link is null or { Service: MeetingService.Other } ? CalendarIcon : MeetingIcon,
+            Tags = link is not null && MeetingServiceText.Name(link.Service) is { } service ? [new Tag(service)] : [],
             Details = Details(entry),
             MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. navigation.Items],
         };
