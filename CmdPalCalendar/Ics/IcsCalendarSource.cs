@@ -1,7 +1,3 @@
-// Copyright (c) Microsoft Corporation
-// The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,19 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
+using CmdPalCalendar.Events;
 using Ical.Net.DataTypes;
 
-namespace CmdPalCalendar.Calendar;
+namespace CmdPalCalendar.Ics;
 
-/// <summary>
-/// Loads ICS feeds (URLs or local files) and expands them into today's occurrences.
-/// </summary>
 internal static partial class IcsCalendarSource
 {
     private static readonly HttpClient Http = CreateHttpClient();
 
-    // Multi-day events that started before today still count if they overlap it,
-    // so expand recurrences from a little before the start of the day.
     private static readonly TimeSpan LookBehind = TimeSpan.FromDays(14);
 
     public static async Task<CalendarLoadResult> LoadTodayAsync(IReadOnlyList<string> feeds, CancellationToken ct)
@@ -103,7 +95,6 @@ internal static partial class IcsCalendarSource
             return await File.ReadAllTextAsync(uri.LocalPath, ct);
         }
 
-        // webcal:// is just a hint to calendar apps; the feed itself is served over https.
         if (uri.Scheme is "webcal" or "webcals")
         {
             uri = new UriBuilder(uri) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri;
@@ -137,7 +128,6 @@ internal static partial class IcsCalendarSource
             Source: source);
     }
 
-    // Floating times and all-day dates have no zone: they mean "this wall-clock time wherever you are".
     private static DateTimeOffset ToLocal(CalDateTime value)
     {
         if (value.IsFloating || !value.HasTime)
@@ -151,8 +141,6 @@ internal static partial class IcsCalendarSource
 
     private static string? FindLink(CalendarEvent ev)
     {
-        // Rough first pass: prefer a known meeting service, then any link. Proper
-        // join-link detection (structured fields, unwrapping, native protocols) comes later.
         string?[] sources = [ev.Location, ev.Url?.ToString(), ev.Description];
         var urls = sources
             .Where(s => !string.IsNullOrEmpty(s))

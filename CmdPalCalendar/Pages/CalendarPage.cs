@@ -1,7 +1,3 @@
-// Copyright (c) Microsoft Corporation
-// The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,31 +5,32 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CmdPalCalendar.Calendar;
+using CmdPalCalendar.Events;
+using CmdPalCalendar.Ics;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
-namespace CmdPalCalendar;
+namespace CmdPalCalendar.Pages;
 
-internal sealed partial class TodayPage : ListPage
+internal sealed partial class CalendarPage : ListPage
 {
     private static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(5);
     private static readonly IconInfo CalendarIcon = new("");
     private static readonly IconInfo LinkIcon = new("");
     private static readonly IconInfo RefreshIcon = new("");
 
-    private readonly SettingsManager _settings;
+    private readonly CalendarSettings _settings;
     private readonly Lock _lock = new();
     private CalendarLoadResult? _result;
     private Task? _loading;
 
-    public TodayPage(SettingsManager settings)
+    public CalendarPage(CalendarSettings settings)
     {
         _settings = settings;
         _settings.Settings.SettingsChanged += (_, _) => Refresh();
 
-        Id = "CmdPalCalendar.Today";
+        Id = "CmdPalCalendar.Calendar";
         Icon = CalendarIcon;
         Title = "Today";
         Name = "Open";
@@ -70,7 +67,6 @@ internal sealed partial class TodayPage : ListPage
         }
     }
 
-    // Caller holds _lock.
     private void StartLoad()
     {
         if (_loading is { IsCompleted: false } || _settings.IcsFeeds.Count == 0)
@@ -246,7 +242,6 @@ internal sealed partial class TodayPage : ListPage
         };
     }
 
-    // Event text is plain text; keep it from being interpreted as Markdown.
     private static string Escape(string text)
     {
         var sb = new StringBuilder(text.Length);

@@ -1,7 +1,3 @@
-// Copyright (c) Microsoft Corporation
-// The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,14 +6,12 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace CmdPalCalendar;
 
-internal sealed partial class SettingsManager : JsonSettingsManager
+internal sealed partial class CalendarSettings : JsonSettingsManager
 {
-    private static readonly string _namespace = "CmdPalCalendar";
-
-    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
+    private const string Namespace = "CmdPalCalendar";
 
     private readonly TextSetting _icsFeeds = new(
-        Namespaced(nameof(IcsFeeds)),
+        $"{Namespace}.{nameof(IcsFeeds)}",
         "ICS feeds",
         "One calendar per line: an https:// or webcal:// ICS URL, or a path to a local .ics file",
         string.Empty)
@@ -26,29 +20,24 @@ internal sealed partial class SettingsManager : JsonSettingsManager
         Placeholder = "https://outlook.office365.com/owa/calendar/.../calendar.ics",
     };
 
+    public CalendarSettings()
+    {
+        FilePath = SettingsJsonPath();
+        Settings.Add(_icsFeeds);
+        LoadSettings();
+        Settings.SettingsChanged += (_, _) => SaveSettings();
+    }
+
     public IReadOnlyList<string> IcsFeeds =>
         (_icsFeeds.Value ?? string.Empty)
             .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-    internal static string SettingsJsonPath()
+    private static string SettingsJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("CmdPalCalendar");
+        var directory = Utilities.BaseSettingsPath(Namespace);
         Directory.CreateDirectory(directory);
-
         return Path.Combine(directory, "settings.json");
-    }
-
-    public SettingsManager()
-    {
-        FilePath = SettingsJsonPath();
-
-        Settings.Add(_icsFeeds);
-
-        // Load settings from file upon initialization
-        LoadSettings();
-
-        Settings.SettingsChanged += (_, _) => SaveSettings();
     }
 }
