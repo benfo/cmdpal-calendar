@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using CmdPalCalendar.Events;
+using CmdPalCalendar.Feeds;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 
@@ -8,7 +9,7 @@ namespace CmdPalCalendar.Ics;
 
 internal static class IcsEntryMapper
 {
-    public static CalendarEntry ToEntry(CalendarEvent ev, Period period, string source)
+    public static CalendarEntry ToEntry(CalendarEvent ev, Period period, CalendarFeed feed)
     {
         var start = period.StartTime;
         var end = period.EffectiveEndTime ?? start;
@@ -24,8 +25,9 @@ internal static class IcsEntryMapper
             Organizer: ev.Organizer is { } organizer ? NameOrAddress(organizer.CommonName, organizer.Value) : null,
             Attendees: ev.Attendees.Select(a => NameOrAddress(a.CommonName, a.Value)).OfType<string>().ToList(),
             Link: MeetingLinkFinder.Find(ev.Location, ev.Url?.ToString(), ev.Description),
-            Source: source,
-            Notes: EventNotes.From(ev.Description, ev.Properties.Get<string>("X-ALT-DESC")));
+            Source: feed.Name,
+            Notes: EventNotes.From(ev.Description, ev.Properties.Get<string>("X-ALT-DESC")),
+            Color: feed.Color);
     }
 
     private static DateTimeOffset ToLocal(CalDateTime value)

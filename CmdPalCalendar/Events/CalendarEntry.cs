@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CmdPalCalendar.Feeds;
 
 namespace CmdPalCalendar.Events;
 
@@ -15,7 +16,8 @@ internal sealed record CalendarEntry(
     IReadOnlyList<string> Attendees,
     string? Link,
     string Source,
-    string? Notes = null)
+    string? Notes = null,
+    CalendarColor Color = CalendarColor.Grey)
 {
     public bool Matches(string query) =>
         string.IsNullOrWhiteSpace(query) ||

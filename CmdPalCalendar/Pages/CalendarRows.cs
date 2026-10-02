@@ -21,7 +21,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
 
     private readonly IContextItem[] _pageCommands = [.. navigation.Items, new CommandContextItem(manage)];
 
-    public ListItem Entry(CalendarEntry entry, DateTimeOffset? now)
+    public ListItem Entry(CalendarEntry entry, DateTimeOffset? now, bool showCalendar)
     {
         var link = MeetingLink.Parse(entry.Link);
         ICommand command = link is null ? new NoOpCommand() : new JoinMeetingCommand(link);
@@ -31,10 +31,17 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
             Title = entry.Title,
             Subtitle = Subtitle(entry, now),
             Icon = link is null or { Service: MeetingService.Other } ? CalendarIcon : MeetingIcon,
-            Tags = link is not null && MeetingServiceText.Name(link.Service) is { } service ? [new Tag(service)] : [],
+            Tags = Tags(entry, link, showCalendar),
             Details = Details(entry),
             MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. _pageCommands],
         };
+    }
+
+    private static ITag[] Tags(CalendarEntry entry, MeetingLink? link, bool showCalendar)
+    {
+        ITag[] service = link is not null && MeetingServiceText.Name(link.Service) is { } name ? [new Tag(name)] : [];
+        ITag[] calendar = showCalendar ? [CalendarColors.Tag(entry.Source, entry.Color)] : [];
+        return [.. service, .. calendar];
     }
 
     private static IContextItem[] MeetingCommands(MeetingLink? link, MeetingCredentials? credentials)
@@ -135,7 +142,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
         {
             Title = entry.Title,
             Body = body.ToString(),
-            Metadata = [new DetailsElement { Key = "Calendar", Data = new DetailsTags { Tags = [new Tag(entry.Source)] } }],
+            Metadata = [new DetailsElement { Key = "Calendar", Data = new DetailsTags { Tags = [CalendarColors.Tag(entry.Source, entry.Color)] } }],
         };
     }
 

@@ -54,7 +54,7 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<CalendarFeed>> feeds,
                 .SelectMany(c => c.Loaded.Calendar!.GetOccurrences<CalendarEvent>(expandFrom)
                     .TakeWhileBefore(expandTo)
                     .Where(o => o.Source is CalendarEvent ev && !IsCancelled(ev))
-                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, c.Feed.Name)))
+                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, c.Feed)))
                 .Where(e => e.Start < rangeEnd && e.End > rangeStart)
                 .DistinctBy(e => (e.Uid, e.Start))
                 .OrderBy(e => e.Start)

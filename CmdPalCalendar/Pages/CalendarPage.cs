@@ -82,7 +82,7 @@ internal sealed partial class CalendarPage : DynamicListPage
         return days.All(d => d.Entries.Count == 0) && errors.Count == 0 && IsLoading
             ? []
             : _layout.Build(new CalendarContent(
-                days, errors, _time.GetLocalNow(), SearchText, GoToRow(), NextAfter(days[^1].Date), date => GoTo(date)));
+                days, errors, _time.GetLocalNow(), SearchText, GoToRow(), NextAfter(days[^1].Date), date => GoTo(date), _feeds.EnabledFeeds.Count > 1));
     }
 
     private CalendarEntry? NextAfter(DateOnly date) =>
