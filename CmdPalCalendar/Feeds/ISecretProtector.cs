@@ -1,4 +1,4 @@
-namespace CmdPalCalendar.Ics;
+namespace CmdPalCalendar.Feeds;
 
 internal interface ISecretProtector
 {

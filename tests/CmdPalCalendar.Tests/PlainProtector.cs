@@ -1,4 +1,4 @@
-using CmdPalCalendar.Ics;
+using CmdPalCalendar.Feeds;
 
 namespace CmdPalCalendar.Tests;
 

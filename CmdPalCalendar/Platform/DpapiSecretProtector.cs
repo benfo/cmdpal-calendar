@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using CmdPalCalendar.Ics;
+using CmdPalCalendar.Feeds;
 
 namespace CmdPalCalendar.Platform;
 
