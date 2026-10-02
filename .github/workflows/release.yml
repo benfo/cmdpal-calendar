@@ -20,6 +20,12 @@ jobs:
       - name: Test
         run: dotnet test --project tests/CmdPalCalendar.Tests
 
+      - name: Check trimmed build
+        shell: pwsh
+        run: |
+          dotnet publish tests/CmdPalCalendar.TrimCheck -c Release -o $env:RUNNER_TEMP/trimcheck
+          & $env:RUNNER_TEMP/trimcheck/CmdPalCalendar.TrimCheck.exe
+
       - name: Build signed packages
         shell: pwsh
         env:
