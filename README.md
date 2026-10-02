@@ -13,7 +13,7 @@ Open Command Palette and pick **Calendar**. It opens on today, grouped into **Ha
 
 ## Setup
 
-Press Ctrl+K on **Calendar** and choose **Manage calendars**, then **Add a calendar**. Enter an `https://` or `webcal://` address, or the path to a local `.ics` file. The form checks the calendar before saving, and fills in its name if you leave it blank. Each calendar has a name and a colour (shown as a tag on its events) and can be turned off without removing it. The list is saved in `calendars.json` in the extension's settings folder.
+Press Ctrl+K on **Calendar** and choose **Manage calendars**, then **Add a calendar**. Enter an `https://` or `webcal://` address, or the path to a local `.ics` file. The form checks the calendar before saving, and fills in its name if you leave it blank. Each calendar has a name and a colour (shown as a tag on its events) and can be turned off without removing it. The list is saved in `calendars.json` in the extension's settings folder, with each calendar's address encrypted for your Windows account (published-calendar addresses work like passwords).
 
 Calendars refresh in the background every 5 minutes. The last downloaded copy of each one is kept in the `cache` folder next to it, encrypted for your Windows account, so events show as soon as Command Palette starts and stay visible when a calendar can't be reached ("Problems" then says how old the copy is).
 

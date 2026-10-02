@@ -15,6 +15,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - A day with only in-person meetings says "Nothing to join today", and Enter opens the calendar.
   - A hotkey or alias on Join next meeting still works after its subtitle has changed a few times.
 - [ ] **Next meeting subtitle**: the Calendar subtitle switches to the next meeting once it starts in under 5 minutes, and the rule feels right with a real calendar.
+- [ ] **Encrypted addresses**: after Reload, `calendars.json` shows `protectedLocation` instead of the calendar URLs, and all calendars still load and can be edited.
 - [ ] **Caching**:
   - After restarting Command Palette (or Reload), events and the Calendar subtitle appear right away instead of after the download.
   - With the network off (or a calendar's address broken), its events stay, and "Problems" shows "Couldn't refresh … · showing data from … ago".
@@ -38,7 +39,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Dock band** "Standup · 7m"; clicking it joins. Copy the built-in `NowDockBand` timer pattern. Watch PowerToys #50367: bands can die after an RDP or session switch.
-- [ ] **Encrypt feed URLs** (DPAPI): published-calendar links work like passwords.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
 - [ ] **Microsoft 365 (Graph)**:
   - The default tenant policy needs admin consent for `Calendars.Read`; test that first.
@@ -69,6 +69,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [x] Hidden from the Start menu.
 - [x] Manage calendars page (Ctrl+K on Calendar or any row): add, edit, turn off and remove ICS calendars, each with a name and colour, checked before saving and stored in `calendars.json`. The old settings text box is imported once and the Settings page removed. Events show their calendar as a coloured tag.
 - [x] Caching: each calendar's last download is kept in `cache/`, encrypted with DPAPI. Events show at startup before the download finishes, and the last good copy stays visible when a download fails, with its age under "Problems". Copies of removed or turned-off calendars are deleted.
+- [x] Calendar addresses encrypted in `calendars.json` with DPAPI (names, colours and on/off stay readable); plain addresses from older files are encrypted on first load.
 - [x] Calendar icon and logos instead of the template placeholders.
 - [x] Fixed command ID (`CmdPalCalendar.Calendar`) so pins, aliases and hotkeys survive updates.
 - [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
