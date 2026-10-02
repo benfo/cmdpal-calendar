@@ -2,6 +2,20 @@
 
 Ordered roughly by priority. Move items to **Done** when they ship. The original research is in git history (`13723c6`, PLAN.md).
 
+## To test
+
+Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
+
+- [ ] **Formatted notes**:
+  - An Outlook invite with a long agenda shows in full, formatted, without the Teams footer.
+  - A Google invite with bold text and links shows them formatted and clickable.
+  - A Teams invite in another language: is the footer still cut? Only the underscore line is language-independent.
+- [ ] **Smarter Join next meeting**:
+  - A meeting more than 15 minutes away asks for confirmation before joining.
+  - A day with only in-person meetings says "Nothing to join today", and Enter opens the calendar.
+  - A hotkey or alias on Join next meeting still works after its subtitle has changed a few times.
+- [ ] **Next meeting subtitle**: the Calendar subtitle switches to the next meeting once it starts in under 5 minutes, and the rule feels right with a real calendar.
+
 ## Next up
 
 - [ ] **Caching**: calendar entries are available immediately, without waiting for the feeds to download.
