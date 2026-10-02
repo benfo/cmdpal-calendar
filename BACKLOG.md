@@ -46,6 +46,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 ## Ideas
 
 - [ ] Windows reminder with a Join button. Needs the Windows App SDK; possibly redundant with Outlook and Teams reminders.
+- [ ] Coloured service tags: brand-coloured backgrounds with white text for Teams (~`#5B5FC7`), Zoom (~`#0B5CFF`), Meet (~`#00897B`) and Webex, via `Tag.Background`/`Foreground` and `ColorHelpers.FromRgb`. Colours are fixed (not theme-aware), so stick to coloured backgrounds with white text. Check that colours survive row reuse (bookmarx lost tag icons that way), and keep other tags (feed, Tentative) neutral so the service stands out.
 - [ ] Images in event notes: dropped for now, because remote images let the sender track when the event was opened. Revisit if embedded (`data:`) images turn out to matter. See [docs/description-formatting.md](docs/description-formatting.md).
 
 ## Engineering
