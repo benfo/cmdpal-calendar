@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet test --project tests/CmdPalCalendar.Tests
+
+      - name: Build signed packages
+        shell: pwsh
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $pfx = Join-Path $env:RUNNER_TEMP 'signing.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:SIGNING_CERTIFICATE))
+          try {
+            ./package.ps1 -Version $version -CertificatePath $pfx -CertificatePassword $env:SIGNING_PASSWORD
+          }
+          finally {
+            Remove-Item $pfx -Force
+          }
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          gh release create '${{ github.ref_name }}' artifacts/CmdPalCalendar_x64.msix artifacts/CmdPalCalendar_arm64.msix artifacts/CmdPalCalendar.cer install.ps1 `
+            --title "Calendar for Command Palette $version" --generate-notes
