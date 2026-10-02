@@ -5,3 +5,4 @@ obj/
 *.msix
 AppPackages/
 # Note: Properties/launchSettings.json and *.pubxml are intentionally tracked (needed to deploy).
+artifacts/
