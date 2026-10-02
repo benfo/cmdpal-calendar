@@ -9,7 +9,7 @@ namespace CmdPalCalendar.Events;
 
 internal static partial class HtmlToMarkdown
 {
-    private const string LineBreak = "\n";
+    private const char LineBreak = '\n';
 
     public static bool LooksLikeHtml(string text) => HtmlTagRegex().IsMatch(text);
 
@@ -132,7 +132,7 @@ internal static partial class HtmlToMarkdown
 
         private void NewLine()
         {
-            if (Current.Length > 0 && !Current.ToString().TrimEnd(' ').EndsWith(LineBreak, StringComparison.Ordinal))
+            if (Current.Length > 0 && !Current.ToString().TrimEnd(' ').EndsWith(LineBreak))
             {
                 Current.Append(LineBreak);
             }
