@@ -22,11 +22,8 @@ internal sealed class CalendarRows(NavigationCommands navigation)
 
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now)
     {
-        ICommand command = MeetingLink.Parse(entry.Link) is { } link ? new JoinMeetingCommand(link) : new NoOpCommand();
-
-        IContextItem[] linkCommands = entry.Link is { } url
-            ? [new CommandContextItem(new CopyTextCommand(url) { Name = "Copy link" }), new Separator()]
-            : [];
+        var link = MeetingLink.Parse(entry.Link);
+        ICommand command = link is null ? new NoOpCommand() : new JoinMeetingCommand(link);
 
         return new ListItem(command)
         {
@@ -34,8 +31,23 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Subtitle = Subtitle(entry, now),
             Icon = CalendarIcon,
             Details = Details(entry),
-            MoreCommands = [.. linkCommands, .. navigation.Items],
+            MoreCommands = [.. LinkCommands(link), .. navigation.Items],
         };
+    }
+
+    private static IContextItem[] LinkCommands(MeetingLink? link)
+    {
+        if (link is null)
+        {
+            return [];
+        }
+
+        var web = link.Web.OriginalString;
+        IContextItem[] browser = link.App is null
+            ? []
+            : [new CommandContextItem(new OpenUrlCommand(web) { Name = "Join in browser", Result = CommandResult.Dismiss() })];
+
+        return [.. browser, new CommandContextItem(new CopyTextCommand(web) { Name = "Copy link" }), new Separator()];
     }
 
     public ListItem Message(string title, string subtitle = "", ICommand? command = null) =>
