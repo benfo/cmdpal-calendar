@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,8 +69,7 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<string>> feeds, IcsFe
         var name = IcsFeedReader.DisplayName(feed);
         try
         {
-            var text = await reader.ReadAsync(feed, cancellationToken);
-            var calendar = Calendar.Load(text) ?? throw new InvalidDataException("Not an iCalendar file");
+            var calendar = await reader.ReadCalendarAsync(feed, cancellationToken);
             return new LoadedFeed(name, calendar, null);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)

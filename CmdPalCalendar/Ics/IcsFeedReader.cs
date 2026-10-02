@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Ical.Net;
 
 namespace CmdPalCalendar.Ics;
 
@@ -21,6 +22,14 @@ internal sealed class IcsFeedReader(HttpClient http)
         }
 
         return Uri.TryCreate(feed, UriKind.Absolute, out var uri) ? uri.Host : feed;
+    }
+
+    public async Task<Calendar> ReadCalendarAsync(string feed, CancellationToken cancellationToken)
+    {
+        var text = await ReadAsync(feed, cancellationToken);
+        return text.Contains("BEGIN:VCALENDAR", StringComparison.OrdinalIgnoreCase) && Calendar.Load(text) is { } calendar
+            ? calendar
+            : throw new InvalidDataException("That isn't an iCalendar (.ics) feed");
     }
 
     public async Task<string> ReadAsync(string feed, CancellationToken cancellationToken)
