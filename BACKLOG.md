@@ -14,6 +14,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - A meeting more than 15 minutes away asks for confirmation before joining.
   - A day with only in-person meetings says "Nothing to join today", and Enter opens the calendar.
   - A hotkey or alias on Join next meeting still works after its subtitle has changed a few times.
+- [ ] **Time first in titles**: on a narrow window, rows read "09:00  Standup" and the time stays visible when a long title is cut off; all-day events have no time.
 - [ ] **Next meeting subtitle**: the Calendar subtitle switches to the next meeting once it starts in under 5 minutes, and the rule feels right with a real calendar.
 - [ ] **Manage calendars**:
   - After Reload, the three feeds from the old settings text box show up as calendars (named after their host, coloured blue, purple and green), and the Settings page is gone.
