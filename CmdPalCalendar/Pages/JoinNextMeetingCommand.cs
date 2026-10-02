@@ -24,11 +24,20 @@ internal sealed partial class JoinNextMeetingCommand : InvokableCommand
         var now = _time.GetLocalNow();
         var today = DateOnly.FromDateTime(now.DateTime);
 
-        return UpcomingMeeting.Find(_source.GetEntries(today, today.AddDays(1)), now) switch
+        if (UpcomingMeeting.FindJoinable(_source.GetEntries(today, today.AddDays(1)), now) is not { } meeting ||
+            MeetingLink.Parse(meeting.Link) is not { } link)
         {
-            null => CommandResult.ShowToast("No more meetings today"),
-            { } meeting when MeetingLink.Parse(meeting.Link) is { } link => new JoinMeetingCommand(link).Invoke(),
-            { } meeting => CommandResult.ShowToast($"{meeting.Title} has no meeting link"),
-        };
+            return CommandResult.ShowToast("Nothing to join today");
+        }
+
+        var join = new JoinMeetingCommand(link);
+        return UpcomingMeeting.IsJoinableNow(meeting, now)
+            ? join.Invoke()
+            : CommandResult.Confirm(new ConfirmationArgs
+            {
+                Title = $"Join {meeting.Title}?",
+                Description = $"{meeting.Title} starts at {TimeText.Clock(meeting.Start)} (in {TimeText.Duration(meeting.Start - now)}). Join now?",
+                PrimaryCommand = join,
+            });
     }
 }
