@@ -32,7 +32,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 - [ ] Tests for link detection and the layout (now/next split, empty states).
 - [ ] Check the trimmed Release build for Ical.Net warnings.
-- [ ] Replace the template's placeholder icons.
 
 ## Done
 
@@ -41,6 +40,7 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [x] Open link, copy link and refresh actions. A broken feed shows under "Problems".
 - [x] Builds with just the .NET SDK. `deploy.ps1` registers the package and keeps settings.
 - [x] Hidden from the Start menu.
+- [x] Calendar icon and logos instead of the template placeholders.
 - [x] Fixed command ID (`CmdPalCalendar.Calendar`) so pins, aliases and hotkeys survive updates.
 - [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
 - [x] Empty days and finished days point to the next event.
