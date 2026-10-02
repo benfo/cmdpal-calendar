@@ -16,16 +16,13 @@ internal sealed class CalendarRows(NavigationCommands navigation)
     private const string MarkdownSpecials = "\\`*_{}[]<>()#+-!|";
 
     private static readonly IconInfo CalendarIcon = new(Glyphs.Calendar);
-    private static readonly IconInfo LinkIcon = new(Glyphs.Link);
     private static readonly IconInfo ErrorIcon = new(Glyphs.Error);
     private static readonly IconInfo SettingsIcon = new(Glyphs.Settings);
     private static readonly IconInfo GoToIcon = new(Glyphs.CalendarDay);
 
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now)
     {
-        ICommand command = entry.Link is { } link
-            ? new OpenUrlCommand(link) { Name = "Open link", Icon = LinkIcon, Result = CommandResult.Dismiss() }
-            : new NoOpCommand();
+        ICommand command = MeetingLink.Parse(entry.Link) is { } link ? new JoinMeetingCommand(link) : new NoOpCommand();
 
         IContextItem[] linkCommands = entry.Link is { } url
             ? [new CommandContextItem(new CopyTextCommand(url) { Name = "Copy link" }), new Separator()]
