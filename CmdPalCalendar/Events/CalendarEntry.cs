@@ -14,4 +14,10 @@ internal sealed record CalendarEntry(
     string? Organizer,
     IReadOnlyList<string> Attendees,
     string? Link,
-    string Source);
+    string Source)
+{
+    public bool Matches(string query) =>
+        string.IsNullOrWhiteSpace(query) ||
+        Title.Contains(query.Trim(), StringComparison.CurrentCultureIgnoreCase) ||
+        (Location?.Contains(query.Trim(), StringComparison.CurrentCultureIgnoreCase) ?? false);
+}

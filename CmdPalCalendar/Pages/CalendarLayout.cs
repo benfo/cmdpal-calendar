@@ -9,18 +9,23 @@ namespace CmdPalCalendar.Pages;
 
 internal sealed class CalendarLayout(CalendarRows rows)
 {
-    public IListItem[] Day(DateOnly date, IReadOnlyList<CalendarEntry> entries, IReadOnlyList<string> errors, DateTimeOffset now)
+    public IListItem[] Day(DayContent content)
     {
-        var isToday = date == DateOnly.FromDateTime(now.DateTime);
-        IListItem[] body = isToday ? Today(entries, now) : OtherDay(entries);
+        var entries = content.Entries.Where(e => e.Matches(content.Query)).ToList();
+        var isToday = content.Date == DateOnly.FromDateTime(content.Now.DateTime);
 
-        if (entries.Count == 0)
-        {
-            body = [rows.Message($"Nothing on {DateText.Long(date)}")];
-        }
+        IListItem[] body = entries.Count > 0
+            ? isToday ? Today(entries, content.Now) : OtherDay(entries)
+            : Empty(content);
 
-        return [.. body, .. new Section("Problems", errors.Select(rows.Error).ToArray())];
+        IListItem[] goTo = content.GoTo is { } row ? [row] : [];
+        return [.. goTo, .. body, .. new Section("Problems", content.Errors.Select(rows.Error).ToArray())];
     }
+
+    private ListItem[] Empty(DayContent content) =>
+        string.IsNullOrWhiteSpace(content.Query) ? [rows.Message($"Nothing on {DateText.Long(content.Date)}")]
+        : content.GoTo is null ? [rows.Message($"No events match '{content.Query.Trim()}'")]
+        : [];
 
     private IListItem[] Today(IReadOnlyList<CalendarEntry> entries, DateTimeOffset now)
     {
@@ -42,3 +47,11 @@ internal sealed class CalendarLayout(CalendarRows rows)
         .. entries.Where(e => !e.IsAllDay).Select(e => rows.Entry(e, now: null)),
     ];
 }
+
+internal sealed record DayContent(
+    DateOnly Date,
+    IReadOnlyList<CalendarEntry> Entries,
+    IReadOnlyList<string> Errors,
+    DateTimeOffset Now,
+    string Query,
+    ListItem? GoTo);

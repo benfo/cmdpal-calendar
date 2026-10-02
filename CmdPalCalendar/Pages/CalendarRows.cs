@@ -19,6 +19,7 @@ internal sealed class CalendarRows(NavigationCommands navigation)
     private static readonly IconInfo LinkIcon = new("");
     private static readonly IconInfo ErrorIcon = new("");
     private static readonly IconInfo SettingsIcon = new("");
+    private static readonly IconInfo GoToIcon = new("");
 
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now)
     {
@@ -46,6 +47,15 @@ internal sealed class CalendarRows(NavigationCommands navigation)
             Title = title,
             Subtitle = subtitle,
             Icon = CalendarIcon,
+            MoreCommands = navigation.Items,
+        };
+
+    public ListItem GoTo(DateOnly date, int eventCount, Action go) =>
+        new(new AnonymousCommand(go) { Name = "Go", Result = CommandResult.KeepOpen() })
+        {
+            Title = $"Go to {DateText.Long(date)}",
+            Subtitle = eventCount switch { 0 => "No events", 1 => "1 event", _ => $"{eventCount} events" },
+            Icon = GoToIcon,
             MoreCommands = navigation.Items,
         };
 
