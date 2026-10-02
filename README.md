@@ -13,7 +13,7 @@ Open Command Palette and pick **Calendar**. It opens on today, grouped into **Ha
 
 ## Setup
 
-In the extension's settings, add one ICS feed per line: an `https://` or `webcal://` URL, or a path to a local `.ics` file.
+Press Ctrl+K on **Calendar** and choose **Manage calendars**, then **Add a calendar**. Enter an `https://` or `webcal://` address, or the path to a local `.ics` file. The form checks the calendar before saving, and fills in its name if you leave it blank. Each calendar has a name and a colour (shown as a tag on its events) and can be turned off without removing it. The list is saved in `calendars.json` in the extension's settings folder.
 
 - **Outlook:** Settings > Calendar > Shared calendars > Publish a calendar. To get join links, publish with all details. Work tenants may block publishing.
 - **Google:** Settings > your calendar > Integrate calendar > Secret address in iCal format. It can lag by a few hours.

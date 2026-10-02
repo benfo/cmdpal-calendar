@@ -15,6 +15,13 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - A day with only in-person meetings says "Nothing to join today", and Enter opens the calendar.
   - A hotkey or alias on Join next meeting still works after its subtitle has changed a few times.
 - [ ] **Next meeting subtitle**: the Calendar subtitle switches to the next meeting once it starts in under 5 minutes, and the rule feels right with a real calendar.
+- [ ] **Manage calendars**:
+  - After Reload, the three feeds from the old settings text box show up as calendars (named after their host, coloured blue, purple and green), and the Settings page is gone.
+  - Adding a calendar: a bad address shows an error in the form; a blank name uses the calendar's own name.
+  - Editing a name or colour updates the event tags straight away; turning a calendar off hides its events.
+  - Removing a calendar asks first.
+  - With several calendars on, each row shows a coloured calendar tag; with one, only the details pane does.
+  - The form's colour dropdown and on/off toggle show the saved values when editing.
 
 ## Next up
 
@@ -31,7 +38,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Dock band** "Standup · 7m"; clicking it joins. Copy the built-in `NowDockBand` timer pattern. Watch PowerToys #50367: bands can die after an RDP or session switch.
-- [ ] **Named feeds** with a colour tag per feed.
 - [ ] **Encrypt feed URLs** (DPAPI): published-calendar links work like passwords.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
 - [ ] **Microsoft 365 (Graph)**:
@@ -61,6 +67,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [x] Open link, copy link and refresh actions. A broken feed shows under "Problems".
 - [x] Builds with just the .NET SDK. `deploy.ps1` registers the package and keeps settings.
 - [x] Hidden from the Start menu.
+- [x] Manage calendars page (Ctrl+K on Calendar or any row): add, edit, turn off and remove ICS calendars, each with a name and colour, checked before saving and stored in `calendars.json`. The old settings text box is imported once and the Settings page removed. Events show their calendar as a coloured tag.
 - [x] Calendar icon and logos instead of the template placeholders.
 - [x] Fixed command ID (`CmdPalCalendar.Calendar`) so pins, aliases and hotkeys survive updates.
 - [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
