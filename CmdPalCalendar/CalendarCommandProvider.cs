@@ -22,8 +22,8 @@ public partial class CalendarCommandProvider : CommandProvider
         [
             new CommandItem(new CalendarPage(_settings, CreateSource(_settings), TimeProvider.System))
             {
-                Title = "Today's calendar",
-                Subtitle = "Your events for the rest of today",
+                Title = "Calendar",
+                Subtitle = "Your events, day by day",
                 MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
             },
         ];

@@ -1,62 +1,74 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Events;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.System;
 
 namespace CmdPalCalendar.Pages;
 
 internal sealed partial class CalendarPage : ListPage
 {
-    private static readonly IconInfo CalendarIcon = new("");
-    private static readonly IconInfo LinkIcon = new("");
-    private static readonly IconInfo RefreshIcon = new("");
-
     private readonly CalendarSettings _settings;
     private readonly ICalendarSource _source;
     private readonly TimeProvider _time;
+    private readonly CalendarLayout _layout;
     private readonly Lock _lock = new();
     private Task? _loading;
+    private DateOnly? _selectedDate;
 
     public CalendarPage(CalendarSettings settings, ICalendarSource source, TimeProvider time)
     {
         _settings = settings;
         _source = source;
         _time = time;
-        _settings.Settings.SettingsChanged += (_, _) => Refresh();
+        _layout = new CalendarLayout(new CalendarRows(new NavigationCommands(
+            previous: () => GoTo(SelectedDate.AddDays(-1)),
+            next: () => GoTo(SelectedDate.AddDays(1)),
+            today: () => GoTo(Today),
+            refresh: () => LoadIfStale(force: true))));
+
+        _settings.Settings.SettingsChanged += (_, _) => LoadIfStale(force: true);
 
         Id = "CmdPalCalendar.Calendar";
-        Icon = CalendarIcon;
-        Title = "Today";
+        Icon = new IconInfo("");
         Name = "Open";
-        PlaceholderText = "Filter today's events";
+        PlaceholderText = "Filter events";
         ShowDetails = true;
+        UpdateTitle();
     }
+
+    private DateOnly Today => DateOnly.FromDateTime(_time.GetLocalNow().DateTime);
+
+    private DateOnly SelectedDate => _selectedDate ?? Today;
 
     public override IListItem[] GetItems()
     {
         if (_settings.IcsFeeds.Count == 0)
         {
-            return [OpenSettingsItem()];
+            return [CalendarRows.Settings(_settings.Settings.SettingsPage)];
         }
 
         LoadIfStale();
+        UpdateTitle();
 
-        var now = _time.GetLocalNow();
-        var today = DateOnly.FromDateTime(now.DateTime);
-        var entries = _source.GetEntries(today, today.AddDays(1));
+        var date = SelectedDate;
+        var entries = _source.GetEntries(date, date.AddDays(1));
         var errors = _source.Errors;
 
-        return entries.Count == 0 && errors.Count == 0 && IsLoading ? [] : BuildItems(entries, errors, now);
+        return entries.Count == 0 && errors.Count == 0 && IsLoading
+            ? []
+            : _layout.Day(date, entries, errors, _time.GetLocalNow());
     }
 
-    private void Refresh() => LoadIfStale(force: true);
+    private void GoTo(DateOnly date)
+    {
+        _selectedDate = date == Today ? null : date;
+        UpdateTitle();
+        RaiseItemsChanged();
+    }
+
+    private void UpdateTitle() => Title = DateText.Title(SelectedDate, Today);
 
     private void LoadIfStale(bool force = false)
     {
@@ -84,188 +96,4 @@ internal sealed partial class CalendarPage : ListPage
             RaiseItemsChanged();
         }
     }
-
-    private IListItem[] BuildItems(IReadOnlyList<CalendarEntry> entries, IReadOnlyList<string> errors, DateTimeOffset now)
-    {
-        var timed = entries.Where(e => !e.IsAllDay).ToList();
-
-        var happeningNow = timed.Where(e => e.Start <= now && e.End > now).Select(e => ToListItem(e, now)).ToArray();
-        var upNext = timed.Where(e => e.Start > now).Select(e => ToListItem(e, now)).ToArray();
-        var allDay = entries.Where(e => e.IsAllDay).Select(e => ToListItem(e, now)).ToArray();
-        var earlier = timed.Where(e => e.End <= now).Select(e => ToListItem(e, now)).ToArray();
-
-        IListItem[] items =
-        [
-            .. new Section("Happening now", happeningNow),
-            .. new Section("Up next", upNext),
-            .. new Section("All day", allDay),
-            .. new Section("Earlier today", earlier),
-            .. new Section("Problems", errors.Select(ErrorItem).ToArray()),
-        ];
-
-        if (entries.Count == 0 && errors.Count == 0)
-        {
-            items = [new ListItem(new NoOpCommand()) { Title = "Nothing on your calendar today", Icon = CalendarIcon, MoreCommands = [RefreshContextItem()] }];
-        }
-
-        return items;
-    }
-
-    private ListItem ToListItem(CalendarEntry entry, DateTimeOffset now)
-    {
-        ICommand command = entry.Link is not null
-            ? new OpenUrlCommand(entry.Link) { Name = "Open link", Icon = LinkIcon, Result = CommandResult.Dismiss() }
-            : new NoOpCommand();
-
-        var moreCommands = new List<IContextItem>();
-        if (entry.Link is not null)
-        {
-            moreCommands.Add(new CommandContextItem(new CopyTextCommand(entry.Link) { Name = "Copy link" }));
-        }
-
-        moreCommands.Add(RefreshContextItem());
-
-        return new ListItem(command)
-        {
-            Title = entry.Title,
-            Subtitle = Subtitle(entry, now),
-            Icon = CalendarIcon,
-            Details = BuildDetails(entry),
-            MoreCommands = [.. moreCommands],
-        };
-    }
-
-    private static string Subtitle(CalendarEntry entry, DateTimeOffset now)
-    {
-        if (entry.IsAllDay)
-        {
-            return entry.Location ?? entry.Source;
-        }
-
-        var parts = new List<string> { $"{entry.Start:HH:mm}–{entry.End:HH:mm}", Relative(entry, now) };
-        if (entry.Location is not null)
-        {
-            parts.Add(entry.Location);
-        }
-
-        return string.Join(" · ", parts);
-    }
-
-    private static string Relative(CalendarEntry entry, DateTimeOffset now)
-    {
-        if (entry.End <= now)
-        {
-            return "ended";
-        }
-
-        if (entry.Start <= now)
-        {
-            return $"started {Duration(now - entry.Start)} ago";
-        }
-
-        return $"in {Duration(entry.Start - now)}";
-    }
-
-    private static string Duration(TimeSpan span)
-    {
-        var minutes = (int)Math.Round(span.TotalMinutes);
-        if (minutes < 1)
-        {
-            return "less than a minute";
-        }
-
-        if (minutes < 60)
-        {
-            return $"{minutes} min";
-        }
-
-        var hours = minutes / 60;
-        var rest = minutes % 60;
-        return rest == 0 ? $"{hours} h" : $"{hours} h {rest} min";
-    }
-
-    private static Details BuildDetails(CalendarEntry entry)
-    {
-        var body = new StringBuilder();
-        body.AppendLine(entry.IsAllDay ? "**All day**" : $"**{entry.Start:HH:mm} – {entry.End:HH:mm}**");
-        body.AppendLine();
-
-        if (entry.Location is not null)
-        {
-            body.AppendLine(CultureInfo.CurrentCulture, $"**Where:** {Escape(entry.Location)}  ");
-        }
-
-        if (entry.Organizer is not null)
-        {
-            body.AppendLine(CultureInfo.CurrentCulture, $"**Organizer:** {Escape(entry.Organizer)}  ");
-        }
-
-        if (entry.Attendees.Count > 0)
-        {
-            const int shown = 8;
-            var names = string.Join(", ", entry.Attendees.Take(shown).Select(Escape));
-            var more = entry.Attendees.Count > shown ? $" +{entry.Attendees.Count - shown} more" : string.Empty;
-            body.AppendLine(CultureInfo.CurrentCulture, $"**Attendees:** {names}{more}  ");
-        }
-
-        if (entry.Description is not null)
-        {
-            var lines = entry.Description
-                .Split('\n')
-                .Select(l => l.TrimEnd('\r'))
-                .Where(l => !string.IsNullOrWhiteSpace(l))
-                .Take(10);
-            body.AppendLine();
-            body.AppendLine(string.Join("  \n", lines.Select(Escape)));
-        }
-
-        return new Details
-        {
-            Title = entry.Title,
-            Body = body.ToString(),
-            Metadata =
-            [
-                new DetailsElement { Key = "Calendar", Data = new DetailsTags { Tags = [new Tag(entry.Source)] } },
-            ],
-        };
-    }
-
-    private static string Escape(string text)
-    {
-        var sb = new StringBuilder(text.Length);
-        foreach (var c in text)
-        {
-            if ("\\`*_{}[]<>()#+-!|".Contains(c))
-            {
-                sb.Append('\\');
-            }
-
-            sb.Append(c);
-        }
-
-        return sb.ToString();
-    }
-
-    private ListItem ErrorItem(string error) =>
-        new(new NoOpCommand())
-        {
-            Title = "Couldn't load a calendar",
-            Subtitle = error,
-            Icon = new IconInfo(""),
-            MoreCommands = [RefreshContextItem()],
-        };
-
-    private ListItem OpenSettingsItem() =>
-        new(_settings.Settings.SettingsPage)
-        {
-            Title = "Add an ICS feed in settings",
-            Subtitle = "Paste a published calendar URL (Outlook, Google, etc.) to see today's events",
-            Icon = new IconInfo(""),
-        };
-
-    private CommandContextItem RefreshContextItem() =>
-        new(new AnonymousCommand(Refresh) { Name = "Refresh", Icon = RefreshIcon, Result = CommandResult.KeepOpen() })
-        {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.R),
-        };
 }
