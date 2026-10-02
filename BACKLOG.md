@@ -4,7 +4,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Next up
 
-- [ ] **Fixed command ID** (`CmdPalCalendar.Today`) so pins, aliases and hotkeys survive updates.
 - [ ] **Join in the app**: Enter opens Teams or Zoom directly.
   - Unwrap Safe Links, `google.com/url?q=` and Proofpoint links before matching.
   - Teams: swap `https` for `msteams`, keeping the host and path. This covers `/l/meetup-join/`, `/meet/`, `teams.live.com` and gov clouds.
@@ -48,3 +47,4 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [x] Open link, copy link and refresh actions. A broken feed shows under "Problems".
 - [x] Builds with just the .NET SDK. `deploy.ps1` registers the package and keeps settings.
 - [x] Hidden from the Start menu.
+- [x] Fixed command ID (`CmdPalCalendar.Today`) so pins, aliases and hotkeys survive updates.

@@ -33,6 +33,7 @@ internal sealed partial class TodayPage : ListPage
         _settings = settings;
         _settings.Settings.SettingsChanged += (_, _) => Refresh();
 
+        Id = "CmdPalCalendar.Today";
         Icon = CalendarIcon;
         Title = "Today";
         Name = "Open";
