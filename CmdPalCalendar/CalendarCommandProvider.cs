@@ -35,7 +35,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         {
             Title = "Join next meeting",
         };
-        _ticker = new NextMeetingTicker(_settings, source, refresher, time, calendar, joinNext);
+        _ticker = new NextMeetingTicker(calendar, joinNext, _settings, source, refresher, time);
         _commands = [calendar, joinNext];
     }
 
