@@ -10,7 +10,6 @@ namespace CmdPalCalendar.Events;
 internal static partial class HtmlToMarkdown
 {
     private const string LineBreak = "\n";
-    private const string BlockBreak = "\n\n";
 
     public static bool LooksLikeHtml(string text) => HtmlTagRegex().IsMatch(text);
 
@@ -29,25 +28,7 @@ internal static partial class HtmlToMarkdown
             }
         }
 
-        return Tidy(writer.ToString());
-    }
-
-    private static string Tidy(string markdown)
-    {
-        var paragraphs = new List<List<string>> { new() };
-        foreach (var line in markdown.Split('\n').Select(l => SpacesRegex().Replace(l, " ").Trim()))
-        {
-            if (line.Length == 0)
-            {
-                paragraphs.Add([]);
-            }
-            else
-            {
-                paragraphs[^1].Add(line);
-            }
-        }
-
-        return string.Join(BlockBreak, paragraphs.Where(p => p.Count > 0).Select(p => string.Join("  " + LineBreak, p)));
+        return MarkdownText.Tidy(writer.ToString());
     }
 
     private static string? AllowedHref(string attributes)
@@ -236,7 +217,4 @@ internal static partial class HtmlToMarkdown
 
     [GeneratedRegex(@"[\r\n\t]+")]
     private static partial Regex WhitespaceRegex();
-
-    [GeneratedRegex(@"[  ]+")]
-    private static partial Regex SpacesRegex();
 }
