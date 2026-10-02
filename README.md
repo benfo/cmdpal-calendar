@@ -9,7 +9,7 @@ Open Command Palette and pick **Calendar**. It opens on today, grouped into **Ha
 - **Views:** the dropdown next to the search box switches between **Day** and **Schedule** (seven days with a heading per day).
 - **Empty days** point to the next event; press Enter to jump there.
 - Ctrl+K also has **Join in browser**, **Copy link**, **Copy meeting ID and passcode** and **Refresh** (Ctrl+R).
-- **Join next meeting:** a separate command that joins whatever is on now or next. The subtitle of both commands shows it ("Next: Standup in 7 min"). Give it a hotkey in Command Palette settings to join with one key press.
+- **Join next meeting:** a separate command that joins the meeting on now or next, counting only meetings with a Teams, Zoom, Meet or Webex link. It joins straight away from 15 minutes before the start and asks first if it's later. With nothing to join it opens the calendar. Its subtitle shows what it will join ("Standup in 4 min · Teams"). Give it a hotkey in Command Palette settings to join with one key press.
 
 ## Setup
 

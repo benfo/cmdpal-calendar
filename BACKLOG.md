@@ -4,11 +4,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Next up
 
-- [ ] **Smarter Join next meeting**:
-  - Only consider meetings with a join link; the Calendar subtitle still shows every meeting.
-  - Join right away if the meeting is in progress or starts within 15 minutes; otherwise confirm first ("Design review starts at 14:00 (in 3 h). Join now?").
-  - With nothing to join today, open the Calendar page instead of showing a toast.
-  - Its own subtitle: "Standup in 4 min · Teams", "Next to join: Review at 14:00", "Nothing to join today".
 - [ ] **Caching**: calendar entries are available immediately, without waiting for the feeds to download.
   - Save each feed's downloaded ICS to disk (LocalState) after a successful load; load from disk at startup, then refresh in the background.
   - Keep the last good copy when a download fails, and show how old it is under "Problems".
@@ -57,3 +52,4 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [x] Tests for the ICS source and date parsing.
 - [x] Join in the Teams or Zoom app (Safe Links, Google and Proofpoint redirects unwrapped; falls back to the browser), with Join in browser, Copy link and Copy meeting ID and passcode in Ctrl+K, and the service shown on each row.
 - [x] Current or next meeting in the command subtitle ("Next: Standup in 7 min", "Now: Review · until 10:45"), updated every 30 seconds, plus a "Join next meeting" command (`CmdPalCalendar.JoinNext`) for a hotkey.
+- [x] Smarter Join next meeting: only meetings with a Teams, Zoom, Meet or Webex link count; joins straight away within 15 minutes of the start, otherwise asks first; opens the calendar when there is nothing to join; its own subtitle ("Standup in 4 min · Teams", "Next to join: Review at 14:00", "Nothing to join today").
