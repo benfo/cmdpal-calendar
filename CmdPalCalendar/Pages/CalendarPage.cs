@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
 using Microsoft.CommandPalette.Extensions;
@@ -14,6 +15,8 @@ internal sealed partial class CalendarPage : DynamicListPage
     public const int LookAheadDays = 60;
     private const int ScheduleDays = 7;
 
+    private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(30);
+
     private readonly CalendarFeedStore _feeds;
     private readonly ICalendarSource _source;
     private readonly CalendarRefresher _refresher;
@@ -22,6 +25,8 @@ internal sealed partial class CalendarPage : DynamicListPage
     private readonly CalendarViewFilters _views = new();
     private readonly CalendarRows _rows;
     private readonly CalendarLayout _layout;
+    private readonly LiveSubtitles _live = new();
+    private readonly ITimer _ticker;
     private DateOnly? _selectedDate;
 
     public CalendarPage(
@@ -41,13 +46,14 @@ internal sealed partial class CalendarPage : DynamicListPage
             next: () => GoTo(SelectedDate.AddDays(DaysShown)),
             today: () => GoTo(Today),
             refresh: () => _refresher.Refresh(force: true));
-        _rows = new CalendarRows(_navigation, manage);
+        _rows = new CalendarRows(_navigation, manage, _live);
         _layout = new CalendarLayout(_rows);
 
         _refresher.LoadingChanged += (_, _) => OnLoadingChanged();
         _source.Updated += (_, _) => RaiseItemsChanged();
         _feeds.Changed += (_, _) => OnFeedsChanged();
         _views.PropChanged += (_, _) => OnViewChanged();
+        _ticker = time.CreateTimer(_ => Tick(), null, TickInterval, TickInterval);
         Filters = _views;
 
         Id = id;
@@ -79,6 +85,7 @@ internal sealed partial class CalendarPage : DynamicListPage
             .Select(d => new DayEntries(d, EntriesOn(d)))
             .ToList();
         var problems = _source.Problems;
+        _live.Reset();
 
         return days.All(d => d.Entries.Count == 0) && problems.Count == 0 && IsLoading
             ? []
@@ -133,6 +140,8 @@ internal sealed partial class CalendarPage : DynamicListPage
         _refresher.Refresh();
         RaiseItemsChanged();
     }
+
+    private void Tick() => _rows.UpdateTimes(_time.GetLocalNow());
 
     private void OnLoadingChanged() => IsLoading = _refresher.IsLoading;
 }

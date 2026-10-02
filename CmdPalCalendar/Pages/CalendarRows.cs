@@ -9,7 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace CmdPalCalendar.Pages;
 
-internal sealed class CalendarRows(NavigationCommands navigation, ICommand manage)
+internal sealed class CalendarRows(NavigationCommands navigation, ICommand manage, LiveSubtitles live)
 {
     private const int AttendeesShown = 8;
 
@@ -26,7 +26,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
         var link = MeetingLink.Parse(entry.Link);
         ICommand command = link is null ? new NoOpCommand() : new JoinMeetingCommand(link);
 
-        return new ListItem(command)
+        var item = new ListItem(command)
         {
             Title = entry.IsAllDay ? entry.Title : $"{TimeText.Clock(entry.Start)}  {entry.Title}",
             Subtitle = Subtitle(entry, now),
@@ -35,7 +35,16 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
             Details = Details(entry),
             MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. _pageCommands],
         };
+
+        if (now is not null && !entry.IsAllDay)
+        {
+            live.Track(item, entry);
+        }
+
+        return item;
     }
+
+    public void UpdateTimes(DateTimeOffset now) => live.Update(entry => Subtitle(entry, now));
 
     private static ITag[] Tags(CalendarEntry entry, MeetingLink? link, bool showCalendar)
     {
