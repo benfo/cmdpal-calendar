@@ -4,16 +4,11 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Next up
 
-- [ ] **Join in the app**: Enter opens Teams or Zoom directly.
-  - Unwrap Safe Links, `google.com/url?q=` and Proofpoint links before matching.
-  - Teams: swap `https` for `msteams`, keeping the host and path. This covers `/l/meetup-join/`, `/meet/`, `teams.live.com` and gov clouds.
-  - Zoom: rewrite only `/j/<id>`, to `zoommtg://<host>/join?action=join&confno=<id>&pwd=<pwd>`. `/my/` and `/w/` links open in the browser.
-  - Check with `Launcher.QueryUriSupportAsync` (registry checks miss MSIX apps), then launch with `LaunchUriAsync` and an https `FallbackUri`.
-  - Ctrl+K: join in browser, copy meeting ID and passcode, copy dial-in.
 - [ ] **Times that tick**: relative times and sections update while the page is open.
 
 ## Later
 
+- [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Dock band** "Standup · 7m"; clicking it joins. Copy the built-in `NowDockBand` timer pattern. Watch PowerToys #50367: bands can die after an RDP or session switch.
 - [ ] **Next meeting** in the command subtitle, plus a "Join next meeting" command.
 - [ ] **Named feeds** with a colour tag per feed.
@@ -50,3 +45,4 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [x] One "Calendar" command with day navigation (Ctrl+←/→, Ctrl+T), Todoist-style typed dates, and Day / Schedule views.
 - [x] Empty days and finished days point to the next event.
 - [x] Tests for the ICS source and date parsing.
+- [x] Join in the Teams or Zoom app (Safe Links, Google and Proofpoint redirects unwrapped; falls back to the browser), with Join in browser, Copy link and Copy meeting ID and passcode in Ctrl+K, and the service shown on each row.

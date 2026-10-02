@@ -2,13 +2,13 @@
 
 A [PowerToys Command Palette](https://learn.microsoft.com/windows/powertoys/command-palette/overview) extension that shows your meetings day by day and, eventually, joins them in one action, like Slack's Google Calendar integration.
 
-Open Command Palette and pick **Calendar**. It opens on today, grouped into **Happening now**, **Up next**, **All day** and **Earlier today**, and the details pane shows the organizer, the attendees and the start of the description. Enter opens the meeting link.
+Open Command Palette and pick **Calendar**. It opens on today, grouped into **Happening now**, **Up next**, **All day** and **Earlier today**, and the details pane shows the organizer, the attendees and the start of the description. Enter joins the meeting in Teams or Zoom (or opens the link in your browser for other services).
 
 - **Move between days:** Ctrl+← and Ctrl+→ (by a week in Schedule view), Ctrl+T for today.
 - **Jump to a date:** type it in the search box, Todoist style (`tomorrow`, `next fri`, `in 2 weeks`, `27 jan`, `2026-10-12`), then press Enter on **Go to…**. Other text filters the events.
 - **Views:** the dropdown next to the search box switches between **Day** and **Schedule** (seven days with a heading per day).
 - **Empty days** point to the next event; press Enter to jump there.
-- Ctrl+K also has **Copy link** and **Refresh** (Ctrl+R).
+- Ctrl+K also has **Join in browser**, **Copy link**, **Copy meeting ID and passcode** and **Refresh** (Ctrl+R).
 
 ## Setup
 
@@ -21,7 +21,6 @@ In the extension's settings, add one ICS feed per line: an `https://` or `webcal
 ## Plan
 
 The extension starts with ICS feeds. The next steps are:
-- joining meetings directly in Teams or Zoom instead of the browser;
 - a Dock item that counts down to the next meeting ("Standup · 7m") and joins it when clicked;
 - Microsoft 365 and Google Calendar accounts, merged into one view.
 
