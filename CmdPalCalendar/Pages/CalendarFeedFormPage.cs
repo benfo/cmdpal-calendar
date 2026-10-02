@@ -49,15 +49,17 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
             var color = Enum.TryParse<CalendarColor>(Value(values, "color"), out var parsed) ? parsed : _store.NextColor;
             var enabled = Value(values, "enabled") != "false";
 
-            using var timeout = new CancellationTokenSource(CheckTimeout);
-            var result = Task.Run(() => _check.RunAsync(location, timeout.Token)).GetAwaiter().GetResult();
-            if (!result.IsValid)
+            var addressChanged = _feed is null || !string.Equals(location, _feed.Location, StringComparison.Ordinal);
+            var result = addressChanged ? Check(location) : null;
+            if (result is { IsValid: false })
             {
                 Show(name, location, color, enabled, result.Error!);
                 return CommandResult.KeepOpen();
             }
 
-            var finalName = name.Length > 0 ? name : result.CalendarName ?? CalendarFeed.Describe(location);
+            var finalName = name.Length > 0 ? name
+                : addressChanged ? result?.CalendarName ?? CalendarFeed.Describe(location)
+                : _feed!.Name;
             if (_feed is null)
             {
                 _store.Add(CalendarFeed.Create(finalName, location, color) with { Enabled = enabled });
@@ -69,6 +71,12 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
 
             var verb = _feed is null ? "Added" : "Saved";
             return CommandResult.ShowToast(new ToastArgs { Message = $"{verb} {finalName}", Result = CommandResult.GoBack() });
+        }
+
+        private IcsFeedCheckResult Check(string location)
+        {
+            using var timeout = new CancellationTokenSource(CheckTimeout);
+            return Task.Run(() => _check.RunAsync(location, timeout.Token)).GetAwaiter().GetResult();
         }
 
         private static string Value(JsonNode? values, string key) => (values?[key]?.GetValue<string>() ?? string.Empty).Trim();
