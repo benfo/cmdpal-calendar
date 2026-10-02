@@ -17,6 +17,9 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 ## Later
 
+- [ ] **Open in calendar**: open the event itself in its provider (Outlook on the web, Google Calendar), not just join it.
+  - "Open in calendar" in Ctrl+K on every event that has a link to it; Enter does this for events with nothing to join.
+  - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Dock band** "Standup · 7m"; clicking it joins. Copy the built-in `NowDockBand` timer pattern. Watch PowerToys #50367: bands can die after an RDP or session switch.
 - [ ] **Named feeds** with a colour tag per feed.
