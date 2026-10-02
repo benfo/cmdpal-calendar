@@ -14,13 +14,13 @@ internal sealed class IcsFeedReader(HttpClient http)
     {
     }
 
-    public async Task<Calendar> ReadCalendarAsync(string feed, CancellationToken cancellationToken)
-    {
-        var text = await ReadAsync(feed, cancellationToken);
-        return text.Contains("BEGIN:VCALENDAR", StringComparison.OrdinalIgnoreCase) && Calendar.Load(text) is { } calendar
+    public static Calendar Parse(string text) =>
+        text.Contains("BEGIN:VCALENDAR", StringComparison.OrdinalIgnoreCase) && Calendar.Load(text) is { } calendar
             ? calendar
             : throw new InvalidDataException("That isn't an iCalendar (.ics) feed");
-    }
+
+    public async Task<Calendar> ReadCalendarAsync(string feed, CancellationToken cancellationToken) =>
+        Parse(await ReadAsync(feed, cancellationToken));
 
     public async Task<string> ReadAsync(string feed, CancellationToken cancellationToken)
     {

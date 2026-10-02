@@ -11,7 +11,11 @@ using Ical.Net.DataTypes;
 
 namespace CmdPalCalendar.Ics;
 
-internal sealed class IcsCalendarSource(Func<IReadOnlyList<CalendarFeed>> feeds, IcsFeedReader reader, TimeProvider time)
+internal sealed class IcsCalendarSource(
+    Func<IReadOnlyList<CalendarFeed>> feeds,
+    IcsFeedReader reader,
+    IcsFeedCache cache,
+    TimeProvider time)
     : ICalendarSource
 {
     private static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(5);
@@ -75,7 +79,10 @@ internal sealed class IcsCalendarSource(Func<IReadOnlyList<CalendarFeed>> feeds,
     {
         try
         {
-            return new LoadedFeed(feed, await reader.ReadCalendarAsync(feed.Location, cancellationToken), null);
+            var text = await reader.ReadAsync(feed.Location, cancellationToken);
+            var calendar = IcsFeedReader.Parse(text);
+            cache.Save(feed, text);
+            return new LoadedFeed(feed, calendar, null);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {

@@ -9,6 +9,10 @@ public sealed class IcsCalendarSourceTests : IDisposable
 
     private readonly List<string> _files = [];
     private readonly ManualTimeProvider _time = new(new DateTimeOffset(2026, 10, 5, 8, 0, 0, TimeSpan.Zero));
+    private readonly string _cacheDirectory = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}");
+    private readonly IcsFeedCache _cache;
+
+    public IcsCalendarSourceTests() => _cache = new IcsFeedCache(_cacheDirectory, new PlainProtector(), _time);
 
     [Fact]
     public async Task Expands_recurrences_across_the_range()
@@ -113,10 +117,21 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task Saves_each_downloaded_calendar_to_the_cache()
+    {
+        var feed = Feed(WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500")));
+        var source = new IcsCalendarSource(() => [feed], new IcsFeedReader(), _cache, _time);
+
+        await source.LoadAsync(CancellationToken.None);
+
+        Assert.Contains("SUMMARY:Standup", _cache.Load(feed)!.Ics, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Is_stale_when_the_feeds_change()
     {
         List<CalendarFeed> feeds = [Feed(WriteFeed())];
-        var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _time);
+        var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _cache, _time);
         await source.LoadAsync(CancellationToken.None);
 
         feeds.Add(Feed(WriteFeed()));
@@ -128,7 +143,7 @@ public sealed class IcsCalendarSourceTests : IDisposable
     public async Task Renaming_a_calendar_shows_without_reloading()
     {
         List<CalendarFeed> feeds = [Feed(WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500")))];
-        var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _time);
+        var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _cache, _time);
         await source.LoadAsync(CancellationToken.None);
 
         feeds[0] = feeds[0] with { Name = "Work" };
@@ -141,7 +156,7 @@ public sealed class IcsCalendarSourceTests : IDisposable
     public async Task Turned_off_calendars_are_hidden_without_reloading()
     {
         List<CalendarFeed> feeds = [Feed(WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500")))];
-        var source = new IcsCalendarSource(() => feeds.Where(f => f.Enabled).ToList(), new IcsFeedReader(), _time);
+        var source = new IcsCalendarSource(() => feeds.Where(f => f.Enabled).ToList(), new IcsFeedReader(), _cache, _time);
         await source.LoadAsync(CancellationToken.None);
 
         feeds[0] = feeds[0] with { Enabled = false };
@@ -155,6 +170,11 @@ public sealed class IcsCalendarSourceTests : IDisposable
         {
             File.Delete(file);
         }
+
+        if (Directory.Exists(_cacheDirectory))
+        {
+            Directory.Delete(_cacheDirectory, recursive: true);
+        }
     }
 
     private async Task<IcsCalendarSource> LoadAsync(params string[] events)
@@ -167,7 +187,7 @@ public sealed class IcsCalendarSourceTests : IDisposable
     private IcsCalendarSource Source(params string[] paths)
     {
         var feeds = paths.Select(Feed).ToList();
-        return new IcsCalendarSource(() => feeds, new IcsFeedReader(), _time);
+        return new IcsCalendarSource(() => feeds, new IcsFeedReader(), _cache, _time);
     }
 
     private static CalendarFeed Feed(string path) => CalendarFeed.Create(CalendarFeed.Describe(path), path, CalendarColor.Blue);

@@ -4,6 +4,7 @@ using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
 using CmdPalCalendar.Ics;
 using CmdPalCalendar.Pages;
+using CmdPalCalendar.Platform;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -26,7 +27,8 @@ public sealed partial class CalendarCommandProvider : CommandProvider
 
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
-        var source = new IcsCalendarSource(() => feeds.EnabledFeeds, reader, time);
+        var cache = new IcsFeedCache(Path.Combine(directory, "cache"), new DpapiSecretProtector(), time);
+        var source = new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time);
         var refresher = new CalendarRefresher(source);
         var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));
 
