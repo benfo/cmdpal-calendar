@@ -48,7 +48,9 @@ internal sealed class IcsCalendarSource(
             Replace(feeds().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Calendar, null, null) : null).OfType<LoadedFeed>().ToList());
         }
 
-        Replace(await Task.WhenAll(feeds().Select(f => LoadFeedAsync(f, cancellationToken))), loadedAt: time.GetUtcNow());
+        var current = feeds();
+        Replace(await Task.WhenAll(current.Select(f => LoadFeedAsync(f, cancellationToken))), loadedAt: time.GetUtcNow());
+        cache.RemoveAllExcept(current);
     }
 
     public IReadOnlyList<CalendarEntry> GetEntries(DateOnly from, DateOnly toExclusive)

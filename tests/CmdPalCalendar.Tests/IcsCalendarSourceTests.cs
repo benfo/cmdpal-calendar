@@ -159,6 +159,22 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task Removes_cached_copies_of_calendars_that_are_gone()
+    {
+        var kept = Feed(WriteFeed());
+        var removed = Feed(WriteFeed());
+        List<CalendarFeed> feeds = [kept, removed];
+        var source = new IcsCalendarSource(() => feeds, new IcsFeedReader(), _cache, _time);
+        await source.LoadAsync(CancellationToken.None);
+
+        feeds.Remove(removed);
+        await source.LoadAsync(CancellationToken.None);
+
+        Assert.NotNull(_cache.Load(kept));
+        Assert.Null(_cache.Load(removed));
+    }
+
+    [Fact]
     public async Task Is_stale_when_the_feeds_change()
     {
         List<CalendarFeed> feeds = [Feed(WriteFeed())];
