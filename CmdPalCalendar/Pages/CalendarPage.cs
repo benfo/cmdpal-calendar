@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CmdPalCalendar.Events;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -16,29 +14,29 @@ internal sealed partial class CalendarPage : DynamicListPage
 
     private readonly CalendarSettings _settings;
     private readonly ICalendarSource _source;
+    private readonly CalendarRefresher _refresher;
     private readonly TimeProvider _time;
     private readonly NavigationCommands _navigation;
     private readonly CalendarViewFilters _views = new();
     private readonly CalendarRows _rows;
     private readonly CalendarLayout _layout;
-    private readonly Lock _lock = new();
-    private Task? _loading;
     private DateOnly? _selectedDate;
 
-    public CalendarPage(CalendarSettings settings, ICalendarSource source, TimeProvider time)
+    public CalendarPage(CalendarSettings settings, ICalendarSource source, CalendarRefresher refresher, TimeProvider time)
     {
         _settings = settings;
         _source = source;
+        _refresher = refresher;
         _time = time;
         _navigation = new NavigationCommands(
             previous: () => GoTo(SelectedDate.AddDays(-DaysShown)),
             next: () => GoTo(SelectedDate.AddDays(DaysShown)),
             today: () => GoTo(Today),
-            refresh: () => LoadIfStale(force: true));
+            refresh: () => _refresher.Refresh(force: true));
         _rows = new CalendarRows(_navigation);
         _layout = new CalendarLayout(_rows);
 
-        _settings.Settings.SettingsChanged += (_, _) => LoadIfStale(force: true);
+        _refresher.LoadingChanged += (_, _) => OnLoadingChanged();
         _views.PropChanged += (_, _) => OnViewChanged();
         Filters = _views;
 
@@ -63,7 +61,7 @@ internal sealed partial class CalendarPage : DynamicListPage
             return [CalendarRows.Settings(_settings.Settings.SettingsPage)];
         }
 
-        LoadIfStale();
+        _refresher.Refresh();
         UpdateTitle();
 
         var days = Enumerable.Range(0, DaysShown)
@@ -120,29 +118,11 @@ internal sealed partial class CalendarPage : DynamicListPage
             ? DateText.Title(SelectedDate, Today)
             : DateText.Span(SelectedDate, SelectedDate.AddDays(DaysShown - 1));
 
-    private void LoadIfStale(bool force = false)
+    private void OnLoadingChanged()
     {
-        lock (_lock)
+        IsLoading = _refresher.IsLoading;
+        if (!IsLoading)
         {
-            if (_loading is { IsCompleted: false } || (!force && !_source.IsStale))
-            {
-                return;
-            }
-
-            IsLoading = true;
-            _loading = Task.Run(LoadAsync);
-        }
-    }
-
-    private async Task LoadAsync()
-    {
-        try
-        {
-            await _source.LoadAsync(CancellationToken.None);
-        }
-        finally
-        {
-            IsLoading = false;
             RaiseItemsChanged();
         }
     }
