@@ -32,6 +32,7 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 ## Ideas
 
 - [ ] Windows reminder with a Join button. Needs the Windows App SDK; possibly redundant with Outlook and Teams reminders.
+- [ ] Images in event notes: dropped for now, because remote images let the sender track when the event was opened. Revisit if embedded (`data:`) images turn out to matter. See [docs/description-formatting.md](docs/description-formatting.md).
 
 ## Engineering
 
@@ -53,3 +54,4 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 - [x] Join in the Teams or Zoom app (Safe Links, Google and Proofpoint redirects unwrapped; falls back to the browser), with Join in browser, Copy link and Copy meeting ID and passcode in Ctrl+K, and the service shown on each row.
 - [x] Current or next meeting in the command subtitle ("Next: Standup in 7 min", "Now: Review · until 10:45"), updated every 30 seconds, plus a "Join next meeting" command (`CmdPalCalendar.JoinNext`) for a hotkey.
 - [x] Smarter Join next meeting: only meetings with a Teams, Zoom, Meet or Webex link count; joins straight away within 15 minutes of the start, otherwise asks first; opens the calendar when there is nothing to join; its own subtitle ("Standup in 4 min · Teams", "Next to join: Review at 14:00", "Nothing to join today").
+- [x] Formatted event notes: HTML descriptions (Outlook's `X-ALT-DESC` first) shown as Markdown with bold, italic, links, lists and flattened tables, and the Teams/Zoom invite block cut. Rules and decisions in [docs/description-formatting.md](docs/description-formatting.md).
