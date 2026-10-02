@@ -16,13 +16,15 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
 
     public CalendarFeedFormPage(CalendarFeedStore store, IcsFeedCheck check, CalendarFeed? feed)
     {
-        _form = new CalendarFeedForm(store, check, feed);
+        _form = new CalendarFeedForm(store, check, feed, busy => IsLoading = busy);
         Name = feed is null ? "Add" : "Edit";
         Title = feed is null ? "Add a calendar" : $"Edit {feed.Name}";
         Icon = new IconInfo(feed is null ? Glyphs.Add : Glyphs.Edit);
     }
 
     public override IContent[] GetContent() => [_form];
+
+    private sealed record Fields(string Name, string Location, CalendarColor Color, bool Enabled);
 
     private sealed partial class CalendarFeedForm : FormContent
     {
@@ -31,64 +33,99 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
         private readonly CalendarFeedStore _store;
         private readonly IcsFeedCheck _check;
         private readonly CalendarFeed? _feed;
+        private readonly Action<bool> _setBusy;
+        private int _checking;
 
-        public CalendarFeedForm(CalendarFeedStore store, IcsFeedCheck check, CalendarFeed? feed)
+        public CalendarFeedForm(CalendarFeedStore store, IcsFeedCheck check, CalendarFeed? feed, Action<bool> setBusy)
         {
             _store = store;
             _check = check;
             _feed = feed;
+            _setBusy = setBusy;
             TemplateJson = Template(feed is null ? "Add calendar" : "Save");
-            Show(feed?.Name ?? string.Empty, feed?.Location ?? string.Empty, feed?.Color ?? store.NextColor, feed?.Enabled ?? true, error: string.Empty);
+            Show(new Fields(feed?.Name ?? string.Empty, feed?.Location ?? string.Empty, feed?.Color ?? store.NextColor, feed?.Enabled ?? true));
         }
 
         public override ICommandResult SubmitForm(string inputs)
         {
-            var values = JsonNode.Parse(inputs);
-            var name = Value(values, "name");
-            var location = Value(values, "location");
-            var color = Enum.TryParse<CalendarColor>(Value(values, "color"), out var parsed) ? parsed : _store.NextColor;
-            var enabled = Value(values, "enabled") != "false";
-
-            var addressChanged = _feed is null || !string.Equals(location, _feed.Location, StringComparison.Ordinal);
-            var result = addressChanged ? Check(location) : null;
-            if (result is { IsValid: false })
+            if (Interlocked.Exchange(ref _checking, 1) == 1)
             {
-                Show(name, location, color, enabled, result.Error!);
                 return CommandResult.KeepOpen();
             }
 
-            var finalName = name.Length > 0 ? name
-                : addressChanged ? result?.CalendarName ?? CalendarFeed.Describe(location)
+            try
+            {
+                return Save(Read(inputs));
+            }
+            finally
+            {
+                Volatile.Write(ref _checking, 0);
+            }
+        }
+
+        private CommandResult Save(Fields fields)
+        {
+            var addressChanged = _feed is null || !string.Equals(fields.Location, _feed.Location, StringComparison.Ordinal);
+            var result = addressChanged ? Check(fields) : null;
+            if (result is { IsValid: false })
+            {
+                Show(fields, error: result.Error!);
+                return CommandResult.KeepOpen();
+            }
+
+            var name = fields.Name.Length > 0 ? fields.Name
+                : addressChanged ? result?.CalendarName ?? CalendarFeed.Describe(fields.Location)
                 : _feed!.Name;
             if (_feed is null)
             {
-                _store.Add(CalendarFeed.Create(finalName, location, color) with { Enabled = enabled });
+                _store.Add(CalendarFeed.Create(name, fields.Location, fields.Color) with { Enabled = fields.Enabled });
             }
             else
             {
-                _store.Update(_feed with { Name = finalName, Location = location, Color = color, Enabled = enabled });
+                _store.Update(_feed with { Name = name, Location = fields.Location, Color = fields.Color, Enabled = fields.Enabled });
             }
 
             var verb = _feed is null ? "Added" : "Saved";
-            return CommandResult.ShowToast(new ToastArgs { Message = $"{verb} {finalName}", Result = CommandResult.GoBack() });
+            return CommandResult.ShowToast(new ToastArgs { Message = $"{verb} {name}", Result = CommandResult.GoBack() });
         }
 
-        private IcsFeedCheckResult Check(string location)
+        private IcsFeedCheckResult Check(Fields fields)
         {
-            using var timeout = new CancellationTokenSource(CheckTimeout);
-            return Task.Run(() => _check.RunAsync(location, timeout.Token)).GetAwaiter().GetResult();
+            Show(fields, status: "Checking the calendar…");
+            _setBusy(true);
+            try
+            {
+                using var timeout = new CancellationTokenSource(CheckTimeout);
+                return Task.Run(() => _check.RunAsync(fields.Location, timeout.Token)).GetAwaiter().GetResult();
+            }
+            finally
+            {
+                _setBusy(false);
+                Show(fields);
+            }
+        }
+
+        private Fields Read(string inputs)
+        {
+            var values = JsonNode.Parse(inputs);
+            return new Fields(
+                Value(values, "name"),
+                Value(values, "location"),
+                Enum.TryParse<CalendarColor>(Value(values, "color"), out var color) ? color : _store.NextColor,
+                Value(values, "enabled") != "false");
         }
 
         private static string Value(JsonNode? values, string key) => (values?[key]?.GetValue<string>() ?? string.Empty).Trim();
 
-        private void Show(string name, string location, CalendarColor color, bool enabled, string error) =>
+        private void Show(Fields fields, string error = "", string status = "") =>
             DataJson = new JsonObject
             {
-                ["name"] = name,
-                ["location"] = location,
-                ["color"] = color.ToString(),
-                ["enabled"] = enabled ? "true" : "false",
+                ["name"] = fields.Name,
+                ["location"] = fields.Location,
+                ["color"] = fields.Color.ToString(),
+                ["enabled"] = fields.Enabled ? "true" : "false",
                 ["error"] = error,
+                ["status"] = status,
             }.ToJsonString();
 
         private static string Template(string submitTitle)
@@ -141,6 +178,13 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
                         "value": "${enabled}",
                         "valueOn": "true",
                         "valueOff": "false"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "${status}",
+                        "$when": "${status != ''}",
+                        "weight": "Bolder",
+                        "wrap": true
                     },
                     {
                         "type": "TextBlock",
