@@ -27,7 +27,8 @@ internal static class IcsEntryMapper
             Link: MeetingLinkFinder.Find(ev.Location, ev.Url?.ToString(), ev.Description),
             Source: feed.Name,
             Notes: EventNotes.From(ev.Description, ev.Properties.Get<string>("X-ALT-DESC")),
-            Color: feed.Color);
+            Color: feed.Color,
+            Site: CalendarSites.Detect(feed.Location));
     }
 
     private static DateTimeOffset ToLocal(CalDateTime value)
