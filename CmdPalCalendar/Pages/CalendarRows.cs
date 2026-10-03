@@ -6,6 +6,7 @@ using System.Text;
 using CmdPalCalendar.Events;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
 namespace CmdPalCalendar.Pages;
 
@@ -66,7 +67,13 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
     {
         IContextItem[] browser = link?.App is null
             ? []
-            : [new CommandContextItem(new OpenUrlCommand(link.Web.OriginalString) { Name = "Join in browser", Result = CommandResult.Dismiss() })];
+            :
+            [
+                new CommandContextItem(new OpenUrlCommand(link.Web.OriginalString) { Name = "Join in browser", Result = CommandResult.Dismiss() })
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                },
+            ];
         IContextItem[] copyLink = link is null ? [] : [Copy("Copy link", link.Web.OriginalString)];
         IContextItem[] copyCredentials = credentials is null ? [] : [Copy("Copy meeting ID and passcode", credentials.ToString())];
 
