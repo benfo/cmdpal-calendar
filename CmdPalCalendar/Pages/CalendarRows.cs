@@ -24,7 +24,9 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now, bool showCalendar)
     {
         var link = MeetingLink.Parse(entry.Link);
-        ICommand command = link is null ? new NoOpCommand() : new JoinMeetingCommand(link);
+        var open = entry.Site is { } site ? OpenInCalendar(entry, site) : null;
+        ICommand command = link is not null ? new JoinMeetingCommand(link) : open ?? (ICommand)new NoOpCommand();
+        IContextItem[] openOnCtrlEnter = link is not null && open is not null ? [new CommandContextItem(open)] : [];
 
         var item = new ListItem(command)
         {
@@ -33,7 +35,14 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
             Icon = link is null or { Service: MeetingService.Other } ? CalendarIcon : MeetingIcon,
             Tags = Tags(entry, link, showCalendar),
             Details = Details(entry),
-            MoreCommands = [.. MeetingCommands(link, MeetingCredentials.Find(entry.Description)), .. _pageCommands],
+            MoreCommands =
+            [
+                .. openOnCtrlEnter,
+                .. MeetingCommands(link, MeetingCredentials.Find(entry.Description)),
+                Copy("Copy event", EventText.Summary(entry)),
+                new Separator(),
+                .. _pageCommands,
+            ],
         };
 
         if (now is not null && !entry.IsAllDay)
@@ -61,9 +70,16 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
         IContextItem[] copyLink = link is null ? [] : [Copy("Copy link", link.Web.OriginalString)];
         IContextItem[] copyCredentials = credentials is null ? [] : [Copy("Copy meeting ID and passcode", credentials.ToString())];
 
-        IContextItem[] commands = [.. browser, .. copyLink, .. copyCredentials];
-        return commands.Length == 0 ? [] : [.. commands, new Separator()];
+        return [.. browser, .. copyLink, .. copyCredentials];
     }
+
+    private static OpenUrlCommand OpenInCalendar(CalendarEntry entry, CalendarSite site) =>
+        new(CalendarSites.DayAddress(site, DateOnly.FromDateTime(entry.Start.DateTime)))
+        {
+            Name = $"Open in {CalendarSiteText.Name(site)}",
+            Icon = CalendarIcon,
+            Result = CommandResult.Dismiss(),
+        };
 
     private static CommandContextItem Copy(string name, string text) => new(new CopyTextCommand(text) { Name = name });
 
