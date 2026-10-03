@@ -34,6 +34,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
+- [ ] **Back up the signing key** (user): move `Documents\CmdPalCalendar-signing\` (the `.pfx` and its password) into the password manager, then delete that folder. Until then it is the only copy outside the GitHub secrets.
 - [ ] **Release v0.1.2**: `main` has installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). Waiting for the user's go-ahead to tag.
 - [ ] **Shortcut tip** (waiting for the user's decision): there's no SDK way to give extension commands a default alias or hotkey. Suggested: the installer's closing message and the README suggest one (Calendar alias `cal`, a global hotkey for Join next meeting). Writing into Command Palette's own `settings.json` is possible but fragile, so not recommended.
 - [ ] **Dock band** (recommended next feature): "Standup · 7m" in the Command Palette Dock; clicking it joins. Reuse `UpcomingMeeting`/`NextMeetingTicker` logic; copy the built-in `NowDockBand` timer pattern (`GetDockBands()`, band command with a non-empty `Id`). Watch PowerToys #50367: bands can stop updating after an RDP or session switch.
