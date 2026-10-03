@@ -6,7 +6,10 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
-- [ ] **Installing a release**: on a PC without the development build, `irm …/install.ps1 | iex` in an admin PowerShell trusts the certificate, installs the right package, and Calendar works after Reload; running it again after a new release updates in place and keeps the calendars.
+- [ ] **Updating a release** (once v0.1.2 is out; a fresh install of v0.1.1 is confirmed working):
+  - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
+  - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
+  - Running it again says "already installed and up to date".
 - [ ] **Formatted notes**:
   - An Outlook invite with a long agenda shows in full, formatted, without the Teams footer.
   - A Google invite with bold text and links shows them formatted and clickable.
@@ -31,7 +34,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
-- [ ] **Microsoft Store** (unlisted at first, public later; replaces the self-signed sideload):
+- [ ] **Release v0.1.2**: `main` has installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). Waiting for the user's go-ahead to tag.
+- [ ] **Shortcut tip** (waiting for the user's decision): there's no SDK way to give extension commands a default alias or hotkey. Suggested: the installer's closing message and the README suggest one (Calendar alias `cal`, a global hotkey for Join next meeting). Writing into Command Palette's own `settings.json` is possible but fragile, so not recommended.
+- [ ] **Dock band** (recommended next feature): "Standup · 7m" in the Command Palette Dock; clicking it joins. Reuse `UpcomingMeeting`/`NextMeetingTicker` logic; copy the built-in `NowDockBand` timer pattern (`GetDockBands()`, band command with a non-empty `Id`). Watch PowerToys #50367: bands can stop updating after an RDP or session switch.
+- [ ] **Microsoft Store** (blocked on the user creating the developer account) (unlisted at first, public later; replaces the self-signed sideload):
   - Register a free individual developer account at storedeveloper.microsoft.com (ID and selfie check).
   - Reserve the app name in Partner Center; "Calendar" is likely taken, so something like "Calendar for Command Palette".
   - Put the identity Partner Center assigns (package name and `CN=…` publisher) into a Store build: an unsigned `.msixupload` for x64 and ARM64, made alongside the sideload packages.
@@ -46,7 +52,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - "Open in calendar" in Ctrl+K on every event that has a link to it; Enter does this for events with nothing to join.
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
-- [ ] **Dock band** "Standup · 7m"; clicking it joins. Copy the built-in `NowDockBand` timer pattern. Watch PowerToys #50367: bands can die after an RDP or session switch.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
 - [ ] **Microsoft 365 (Graph)**:
   - The default tenant policy needs admin consent for `Calendars.Read`; test that first.
@@ -61,6 +66,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 - [ ] Windows reminder with a Join button. Needs the Windows App SDK; possibly redundant with Outlook and Teams reminders.
 - [ ] Coloured service tags: brand-coloured backgrounds with white text for Teams (~`#5B5FC7`), Zoom (~`#0B5CFF`), Meet (~`#00897B`) and Webex, via `Tag.Background`/`Foreground` and `ColorHelpers.FromRgb`. Colours are fixed (not theme-aware), so stick to coloured backgrounds with white text. Check that colours survive row reuse (bookmarx lost tag icons that way), and keep other tags (feed, Tentative) neutral so the service stands out.
+- [ ] Ask PowerToys (GitHub issue) for an SDK way to suggest a default alias or hotkey for an extension's top-level commands.
 - [ ] Images in event notes: dropped for now, because remote images let the sender track when the event was opened. Revisit if embedded (`data:`) images turn out to matter. See [docs/description-formatting.md](docs/description-formatting.md).
 
 ## Engineering
