@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +16,8 @@ internal interface IMicrosoftSignIn
     Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken);
 
     Task SignOutAsync(string accountId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken);
 }
 
 internal sealed class SignInRequiredException(string accountId, string reason)

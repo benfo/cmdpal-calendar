@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,6 +69,9 @@ internal sealed class WamSignIn : IMicrosoftSignIn
             await _app.RemoveAsync(account);
         }
     }
+
+    public async Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken) =>
+        (await _app.GetAccountsAsync()).Select(a => a.HomeAccountId.Identifier).ToList();
 
     private static string FirstLine(string text) => text.Split('\n', 2)[0].Trim();
 

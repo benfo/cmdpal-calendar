@@ -84,6 +84,8 @@ internal sealed class FixedSignIn : IMicrosoftSignIn
     public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
 
     public Task SignOutAsync(string accountId, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<string>>([]);
 }
 
 internal sealed class FixtureGraph(string json) : HttpMessageHandler

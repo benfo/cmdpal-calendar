@@ -80,6 +80,8 @@ internal sealed class MicrosoftCalendarChoice(
                 Problem = "Sign-in was cancelled";
                 return;
             }
+
+            accounts.SignedIn(Account.Id);
         }
 
         try

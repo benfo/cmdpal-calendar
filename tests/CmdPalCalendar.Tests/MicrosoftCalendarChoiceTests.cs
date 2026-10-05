@@ -149,7 +149,7 @@ public sealed class MicrosoftCalendarChoiceTests : IDisposable
         _store.Add(CalendarFeed.Create(calendar.Name, new MicrosoftSource(account.Id, account.Username, calendar.Id), CalendarColor.Blue));
 
     private MicrosoftCalendarChoice Choice(MicrosoftAccount? account) =>
-        new(_signIn, _graph, _store, new MicrosoftAccounts(_signIn, _store), account);
+        new(_signIn, _graph, _store, new MicrosoftAccounts(_signIn, _store, TimeProvider.System), account);
 
     private sealed class FakeSignIn : IMicrosoftSignIn
     {
@@ -183,6 +183,8 @@ public sealed class MicrosoftCalendarChoiceTests : IDisposable
             SignedOut.Add(accountId);
             return Task.CompletedTask;
         }
+
+        public Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<string>>([]);
     }
 
     private sealed class FakeCalendars : IGraphCalendars

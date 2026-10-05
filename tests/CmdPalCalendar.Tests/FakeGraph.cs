@@ -39,5 +39,7 @@ internal sealed class FakeGraph : HttpMessageHandler
         public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult($"token-for-{accountId}");
 
         public Task SignOutAsync(string accountId, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<string>>([]);
     }
 }
