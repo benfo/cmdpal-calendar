@@ -52,6 +52,7 @@ Always check exit status before committing: piping build/test output through `gr
 - Outlook on the web has no link to a given date (`/calendar/view/day/2026/10/3` opens today); Google Calendar's `/r/day/yyyy/M/d` works.
 - No API for default aliases or hotkeys for extension commands.
 - After deploying, Command Palette may keep the old extension until **Reload** or a restart.
+- After the Windows sign-in (WAM) dialog closes, focus goes to the app that was active before Command Palette, not back to Command Palette; you click it once. The extension can't take it back: `SetForegroundWindow` (also with `AttachThreadInput`) and `SwitchToThisWindow` are refused (foreground lock). Untried: parenting the dialog on a hidden window of our own process.
 
 ## How we work
 
