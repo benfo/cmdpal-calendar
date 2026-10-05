@@ -19,6 +19,11 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
   - The row reads "Sign in again to <account>" with "Your calendars can't update until you sign in" underneath.
   - Cancelling the prompt leaves the row in place.
+- [ ] **Sign out** (Graph step 6):
+  - In Manage calendars, Ctrl+K on a Microsoft calendar shows "Sign out of <account>"; it asks first ("Its 2 calendars will be removed…"), then removes that account's calendars only.
+  - Removing a Microsoft calendar that is its account's last says "…and you'll be signed out of <account>"; afterwards, Add a calendar → Microsoft asks you to sign in again.
+  - Removing one of several calendars of an account keeps you signed in.
+  - The removed calendars' `.graph.bin` files disappear from `cache/` after the next refresh.
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
