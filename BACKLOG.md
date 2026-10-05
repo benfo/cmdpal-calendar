@@ -16,6 +16,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Enter on a calendar adds it ("Added …"), marks it with a check and "Added", and the page stays open.
   - Opening the picker again lists your calendars without asking to sign in (also after Reload); "Use another account" adds a second account.
   - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
+- [ ] **Join guard on calendar rows**:
+  - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
+  - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
+  - Within 15 minutes of the start, or during the meeting, Enter joins straight away. Join next meeting behaves as before.
 - [ ] **Microsoft events** (Graph step 3):
   - Events from added Microsoft calendars show on the calendar page, at the right times, all-day events on the right day.
   - Teams meetings join with Enter; notes show the agenda formatted without the Teams footer; Copy meeting ID and passcode works.
