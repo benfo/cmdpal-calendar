@@ -29,7 +29,7 @@ internal sealed class IcsCalendarSource(
     public bool IsStale =>
         _loadedAt is not { } loadedAt ||
         time.GetUtcNow() - loadedAt > MaxAge ||
-        !Addresses(_loaded.Select(f => f.Feed)).SetEquals(Addresses(feeds()));
+        !Addresses(_loaded.Select(f => f.Feed)).SetEquals(Addresses(IcsCalendars()));
 
     public event EventHandler? Updated;
 
@@ -45,10 +45,10 @@ internal sealed class IcsCalendarSource(
     {
         if (!HasData)
         {
-            Replace(feeds().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Calendar, null, null) : null).OfType<LoadedFeed>().ToList());
+            Replace(IcsCalendars().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Calendar, null, null) : null).OfType<LoadedFeed>().ToList());
         }
 
-        var current = feeds();
+        var current = IcsCalendars();
         Replace(await Task.WhenAll(current.Select(f => LoadFeedAsync(f, cancellationToken))), loadedAt: time.GetUtcNow());
         cache.RemoveAllExcept(current);
     }
@@ -76,11 +76,13 @@ internal sealed class IcsCalendarSource(
         }
     }
 
+    private List<CalendarFeed> IcsCalendars() => feeds().Where(f => f.Source is IcsSource).ToList();
+
     private IEnumerable<(CalendarFeed Feed, LoadedFeed Loaded)> Current()
     {
         var loaded = _loaded.ToDictionary(f => f.Feed.Id);
-        return feeds()
-            .Where(f => loaded.ContainsKey(f.Id) && loaded[f.Id].Feed.Location == f.Location)
+        return IcsCalendars()
+            .Where(f => loaded.ContainsKey(f.Id) && loaded[f.Id].Feed.Source == f.Source)
             .Select(f => (f, loaded[f.Id]));
     }
 
@@ -88,7 +90,7 @@ internal sealed class IcsCalendarSource(
     {
         try
         {
-            var text = await reader.ReadAsync(feed.Location, cancellationToken);
+            var text = await reader.ReadAsync(feed.IcsLocation(), cancellationToken);
             var calendar = IcsFeedReader.Parse(text);
             cache.Save(feed, text);
             return new LoadedFeed(feed, calendar, null, null);
@@ -124,8 +126,8 @@ internal sealed class IcsCalendarSource(
         Updated?.Invoke(this, EventArgs.Empty);
     }
 
-    private static HashSet<(string Id, string Location)> Addresses(IEnumerable<CalendarFeed> feeds) =>
-        feeds.Select(f => (f.Id, f.Location)).ToHashSet();
+    private static HashSet<(string Id, FeedSource Source)> Addresses(IEnumerable<CalendarFeed> feeds) =>
+        feeds.Select(f => (f.Id, f.Source)).ToHashSet();
 
     private static DateTimeOffset StartOfDay(DateOnly date)
     {

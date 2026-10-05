@@ -20,7 +20,7 @@ Expect(check.IsValid, $"feed check passes ({check.Error})");
 Expect(check.CalendarName == "Trim check", "feed check reads the calendar name");
 
 var cacheDirectory = Path.Combine(Path.GetTempPath(), $"trimcheck-{Guid.NewGuid():N}");
-var feed = CalendarFeed.Create("Trim check", feedPath, CalendarColor.Blue);
+var feed = CalendarFeed.Create("Trim check", new IcsSource(feedPath), CalendarColor.Blue);
 var source = new IcsCalendarSource(() => [feed], reader, new IcsFeedCache(cacheDirectory, new PlainProtector(), TimeProvider.System), TimeProvider.System);
 await source.LoadAsync(CancellationToken.None);
 Expect(source.Problems.Count == 0, $"feed loads without problems ({string.Join(" | ", source.Problems.Select(p => p.Message))})");

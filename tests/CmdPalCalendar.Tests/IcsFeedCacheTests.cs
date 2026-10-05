@@ -8,7 +8,7 @@ public sealed class IcsFeedCacheTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}");
     private readonly ManualTimeProvider _time = new(new DateTimeOffset(2026, 10, 5, 8, 0, 0, TimeSpan.Zero));
-    private readonly CalendarFeed _work = CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Blue);
+    private readonly CalendarFeed _work = CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Blue);
 
     [Fact]
     public void Returns_what_was_saved_and_when()
@@ -35,7 +35,7 @@ public sealed class IcsFeedCacheTests : IDisposable
         var cache = Cache();
         cache.Save(_work, "old");
 
-        Assert.Null(cache.Load(_work with { Location = "https://example.com/new.ics" }));
+        Assert.Null(cache.Load(_work with { Source = new IcsSource("https://example.com/new.ics") }));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class IcsFeedCacheTests : IDisposable
     public void Removes_copies_of_calendars_that_are_gone()
     {
         var cache = Cache();
-        var family = CalendarFeed.Create("Family", "https://example.com/family.ics", CalendarColor.Green);
+        var family = CalendarFeed.Create("Family", new IcsSource("https://example.com/family.ics"), CalendarColor.Green);
         cache.Save(_work, "work");
         cache.Save(family, "family");
 

@@ -62,11 +62,16 @@ internal sealed partial class CalendarFeedStore
         File.WriteAllText(_path, JsonSerializer.Serialize(_feeds.Select(ToStored).ToList(), StoreJsonContext.Default.ListStoredFeed));
     }
 
-    private StoredFeed ToStored(CalendarFeed feed) =>
-        new(feed.Id, feed.Name, Location: null, Convert.ToBase64String(_protector.Protect(Encoding.UTF8.GetBytes(feed.Location))), feed.Enabled, feed.Color);
+    private StoredFeed ToStored(CalendarFeed feed) => feed.Source switch
+    {
+        IcsSource ics => new(feed.Id, feed.Name, Location: null, Protect(ics.Location), feed.Enabled, feed.Color),
+        _ => throw new NotSupportedException($"Unknown calendar source {feed.Source.GetType().Name}"),
+    };
 
     private CalendarFeed ToFeed(StoredFeed stored) =>
-        new(stored.Id, stored.Name, stored.Location ?? Unprotect(stored.ProtectedLocation), stored.Enabled, stored.Color);
+        new(stored.Id, stored.Name, new IcsSource(stored.Location ?? Unprotect(stored.ProtectedLocation)), stored.Enabled, stored.Color);
+
+    private string Protect(string location) => Convert.ToBase64String(_protector.Protect(Encoding.UTF8.GetBytes(location)));
 
     private string Unprotect(string? protectedLocation)
     {

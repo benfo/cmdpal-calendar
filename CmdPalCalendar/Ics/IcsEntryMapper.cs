@@ -28,7 +28,7 @@ internal static class IcsEntryMapper
             Source: feed.Name,
             Notes: EventNotes.From(ev.Description, ev.Properties.Get<string>("X-ALT-DESC")),
             Color: feed.Color,
-            Site: CalendarSites.Detect(feed.Location));
+            Site: CalendarSites.Detect(feed.IcsLocation()));
     }
 
     private static DateTimeOffset ToLocal(CalDateTime value)

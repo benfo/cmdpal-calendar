@@ -18,7 +18,7 @@ internal sealed class IcsFeedCache(string directory, ISecretProtector protector,
     {
         Directory.CreateDirectory(directory);
         var path = PathFor(feed.Id);
-        File.WriteAllBytes(path, protector.Protect(Encoding.UTF8.GetBytes($"{feed.Location}\n{ics}")));
+        File.WriteAllBytes(path, protector.Protect(Encoding.UTF8.GetBytes($"{feed.IcsLocation()}\n{ics}")));
         File.SetLastWriteTimeUtc(path, time.GetUtcNow().UtcDateTime);
     }
 
@@ -34,7 +34,7 @@ internal sealed class IcsFeedCache(string directory, ISecretProtector protector,
         {
             var content = Encoding.UTF8.GetString(protector.Unprotect(File.ReadAllBytes(path)));
             var separator = content.IndexOf('\n', StringComparison.Ordinal);
-            return separator >= 0 && content[..separator] == feed.Location
+            return separator >= 0 && content[..separator] == feed.IcsLocation()
                 ? new CachedFeed(content[(separator + 1)..], new DateTimeOffset(File.GetLastWriteTimeUtc(path), TimeSpan.Zero))
                 : null;
         }

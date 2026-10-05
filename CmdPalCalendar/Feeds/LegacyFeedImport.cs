@@ -25,7 +25,7 @@ internal static class LegacyFeedImport
                 .Distinct(StringComparer.OrdinalIgnoreCase);
             foreach (var location in locations)
             {
-                store.Add(CalendarFeed.Create(CalendarFeed.Describe(location), location, store.NextColor));
+                store.Add(CalendarFeed.Create(IcsSource.Describe(location), new IcsSource(location), store.NextColor));
             }
         }
 

@@ -237,7 +237,7 @@ public sealed class IcsCalendarSourceTests : IDisposable
         return new IcsCalendarSource(() => feeds, new IcsFeedReader(), _cache, _time);
     }
 
-    private static CalendarFeed Feed(string path) => CalendarFeed.Create(CalendarFeed.Describe(path), path, CalendarColor.Blue);
+    private static CalendarFeed Feed(string path) => CalendarFeed.Create(IcsSource.Describe(path), new IcsSource(path), CalendarColor.Blue);
 
     private string WriteFeed(params string[] events)
     {

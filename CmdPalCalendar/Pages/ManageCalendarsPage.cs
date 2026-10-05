@@ -39,7 +39,7 @@ internal sealed partial class ManageCalendarsPage : ListPage
         new(new CalendarFeedFormPage(_store, _check, feed))
         {
             Title = feed.Name,
-            Subtitle = feed.Enabled ? feed.LocationLabel : $"{feed.LocationLabel} · Off",
+            Subtitle = feed.Enabled ? feed.Source.Label : $"{feed.Source.Label} · Off",
             Icon = new IconInfo(Glyphs.Calendar),
             Tags = [CalendarColors.Tag(feed.Color.ToString(), feed.Color)],
             MoreCommands =

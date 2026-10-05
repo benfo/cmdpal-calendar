@@ -30,7 +30,7 @@ public sealed class LegacyFeedImportTests : IDisposable
     {
         WriteSettings("""{ "CmdPalCalendar.IcsFeeds": "https://calendar.google.com/a.ics" }""");
         var store = new CalendarFeedStore(CalendarsPath, new PlainProtector());
-        store.Add(CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Red));
+        store.Add(CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Red));
 
         LegacyFeedImport.Run(SettingsPath, store);
 

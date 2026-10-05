@@ -43,7 +43,7 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
             _feed = feed;
             _setBusy = setBusy;
             TemplateJson = Template(feed is null ? "Add calendar" : "Save");
-            Show(new Fields(feed?.Name ?? string.Empty, feed?.Location ?? string.Empty, feed?.Color ?? store.NextColor, feed?.Enabled ?? true));
+            Show(new Fields(feed?.Name ?? string.Empty, Location(feed) ?? string.Empty,feed?.Color ?? store.NextColor, feed?.Enabled ?? true));
         }
 
         public override ICommandResult SubmitForm(string inputs)
@@ -65,7 +65,7 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
 
         private CommandResult Save(Fields fields)
         {
-            var addressChanged = _feed is null || !string.Equals(fields.Location, _feed.Location, StringComparison.Ordinal);
+            var addressChanged = _feed is null || !string.Equals(fields.Location, Location(_feed), StringComparison.Ordinal);
             var result = addressChanged ? Check(fields) : null;
             if (result is { IsValid: false })
             {
@@ -74,15 +74,15 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
             }
 
             var name = fields.Name.Length > 0 ? fields.Name
-                : addressChanged ? result?.CalendarName ?? CalendarFeed.Describe(fields.Location)
+                : addressChanged ? result?.CalendarName ?? IcsSource.Describe(fields.Location)
                 : _feed!.Name;
             if (_feed is null)
             {
-                _store.Add(CalendarFeed.Create(name, fields.Location, fields.Color) with { Enabled = fields.Enabled });
+                _store.Add(CalendarFeed.Create(name, new IcsSource(fields.Location), fields.Color) with { Enabled = fields.Enabled });
             }
             else
             {
-                _store.Update(_feed with { Name = name, Location = fields.Location, Color = fields.Color, Enabled = fields.Enabled });
+                _store.Update(_feed with { Name = name, Source = new IcsSource(fields.Location), Color = fields.Color, Enabled = fields.Enabled });
             }
 
             var verb = _feed is null ? "Added" : "Saved";
@@ -114,6 +114,8 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
                 Enum.TryParse<CalendarColor>(Value(values, "color"), out var color) ? color : _store.NextColor,
                 Value(values, "enabled") != "false");
         }
+
+        private static string? Location(CalendarFeed? feed) => (feed?.Source as IcsSource)?.Location;
 
         private static string Value(JsonNode? values, string key) => (values?[key]?.GetValue<string>() ?? string.Empty).Trim();
 

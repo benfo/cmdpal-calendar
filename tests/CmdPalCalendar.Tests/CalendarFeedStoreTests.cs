@@ -16,10 +16,10 @@ public sealed class CalendarFeedStoreTests : IDisposable
     public void Saves_and_reloads_calendars()
     {
         var store = new CalendarFeedStore(_path, new PlainProtector());
-        var work = CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Purple);
+        var work = CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Purple);
 
         store.Add(work);
-        store.Add(CalendarFeed.Create("Family", @"C:\cal\family.ics", CalendarColor.Green));
+        store.Add(CalendarFeed.Create("Family", new IcsSource(@"C:\cal\family.ics"), CalendarColor.Green));
 
         var reloaded = new CalendarFeedStore(_path, new PlainProtector()).Feeds;
         Assert.Equal(["Work", "Family"], reloaded.Select(f => f.Name));
@@ -30,8 +30,8 @@ public sealed class CalendarFeedStoreTests : IDisposable
     public void Updates_and_removes_by_id()
     {
         var store = new CalendarFeedStore(_path, new PlainProtector());
-        var work = CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Blue);
-        var family = CalendarFeed.Create("Family", "https://example.com/family.ics", CalendarColor.Green);
+        var work = CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Blue);
+        var family = CalendarFeed.Create("Family", new IcsSource("https://example.com/family.ics"), CalendarColor.Green);
         store.Add(work);
         store.Add(family);
 
@@ -51,7 +51,7 @@ public sealed class CalendarFeedStoreTests : IDisposable
         var raised = 0;
         store.Changed += (_, _) => raised++;
 
-        store.Add(CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Blue));
+        store.Add(CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Blue));
 
         Assert.Equal(1, raised);
     }
@@ -62,7 +62,7 @@ public sealed class CalendarFeedStoreTests : IDisposable
         var store = new CalendarFeedStore(_path, new PlainProtector());
         Assert.Equal(CalendarColor.Blue, store.NextColor);
 
-        store.Add(CalendarFeed.Create("Work", "https://example.com/work.ics", store.NextColor));
+        store.Add(CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), store.NextColor));
 
         Assert.Equal(CalendarColor.Purple, store.NextColor);
     }
@@ -71,7 +71,7 @@ public sealed class CalendarFeedStoreTests : IDisposable
     public void Stores_addresses_encrypted_and_the_rest_readable()
     {
         new CalendarFeedStore(_path, new PlainProtector())
-            .Add(CalendarFeed.Create("Work", "https://example.com/secret-token/work.ics", CalendarColor.Purple));
+            .Add(CalendarFeed.Create("Work", new IcsSource("https://example.com/secret-token/work.ics"), CalendarColor.Purple));
 
         var json = File.ReadAllText(_path);
         Assert.DoesNotContain("secret-token", json, StringComparison.Ordinal);
@@ -87,19 +87,19 @@ public sealed class CalendarFeedStoreTests : IDisposable
 
         var feed = Assert.Single(new CalendarFeedStore(_path, new PlainProtector()).Feeds);
 
-        Assert.Equal("https://example.com/secret-token/work.ics", feed.Location);
+        Assert.Equal(new IcsSource("https://example.com/secret-token/work.ics"), feed.Source);
         Assert.DoesNotContain("secret-token", File.ReadAllText(_path), StringComparison.Ordinal);
     }
 
     [Fact]
     public void An_address_that_cannot_be_decrypted_comes_back_empty()
     {
-        new CalendarFeedStore(_path, new PlainProtector()).Add(CalendarFeed.Create("Work", "https://example.com/work.ics", CalendarColor.Blue));
+        new CalendarFeedStore(_path, new PlainProtector()).Add(CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Blue));
 
         var feed = Assert.Single(new CalendarFeedStore(_path, new FailingProtector()).Feeds);
 
         Assert.Equal("Work", feed.Name);
-        Assert.Equal(string.Empty, feed.Location);
+        Assert.Equal(new IcsSource(string.Empty), feed.Source);
     }
 
     [Fact]

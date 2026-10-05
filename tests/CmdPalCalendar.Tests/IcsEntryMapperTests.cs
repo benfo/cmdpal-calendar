@@ -16,7 +16,7 @@ public sealed class IcsEntryMapperTests
         var ev = new CalendarEvent { Uid = "1", Summary = "Standup" };
         var period = new Period(new CalDateTime(2026, 10, 5, 9, 0, 0, "UTC"), new CalDateTime(2026, 10, 5, 9, 15, 0, "UTC"));
 
-        var entry = IcsEntryMapper.ToEntry(ev, period, CalendarFeed.Create("Work", location, CalendarColor.Blue));
+        var entry = IcsEntryMapper.ToEntry(ev, period, CalendarFeed.Create("Work", new IcsSource(location), CalendarColor.Blue));
 
         Assert.Equal(expected, entry.Site);
     }
