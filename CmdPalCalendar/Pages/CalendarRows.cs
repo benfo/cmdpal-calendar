@@ -69,7 +69,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
             ? []
             :
             [
-                new CommandContextItem(new OpenUrlCommand(link.Web.OriginalString) { Name = "Join in browser", Result = CommandResult.Dismiss() })
+                new CommandContextItem(new OpenInBrowserCommand(link.Web) { Name = "Join in browser" })
                 {
                     RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
                 },
