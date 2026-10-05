@@ -92,7 +92,7 @@ public sealed class GraphCalendarSourceTests
         var problem = Assert.Single(source.Problems);
         Assert.Equal(new AccountSignIn("account-1", "ben@example.com"), problem.SignIn);
         Assert.Equal("ben@example.com", problem.Calendar);
-        Assert.Equal("invalid_grant: expired", problem.Message);
+        Assert.Equal("Your calendars can't update until you sign in", problem.Message);
     }
 
     [Fact]

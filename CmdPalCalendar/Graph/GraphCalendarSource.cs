@@ -81,7 +81,7 @@ internal sealed class GraphCalendarSource(Func<IReadOnlyList<CalendarFeed>> feed
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             var signIn = ex is SignInRequiredException && feed.Source is MicrosoftSource ms ? new AccountSignIn(ms.AccountId, ms.Account) : null;
-            var error = signIn is null ? GraphErrors.Describe(ex) : ex.Message;
+            var error = signIn is null ? GraphErrors.Describe(ex) : "Your calendars can't update until you sign in";
             return _loaded.GetValueOrDefault(feed.Id) is { Entries: not null } previous && previous.Feed.Source == feed.Source
                 ? previous with { Feed = feed, Error = error, SignIn = signIn }
                 : new LoadedFeed(feed, null, error, null, signIn);
