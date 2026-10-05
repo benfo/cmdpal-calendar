@@ -31,7 +31,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
         var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
-        var signIn = new WamSignIn();
+        var signIn = new WamSignIn(new ProtectedTokenCache(Path.Combine(directory, "msal.cache.bin"), protector));
         var graph = new GraphClient(signIn, GraphClientFactory.Create());
         var source = new CompositeCalendarSource(
             new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time),

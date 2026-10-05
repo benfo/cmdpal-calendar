@@ -21,6 +21,8 @@ internal sealed class WamSignIn : IMicrosoftSignIn
         .WithParentActivityOrWindow(NativeMethods.GetForegroundWindow)
         .Build();
 
+    public WamSignIn(ProtectedTokenCache cache) => cache.Bind(_app.UserTokenCache);
+
     public async Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
     {
         try
