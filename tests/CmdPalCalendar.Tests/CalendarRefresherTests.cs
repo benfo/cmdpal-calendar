@@ -72,6 +72,8 @@ public sealed class CalendarRefresherTests
 
         public bool HasData => false;
 
+        public bool IsFetching => false;
+
         public int Loads => _loads;
 
         public IReadOnlyList<CalendarProblem> Problems => [];

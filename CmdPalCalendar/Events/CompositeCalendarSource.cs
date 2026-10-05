@@ -25,6 +25,8 @@ internal sealed class CompositeCalendarSource : ICalendarSource
 
     public bool HasData => _sources.Any(s => s.HasData);
 
+    public bool IsFetching => _sources.Any(s => s.IsFetching);
+
     public IReadOnlyList<CalendarProblem> Problems => _sources.SelectMany(s => s.Problems).ToList();
 
     public Task LoadAsync(CancellationToken cancellationToken) =>

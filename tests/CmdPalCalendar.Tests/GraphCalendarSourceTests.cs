@@ -7,6 +7,7 @@ namespace CmdPalCalendar.Tests;
 public sealed class GraphCalendarSourceTests : IDisposable
 {
     private static readonly DateOnly Monday = new(2026, 10, 5);
+    private static readonly DateOnly March10 = new(2027, 3, 10);
 
     private readonly ManualTimeProvider _time = new(new DateTimeOffset(2026, 10, 5, 8, 0, 0, TimeSpan.Zero));
     private readonly FakeEvents _graph = new();
@@ -176,6 +177,112 @@ public sealed class GraphCalendarSourceTests : IDisposable
         Assert.True(source.IsStale);
     }
 
+    [Fact]
+    public async Task Fetches_the_whole_month_for_a_date_beyond_the_window()
+    {
+        var source = await LoadedSource(Entry("e1", "Planning", March10, 9), Entry("e2", "Later", March10.AddDays(5), 9));
+
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _graph.FetchGate = gate.Task;
+        var updated = NextUpdate(source);
+        Assert.Empty(source.GetEntries(March10, March10.AddDays(1)));
+        Assert.True(source.IsFetching);
+        gate.SetResult();
+        await updated;
+
+        Assert.False(source.IsFetching);
+        Assert.Equal("Planning", Assert.Single(source.GetEntries(March10, March10.AddDays(1))).Title);
+        Assert.Equal("Later", Assert.Single(source.GetEntries(March10.AddDays(5), March10.AddDays(6))).Title);
+        var fetch = Assert.Single(_graph.Fetches);
+        Assert.Equal(new DateOnly(2027, 3, 1), DateOnly.FromDateTime(fetch.From.LocalDateTime));
+        Assert.Equal(new DateOnly(2027, 4, 1), DateOnly.FromDateTime(fetch.To.LocalDateTime));
+    }
+
+    [Fact]
+    public async Task Fetches_nothing_for_dates_inside_the_window()
+    {
+        var source = await LoadedSource(Entry("e1", "Standup", Monday, 9));
+
+        Assert.Single(source.GetEntries(Monday, Monday.AddDays(60)));
+
+        Assert.Empty(_graph.Fetches);
+        Assert.False(source.IsFetching);
+    }
+
+    [Fact]
+    public async Task Shows_an_event_on_the_window_edge_once()
+    {
+        var edge = Monday.AddDays(91);
+        var start = LocalTime.FromWallClock(edge.ToDateTime(TimeOnly.MinValue)).AddHours(-1);
+        var overnight = new CalendarEntry("e1", "Overnight", start, start.AddHours(2), false, null, null, null, [], null, "Old name");
+        var source = await LoadedSource(overnight);
+
+        await Fetched(source, edge.AddDays(-1), edge.AddDays(1));
+
+        Assert.Single(source.GetEntries(edge.AddDays(-1), edge.AddDays(1)));
+    }
+
+    [Fact]
+    public async Task Fetches_a_month_again_after_five_minutes_showing_the_old_copy_meanwhile()
+    {
+        var source = await LoadedSource(Entry("e1", "Planning", March10, 9));
+        await Fetched(source, March10, March10.AddDays(1));
+
+        source.GetEntries(March10, March10.AddDays(1));
+        Assert.Single(_graph.Fetches);
+
+        _time.Advance(TimeSpan.FromMinutes(6));
+        _graph.Next = Full(Entry("e1", "Moved", March10, 10));
+        var updated = NextUpdate(source);
+        Assert.Equal("Planning", Assert.Single(source.GetEntries(March10, March10.AddDays(1))).Title);
+        await updated;
+
+        Assert.Equal("Moved", Assert.Single(source.GetEntries(March10, March10.AddDays(1))).Title);
+    }
+
+    [Fact]
+    public async Task Fetches_months_again_after_a_refresh()
+    {
+        var source = await LoadedSource(Entry("e1", "Planning", March10, 9));
+        await Fetched(source, March10, March10.AddDays(1));
+
+        await source.LoadAsync(CancellationToken.None);
+        await Fetched(source, March10, March10.AddDays(1));
+
+        Assert.Equal(2, _graph.Fetches.Count);
+    }
+
+    [Fact]
+    public async Task Reports_a_month_that_failed_and_keeps_its_last_copy()
+    {
+        var source = await LoadedSource(Entry("e1", "Planning", March10, 9));
+        await Fetched(source, March10, March10.AddDays(1));
+
+        _time.Advance(TimeSpan.FromMinutes(6));
+        _graph.FetchFailure = new HttpRequestException("offline");
+        await Fetched(source, March10, March10.AddDays(1));
+
+        Assert.Single(source.GetEntries(March10, March10.AddDays(1)));
+        var problem = Assert.Single(source.Problems);
+        Assert.Equal($"Work for {new DateOnly(2027, 3, 1):MMMM yyyy}", problem.Calendar);
+        Assert.Equal("Couldn't reach Microsoft. Check your connection.", problem.Message);
+        Assert.NotNull(problem.ShowingCopyFrom);
+    }
+
+    [Fact]
+    public async Task Asks_to_sign_in_again_once_when_months_and_the_window_both_fail()
+    {
+        var source = await LoadedSource();
+        _graph.Failure = new SignInRequiredException("account-1", "expired");
+        _graph.FetchFailure = _graph.Failure;
+        _time.Advance(TimeSpan.FromMinutes(6));
+        await source.LoadAsync(CancellationToken.None);
+
+        await Fetched(source, March10, March10.AddDays(1));
+
+        Assert.Equal("ben@example.com", Assert.Single(source.Problems).Calendar);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_cacheDirectory))
@@ -197,6 +304,28 @@ public sealed class GraphCalendarSourceTests : IDisposable
 
     private GraphCalendarSource Source() => new(() => _feeds, _graph, _cache, _time);
 
+    private async Task<GraphCalendarSource> LoadedSource(params CalendarEntry[] entries)
+    {
+        _graph.Next = Full(entries);
+        var source = Source();
+        await source.LoadAsync(CancellationToken.None);
+        return source;
+    }
+
+    private static async Task Fetched(GraphCalendarSource source, DateOnly from, DateOnly toExclusive)
+    {
+        var updated = NextUpdate(source);
+        source.GetEntries(from, toExclusive);
+        await updated.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    private static Task NextUpdate(GraphCalendarSource source)
+    {
+        var updated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        source.Updated += (_, _) => updated.TrySetResult();
+        return updated.Task;
+    }
+
     private sealed class FakeEvents : IGraphEvents
     {
         public GraphChanges Next { get; set; } = Full();
@@ -205,8 +334,22 @@ public sealed class GraphCalendarSourceTests : IDisposable
 
         public List<(DateTimeOffset From, DateTimeOffset To, string? DeltaLink)> Syncs { get; } = [];
 
-        public Task<IReadOnlyList<CalendarEntry>> GetEntriesAsync(CalendarFeed feed, DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken) =>
-            Task.FromResult(Next.Changed);
+        public Exception? FetchFailure { get; set; }
+
+        public List<(DateTimeOffset From, DateTimeOffset To)> Fetches { get; } = [];
+
+        public Task FetchGate { get; set; } = Task.CompletedTask;
+
+        public async Task<IReadOnlyList<CalendarEntry>> GetEntriesAsync(CalendarFeed feed, DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken)
+        {
+            lock (Fetches)
+            {
+                Fetches.Add((from, to));
+            }
+
+            await FetchGate;
+            return FetchFailure is null ? Next.Changed.Where(e => e.Start < to && e.End > from).ToList() : throw FetchFailure;
+        }
 
         public Task<GraphChanges> SyncAsync(CalendarFeed feed, DateTimeOffset from, DateTimeOffset to, string? deltaLink, CancellationToken cancellationToken)
         {

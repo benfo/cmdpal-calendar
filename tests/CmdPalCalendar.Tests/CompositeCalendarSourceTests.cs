@@ -77,6 +77,8 @@ public sealed class CompositeCalendarSourceTests
 
         public bool HasData { get; init; }
 
+        public bool IsFetching { get; init; }
+
         public IReadOnlyList<CalendarProblem> Problems { get; init; } = [];
 
         public IReadOnlyList<CalendarEntry> Entries { get; init; } = [];

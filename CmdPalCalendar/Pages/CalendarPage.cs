@@ -52,7 +52,7 @@ internal sealed partial class CalendarPage : DynamicListPage
         _layout = new CalendarLayout(_rows);
 
         _refresher.LoadingChanged += (_, _) => OnLoadingChanged();
-        _source.Updated += (_, _) => RaiseItemsChanged();
+        _source.Updated += (_, _) => OnSourceUpdated();
         _feeds.Changed += (_, _) => OnFeedsChanged();
         _views.PropChanged += (_, _) => OnViewChanged();
         _ticker = time.CreateTimer(_ => Tick(), null, TickInterval, TickInterval);
@@ -89,6 +89,7 @@ internal sealed partial class CalendarPage : DynamicListPage
         var problems = _source.Problems;
         _live.Reset();
         _builtAt = _time.GetLocalNow();
+        OnLoadingChanged();
 
         return days.All(d => d.Entries.Count == 0) && problems.Count == 0 && IsLoading
             ? []
@@ -157,5 +158,11 @@ internal sealed partial class CalendarPage : DynamicListPage
         }
     }
 
-    private void OnLoadingChanged() => IsLoading = _refresher.IsLoading;
+    private void OnSourceUpdated()
+    {
+        OnLoadingChanged();
+        RaiseItemsChanged();
+    }
+
+    private void OnLoadingChanged() => IsLoading = _refresher.IsLoading || _source.IsFetching;
 }

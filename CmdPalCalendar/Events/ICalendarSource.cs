@@ -13,6 +13,8 @@ internal interface ICalendarSource
 
     bool HasData { get; }
 
+    bool IsFetching { get; }
+
     IReadOnlyList<CalendarProblem> Problems { get; }
 
     Task LoadAsync(CancellationToken cancellationToken);

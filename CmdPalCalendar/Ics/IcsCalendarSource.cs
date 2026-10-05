@@ -35,6 +35,8 @@ internal sealed class IcsCalendarSource(
 
     public bool HasData => _loaded.Count > 0;
 
+    public bool IsFetching => false;
+
     public IReadOnlyList<CalendarProblem> Problems =>
         Current()
             .Where(c => c.Loaded.Error is not null)
