@@ -87,7 +87,13 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Data: rolling window of 2 weeks back to 3 months ahead, cached encrypted, refreshed every 5 minutes with delta; dates outside it fetched on demand.
   - Code lives in `Graph/` and `Platform/` (see CLAUDE.md). Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; the trim check covers Graph.
   - Done: chooser and feed sources; sign-in and choosing calendars (one form for adding and changing); events, join links and opening the event; encrypted cache and delta sync; sign in again, sign out, cleanup of unused sign-ins; dates beyond the window fetched by whole month on demand (`GraphMonths`, in memory, refetched after 5 minutes or on Refresh).
-  - Left: **our own app registration** (multi-tenant, work and personal accounts), then test consent with an unverified publisher and swap the client ID in `WamSignIn`.
+  - Left: **our own app registration** (user, in progress), then swap the client ID in `WamSignIn` and test consent.
+    - Where: a free Azure account on the personal Microsoft account gives a "Default Directory" tenant (card check, no charge). Apps can no longer be registered outside a tenant; not the employer's tenant.
+    - Settings: multi-tenant plus personal accounts; Mobile and desktop redirect `ms-appx-web://Microsoft.AAD.BrokerPlugin/<client-id>`; delegated `Calendars.Read` only; no secret.
+    - Publisher verification is out of reach: it needs an organisation's verified AI Cloud Partner Program account and a custom domain, and not a personal-account registration. The app shows as "unverified".
+    - Consent: since Nov 2025 Microsoft's managed default consent policy (most tenants) requires admin approval for third-party apps asking for calendar, mail or Teams permissions (MC1163922), verified or not. Work accounts will usually need their admin to approve once; Outlook.com users consent themselves. Graph PowerShell isn't affected because it's a Microsoft app.
+    - README must say that work accounts usually need an admin to approve the app once; the sign-in flow should make the approval request clear.
+    - Later, only if needed: let an organisation enter its own client ID.
   - `iCalUId` is different for each occurrence of a series.
 
 - [ ] **Calendar provider abstraction** (after Graph step 5, before Google): adding a provider shouldn't touch the store, chooser, form, Manage page and wiring.
