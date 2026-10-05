@@ -80,6 +80,8 @@ internal sealed class FixedSignIn : IMicrosoftSignIn
     public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
 
     public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
+
+    public Task SignOutAsync(string accountId, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 internal sealed class FixtureGraph(string json) : HttpMessageHandler

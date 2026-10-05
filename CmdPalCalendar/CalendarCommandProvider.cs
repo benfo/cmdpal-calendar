@@ -40,7 +40,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var refresher = new CalendarRefresher(source);
         var check = new IcsFeedCheck(reader);
         var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, calendars, feeds));
-        var manage = new ManageCalendarsPage(feeds, check, add);
+        var manage = new ManageCalendarsPage(feeds, check, add, new MicrosoftAccounts(signIn, feeds));
         Func<AccountSignIn, ICommand> signInAgain = account => new SignInAgainCommand(signIn, account, () => refresher.Refresh(force: true));
 
         var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time, signInAgain))

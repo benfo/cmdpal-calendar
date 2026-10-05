@@ -111,6 +111,8 @@ public sealed class MicrosoftCalendarPickerTests : IDisposable
         }
 
         public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
+
+        public Task SignOutAsync(string accountId, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
     private sealed class FakeGraph : IGraphCalendars

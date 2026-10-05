@@ -43,7 +43,9 @@ internal sealed partial class CalendarFeedStore
 
     public void Update(CalendarFeed feed) => Change(feeds => feeds.Select(f => f.Id == feed.Id ? feed : f).ToList());
 
-    public void Remove(string id) => Change(feeds => feeds.Where(f => f.Id != id).ToList());
+    public void Remove(string id) => RemoveWhere(f => f.Id == id);
+
+    public void RemoveWhere(Func<CalendarFeed, bool> match) => Change(feeds => feeds.Where(f => !match(f)).ToList());
 
     private void Change(Func<IReadOnlyList<CalendarFeed>, IReadOnlyList<CalendarFeed>> change)
     {

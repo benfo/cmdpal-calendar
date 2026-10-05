@@ -53,6 +53,14 @@ internal sealed class WamSignIn : IMicrosoftSignIn
         }
     }
 
+    public async Task SignOutAsync(string accountId, CancellationToken cancellationToken)
+    {
+        if (await _app.GetAccountAsync(accountId) is { } account)
+        {
+            await _app.RemoveAsync(account);
+        }
+    }
+
     private static string FirstLine(string text) => text.Split('\n', 2)[0].Trim();
 
     private static class NativeMethods
