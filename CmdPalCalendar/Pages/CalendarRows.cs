@@ -10,7 +10,12 @@ using Windows.System;
 
 namespace CmdPalCalendar.Pages;
 
-internal sealed class CalendarRows(NavigationCommands navigation, ICommand manage, LiveSubtitles live, TimeProvider time)
+internal sealed class CalendarRows(
+    NavigationCommands navigation,
+    ICommand manage,
+    LiveSubtitles live,
+    TimeProvider time,
+    Func<AccountSignIn, ICommand> signInAgain)
 {
     private const int AttendeesShown = 8;
 
@@ -131,9 +136,11 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
         };
 
     public ListItem Problem(CalendarProblem problem, DateTimeOffset now) =>
-        new(new NoOpCommand())
+        new(problem.SignIn is { } account ? signInAgain(account) : new NoOpCommand())
         {
-            Title = problem.ShowingCopyFrom is null ? $"Couldn't load {problem.Calendar}" : $"Couldn't refresh {problem.Calendar}",
+            Title = problem.SignIn is not null ? $"Sign in again to {problem.Calendar}"
+                : problem.ShowingCopyFrom is null ? $"Couldn't load {problem.Calendar}"
+                : $"Couldn't refresh {problem.Calendar}",
             Subtitle = problem.ShowingCopyFrom is { } copy
                 ? $"{problem.Message} · showing data from {TimeText.Duration(now - copy)} ago"
                 : problem.Message,

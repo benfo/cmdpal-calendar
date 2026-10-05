@@ -21,13 +21,13 @@ internal sealed class WamSignIn : IMicrosoftSignIn
         .WithParentActivityOrWindow(NativeMethods.GetForegroundWindow)
         .Build();
 
-    public async Task<MicrosoftAccount?> SignInAsync(CancellationToken cancellationToken)
+    public async Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
     {
         try
         {
-            var result = await _app.AcquireTokenInteractive(Scopes)
-                .WithPrompt(Prompt.SelectAccount)
-                .ExecuteAsync(cancellationToken);
+            var request = _app.AcquireTokenInteractive(Scopes);
+            request = username is null ? request.WithPrompt(Prompt.SelectAccount) : request.WithLoginHint(username);
+            var result = await request.ExecuteAsync(cancellationToken);
             return new MicrosoftAccount(result.Account.HomeAccountId.Identifier, result.Account.Username);
         }
         catch (MsalClientException ex) when (ex.ErrorCode == MsalError.AuthenticationCanceledError)
@@ -38,17 +38,20 @@ internal sealed class WamSignIn : IMicrosoftSignIn
 
     public async Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken)
     {
-        var account = await _app.GetAccountAsync(accountId) ?? throw new SignInRequiredException(accountId);
+        var account = await _app.GetAccountAsync(accountId)
+            ?? throw new SignInRequiredException(accountId, "Windows has no sign-in for this account");
         try
         {
             var result = await _app.AcquireTokenSilent(Scopes, account).ExecuteAsync(cancellationToken);
             return result.AccessToken;
         }
-        catch (MsalUiRequiredException)
+        catch (MsalUiRequiredException ex)
         {
-            throw new SignInRequiredException(accountId);
+            throw new SignInRequiredException(accountId, $"{ex.ErrorCode}: {FirstLine(ex.Message)}");
         }
     }
+
+    private static string FirstLine(string text) => text.Split('\n', 2)[0].Trim();
 
     private static class NativeMethods
     {

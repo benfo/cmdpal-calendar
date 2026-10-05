@@ -45,7 +45,7 @@ internal sealed class MicrosoftCalendarPicker(IMicrosoftSignIn signIn, IGraphCal
         Changed?.Invoke(this, EventArgs.Empty);
         try
         {
-            var account = await signIn.SignInAsync(cancellationToken);
+            var account = await signIn.SignInAsync(null, cancellationToken);
             if (account is null)
             {
                 SignInProblem = "Sign-in was cancelled";

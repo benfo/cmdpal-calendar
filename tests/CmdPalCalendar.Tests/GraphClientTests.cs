@@ -133,7 +133,7 @@ public sealed class GraphClientTests
 
     private sealed class TokenSignIn : IMicrosoftSignIn
     {
-        public Task<MicrosoftAccount?> SignInAsync(CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
+        public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
 
         public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult($"token-for-{accountId}");
     }

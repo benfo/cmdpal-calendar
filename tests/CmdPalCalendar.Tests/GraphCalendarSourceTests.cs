@@ -68,15 +68,31 @@ public sealed class GraphCalendarSourceTests
     [Fact]
     public async Task Reports_a_calendar_that_never_loaded()
     {
-        _graph.Failure = new SignInRequiredException("account-1");
+        _graph.Failure = new HttpRequestException("offline");
         var source = Source();
 
         await source.LoadAsync(CancellationToken.None);
 
         var problem = Assert.Single(source.Problems);
-        Assert.Equal("Sign in again to see these calendars", problem.Message);
+        Assert.Equal("Couldn't reach Microsoft. Check your connection.", problem.Message);
         Assert.Null(problem.ShowingCopyFrom);
+        Assert.Null(problem.SignIn);
         Assert.False(source.HasData);
+    }
+
+    [Fact]
+    public async Task Asks_once_per_account_to_sign_in_again()
+    {
+        _feeds = [Feed("Work"), Feed("Team")];
+        _graph.Failure = new SignInRequiredException("account-1", "invalid_grant: expired");
+        var source = Source();
+
+        await source.LoadAsync(CancellationToken.None);
+
+        var problem = Assert.Single(source.Problems);
+        Assert.Equal(new AccountSignIn("account-1", "ben@example.com"), problem.SignIn);
+        Assert.Equal("ben@example.com", problem.Calendar);
+        Assert.Equal("invalid_grant: expired", problem.Message);
     }
 
     [Fact]

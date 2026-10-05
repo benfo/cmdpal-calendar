@@ -62,7 +62,7 @@ return failures.Count == 0 ? 0 : 1;
 
 internal sealed class FixedSignIn : IMicrosoftSignIn
 {
-    public Task<MicrosoftAccount?> SignInAsync(CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
+    public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
 
     public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
 }

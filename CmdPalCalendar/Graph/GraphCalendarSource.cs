@@ -27,11 +27,21 @@ internal sealed class GraphCalendarSource(Func<IReadOnlyList<CalendarFeed>> feed
 
     public bool HasData => _loaded.Values.Any(l => l.Entries is not null);
 
-    public IReadOnlyList<CalendarProblem> Problems =>
-        Current()
-            .Where(c => c.Loaded.Error is not null)
-            .Select(c => new CalendarProblem(c.Feed.Name, c.Loaded.Error!, c.Loaded.Entries is null ? null : c.Loaded.LoadedAt))
-            .ToList();
+    public IReadOnlyList<CalendarProblem> Problems
+    {
+        get
+        {
+            var failed = Current().Select(c => c.Loaded).Where(l => l.Error is not null).ToList();
+            var signIns = failed
+                .Where(l => l.SignIn is not null)
+                .GroupBy(l => l.SignIn!)
+                .Select(g => new CalendarProblem(g.Key.Account, g.First().Error!, g.Min(CopyFrom), g.Key));
+            var others = failed
+                .Where(l => l.SignIn is null)
+                .Select(l => new CalendarProblem(l.Feed.Name, l.Error!, CopyFrom(l)));
+            return [.. signIns, .. others];
+        }
+    }
 
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
@@ -70,11 +80,15 @@ internal sealed class GraphCalendarSource(Func<IReadOnlyList<CalendarFeed>> feed
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
+            var signIn = ex is SignInRequiredException && feed.Source is MicrosoftSource ms ? new AccountSignIn(ms.AccountId, ms.Account) : null;
+            var error = signIn is null ? GraphErrors.Describe(ex) : ex.Message;
             return _loaded.GetValueOrDefault(feed.Id) is { Entries: not null } previous && previous.Feed.Source == feed.Source
-                ? previous with { Feed = feed, Error = GraphErrors.Describe(ex) }
-                : new LoadedFeed(feed, null, GraphErrors.Describe(ex), null);
+                ? previous with { Feed = feed, Error = error, SignIn = signIn }
+                : new LoadedFeed(feed, null, error, null, signIn);
         }
     }
+
+    private static DateTimeOffset? CopyFrom(LoadedFeed loaded) => loaded.Entries is null ? null : loaded.LoadedAt;
 
     private List<CalendarFeed> MicrosoftFeeds() => feeds().Where(f => f.Source is MicrosoftSource).ToList();
 
@@ -89,5 +103,5 @@ internal sealed class GraphCalendarSource(Func<IReadOnlyList<CalendarFeed>> feed
     private static HashSet<(string Id, FeedSource Source)> Keys(IEnumerable<CalendarFeed> feeds) =>
         feeds.Select(f => (f.Id, f.Source)).ToHashSet();
 
-    private sealed record LoadedFeed(CalendarFeed Feed, IReadOnlyList<CalendarEntry>? Entries, string? Error, DateTimeOffset? LoadedAt);
+    private sealed record LoadedFeed(CalendarFeed Feed, IReadOnlyList<CalendarEntry>? Entries, string? Error, DateTimeOffset? LoadedAt, AccountSignIn? SignIn = null);
 }

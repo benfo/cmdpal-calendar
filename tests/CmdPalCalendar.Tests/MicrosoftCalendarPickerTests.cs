@@ -55,7 +55,7 @@ public sealed class MicrosoftCalendarPickerTests : IDisposable
     public async Task Shows_an_error_for_an_account_whose_calendars_fail_to_load()
     {
         _signIn.Next = Ben;
-        _graph.Failure = new SignInRequiredException(Ben.Id);
+        _graph.Failure = new SignInRequiredException(Ben.Id, "expired");
         var picker = Picker();
 
         await picker.SignInAsync(CancellationToken.None);
@@ -104,7 +104,7 @@ public sealed class MicrosoftCalendarPickerTests : IDisposable
 
         public int SignIns { get; private set; }
 
-        public Task<MicrosoftAccount?> SignInAsync(CancellationToken cancellationToken)
+        public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
         {
             SignIns++;
             return Task.FromResult(Next);

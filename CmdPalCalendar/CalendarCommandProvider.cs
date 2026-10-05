@@ -40,8 +40,9 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var check = new IcsFeedCheck(reader);
         var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, graph, feeds));
         var manage = new ManageCalendarsPage(feeds, check, add);
+        Func<AccountSignIn, ICommand> signInAgain = account => new SignInAgainCommand(signIn, account, () => refresher.Refresh(force: true));
 
-        var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time))
+        var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time, signInAgain))
         {
             Title = "Calendar",
             Subtitle = "Your events, day by day",
@@ -49,7 +50,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         };
         var joinNext = new JoinNextMeetingItem(
             new JoinNextMeetingCommand(source, time),
-            new CalendarPage(feeds, source, refresher, manage, time, JoinNextMeetingItem.CommandId));
+            new CalendarPage(feeds, source, refresher, manage, time, signInAgain, JoinNextMeetingItem.CommandId));
         _ticker = new NextMeetingTicker(calendar, joinNext, feeds, source, refresher, time);
         _commands = [calendar, joinNext];
     }
