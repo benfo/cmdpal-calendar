@@ -39,6 +39,8 @@ internal sealed partial class CalendarFeedStore
     public CalendarColor NextColor =>
         Enum.GetValues<CalendarColor>().ElementAt(_feeds.Count % Enum.GetValues<CalendarColor>().Length);
 
+    public CalendarFeed Current(CalendarFeed feed) => _feeds.FirstOrDefault(f => f.Id == feed.Id) ?? feed;
+
     public void Add(CalendarFeed feed) => Change(feeds => [.. feeds, feed]);
 
     public void Update(CalendarFeed feed) => Change(feeds => feeds.Select(f => f.Id == feed.Id ? feed : f).ToList());

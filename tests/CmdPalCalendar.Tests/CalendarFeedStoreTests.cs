@@ -27,6 +27,19 @@ public sealed class CalendarFeedStoreTests : IDisposable
     }
 
     [Fact]
+    public void Returns_the_current_version_of_a_calendar()
+    {
+        var store = new CalendarFeedStore(_path, new PlainProtector());
+        var work = CalendarFeed.Create("Work", new IcsSource("https://example.com/work.ics"), CalendarColor.Blue);
+        store.Add(work);
+        store.Update(work with { Source = new IcsSource("https://example.com/new.ics") });
+
+        Assert.Equal(new IcsSource("https://example.com/new.ics"), store.Current(work).Source);
+        var removed = CalendarFeed.Create("Gone", new IcsSource("https://example.com/gone.ics"), CalendarColor.Red);
+        Assert.Same(removed, store.Current(removed));
+    }
+
+    [Fact]
     public void Saves_and_reloads_microsoft_calendars()
     {
         var work = CalendarFeed.Create("Calendar", new MicrosoftSource("account-1", "ben@example.com", "calendar-1"), CalendarColor.Teal);

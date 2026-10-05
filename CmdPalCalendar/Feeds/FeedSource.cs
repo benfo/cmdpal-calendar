@@ -6,11 +6,15 @@ namespace CmdPalCalendar.Feeds;
 internal abstract record FeedSource
 {
     public abstract string Label { get; }
+
+    public abstract string Provider { get; }
 }
 
 internal sealed record IcsSource(string Location) : FeedSource
 {
     public override string Label => Describe(Location);
+
+    public override string Provider => "calendar address";
 
     public static string Describe(string location)
     {
@@ -26,4 +30,6 @@ internal sealed record IcsSource(string Location) : FeedSource
 internal sealed record MicrosoftSource(string AccountId, string Account, string CalendarId) : FeedSource
 {
     public override string Label => Account;
+
+    public override string Provider => "Microsoft 365";
 }

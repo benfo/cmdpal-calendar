@@ -50,7 +50,7 @@ internal sealed partial class ManageCalendarsPage : ListPage
     ];
 
     private ListItem FeedItem(CalendarFeed feed) =>
-        new(new CalendarFeedFormPage(_store, _check, feed))
+        new(new CalendarDetailsFormPage(_store, feed))
         {
             Title = feed.Name,
             Subtitle = feed.Enabled ? feed.Source.Label : $"{feed.Source.Label} · Off",
@@ -58,7 +58,7 @@ internal sealed partial class ManageCalendarsPage : ListPage
             Tags = [CalendarColors.Tag(feed.Color.ToString(), feed.Color)],
             MoreCommands =
             [
-                .. feed.Source is MicrosoftSource choose ? [new CommandContextItem(ChoosePage(choose))] : Array.Empty<IContextItem>(),
+                new CommandContextItem(ChangeSourcePage(feed)),
                 new CommandContextItem(new AnonymousCommand(() => _store.Update(feed with { Enabled = !feed.Enabled }))
                 {
                     Name = feed.Enabled ? "Turn off" : "Turn on",
@@ -69,12 +69,15 @@ internal sealed partial class ManageCalendarsPage : ListPage
             ],
         };
 
-    private MicrosoftCalendarsPage ChoosePage(MicrosoftSource source) =>
-        new(_newChoice(new MicrosoftAccount(source.AccountId, source.Account)))
+    private ContentPage ChangeSourcePage(CalendarFeed feed) => feed.Source switch
+    {
+        MicrosoftSource source => new MicrosoftCalendarsPage(_newChoice(new MicrosoftAccount(source.AccountId, source.Account)))
         {
-            Name = $"Choose calendars for {source.Account}",
+            Name = $"Choose calendars for {source.Account}…",
             Icon = new IconInfo(Glyphs.Calendar),
-        };
+        },
+        _ => new IcsAddressFormPage(_store, _check, feed),
+    };
 
     private AnonymousCommand RemoveCommand(CalendarFeed feed) =>
         Confirmed(

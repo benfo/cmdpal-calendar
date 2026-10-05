@@ -34,7 +34,7 @@ internal sealed partial class AddCalendarPage : ListPage
             Subtitle = "Sign in with your Microsoft account",
             Icon = new IconInfo(Glyphs.Contact),
         },
-        new ListItem(new CalendarFeedFormPage(_store, _check, feed: null))
+        new ListItem(new IcsAddressFormPage(_store, _check, feed: null))
         {
             Title = "Calendar address or file",
             Subtitle = "A published calendar (ICS) or an .ics file",
