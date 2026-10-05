@@ -15,13 +15,20 @@ internal sealed partial class ManageCalendarsPage : ListPage
     private readonly IcsFeedCheck _check;
     private readonly AddCalendarPage _add;
     private readonly MicrosoftAccounts _accounts;
+    private readonly Func<MicrosoftAccount?, MicrosoftCalendarChoice> _newChoice;
 
-    public ManageCalendarsPage(CalendarFeedStore store, IcsFeedCheck check, AddCalendarPage add, MicrosoftAccounts accounts)
+    public ManageCalendarsPage(
+        CalendarFeedStore store,
+        IcsFeedCheck check,
+        AddCalendarPage add,
+        MicrosoftAccounts accounts,
+        Func<MicrosoftAccount?, MicrosoftCalendarChoice> newChoice)
     {
         _store = store;
         _check = check;
         _add = add;
         _accounts = accounts;
+        _newChoice = newChoice;
         _store.Changed += (_, _) => RaiseItemsChanged();
 
         Id = "CmdPalCalendar.ManageCalendars";
@@ -51,6 +58,7 @@ internal sealed partial class ManageCalendarsPage : ListPage
             Tags = [CalendarColors.Tag(feed.Color.ToString(), feed.Color)],
             MoreCommands =
             [
+                .. feed.Source is MicrosoftSource choose ? [new CommandContextItem(ChoosePage(choose))] : Array.Empty<IContextItem>(),
                 new CommandContextItem(new AnonymousCommand(() => _store.Update(feed with { Enabled = !feed.Enabled }))
                 {
                     Name = feed.Enabled ? "Turn off" : "Turn on",
@@ -59,6 +67,13 @@ internal sealed partial class ManageCalendarsPage : ListPage
                 new CommandContextItem(RemoveCommand(feed)) { IsCritical = true },
                 .. feed.Source is MicrosoftSource source ? [new CommandContextItem(SignOutCommand(source)) { IsCritical = true }] : Array.Empty<IContextItem>(),
             ],
+        };
+
+    private MicrosoftCalendarsPage ChoosePage(MicrosoftSource source) =>
+        new(_newChoice(new MicrosoftAccount(source.AccountId, source.Account)))
+        {
+            Name = $"Choose calendars for {source.Account}",
+            Icon = new IconInfo(Glyphs.Calendar),
         };
 
     private AnonymousCommand RemoveCommand(CalendarFeed feed) =>

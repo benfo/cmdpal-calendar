@@ -39,8 +39,10 @@ public sealed partial class CalendarCommandProvider : CommandProvider
             new GraphCalendarSource(() => feeds.EnabledFeeds, new GraphEventReader(graph), new GraphEventCache(Path.Combine(directory, "cache"), protector), time));
         var refresher = new CalendarRefresher(source);
         var check = new IcsFeedCheck(reader);
-        var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, calendars, feeds));
-        var manage = new ManageCalendarsPage(feeds, check, add, new MicrosoftAccounts(signIn, feeds));
+        var accounts = new MicrosoftAccounts(signIn, feeds);
+        Func<MicrosoftAccount?, MicrosoftCalendarChoice> newChoice = account => new MicrosoftCalendarChoice(signIn, calendars, feeds, accounts, account);
+        var add = new AddCalendarPage(feeds, check, newChoice);
+        var manage = new ManageCalendarsPage(feeds, check, add, accounts, newChoice);
         Func<AccountSignIn, ICommand> signInAgain = account => new SignInAgainCommand(signIn, account, () => refresher.Refresh(force: true));
 
         var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time, signInAgain))

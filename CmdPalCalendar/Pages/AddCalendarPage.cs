@@ -11,13 +11,13 @@ internal sealed partial class AddCalendarPage : ListPage
 {
     private readonly CalendarFeedStore _store;
     private readonly IcsFeedCheck _check;
-    private readonly Func<MicrosoftCalendarPicker> _newPicker;
+    private readonly Func<MicrosoftAccount?, MicrosoftCalendarChoice> _newChoice;
 
-    public AddCalendarPage(CalendarFeedStore store, IcsFeedCheck check, Func<MicrosoftCalendarPicker> newPicker)
+    public AddCalendarPage(CalendarFeedStore store, IcsFeedCheck check, Func<MicrosoftAccount?, MicrosoftCalendarChoice> newChoice)
     {
         _store = store;
         _check = check;
-        _newPicker = newPicker;
+        _newChoice = newChoice;
 
         Id = "CmdPalCalendar.AddCalendar";
         Name = "Add";
@@ -28,7 +28,7 @@ internal sealed partial class AddCalendarPage : ListPage
 
     public override IListItem[] GetItems() =>
     [
-        new ListItem(new MicrosoftCalendarsPage(_newPicker()))
+        new ListItem(new MicrosoftCalendarsPage(_newChoice(null)))
         {
             Title = "Microsoft 365 or Outlook.com",
             Subtitle = "Sign in with your Microsoft account",

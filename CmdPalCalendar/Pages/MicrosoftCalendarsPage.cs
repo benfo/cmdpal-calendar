@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Graph;
@@ -8,81 +10,156 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace CmdPalCalendar.Pages;
 
-internal sealed partial class MicrosoftCalendarsPage : ListPage
+internal sealed partial class MicrosoftCalendarsPage : ContentPage
 {
-    private readonly MicrosoftCalendarPicker _picker;
+    private readonly MicrosoftCalendarChoice _choice;
+    private readonly ChoiceForm _form;
     private int _opened;
 
-    public MicrosoftCalendarsPage(MicrosoftCalendarPicker picker)
+    public MicrosoftCalendarsPage(MicrosoftCalendarChoice choice)
     {
-        _picker = picker;
-        _picker.Changed += (_, _) => RaiseItemsChanged();
+        _choice = choice;
+        _form = new ChoiceForm(choice);
+        _choice.Changed += (_, _) => Refresh();
 
-        Id = "CmdPalCalendar.MicrosoftCalendars";
         Name = "Choose";
         Title = "Choose calendars";
         Icon = new IconInfo(Glyphs.Calendar);
-        PlaceholderText = "Filter calendars";
     }
 
-    public override IListItem[] GetItems()
+    public override IContent[] GetContent()
     {
         if (Interlocked.Exchange(ref _opened, 1) == 0)
         {
-            Start(_picker.OpenAsync);
+            _ = Task.Run(() => _choice.OpenAsync(CancellationToken.None));
         }
 
-        IsLoading = _picker.IsSigningIn || _picker.Accounts.Any(a => a.IsLoading);
-        return [SignInItem(), .. _picker.Accounts.SelectMany(AccountItems)];
+        Refresh();
+        return [_form];
     }
 
-    private IListItem[] AccountItems(PickerAccount account) => account switch
+    private void Refresh()
     {
-        { Calendars: { } calendars } => calendars.Select(c => CalendarItem(account.Account, c)).ToArray(),
-        { Error: { } error } => [new ListItem(SignInCommand(c => _picker.SignInAgainAsync(account.Account, c))) { Title = error, Subtitle = account.Account.Username, Icon = new IconInfo(Glyphs.Error), Section = account.Account.Username }],
-        _ => [new ListItem(new NoOpCommand()) { Title = "Loading calendars…", Section = account.Account.Username }],
-    };
-
-    private ListItem CalendarItem(MicrosoftAccount account, GraphCalendar calendar)
-    {
-        var added = _picker.IsAdded(account, calendar);
-        return new ListItem(added ? new NoOpCommand() : AddCommand(account, calendar))
-        {
-            Title = calendar.Name,
-            Subtitle = calendar.IsDefault ? "Your default calendar" : calendar.SharedBy is { } owner ? $"Shared by {owner}" : string.Empty,
-            Icon = new IconInfo(added ? Glyphs.Accept : Glyphs.Calendar),
-            Tags = added ? [new Tag("Added")] : [],
-            Section = account.Username,
-        };
+        IsLoading = _choice.IsBusy;
+        _form.Show();
     }
 
-    private AnonymousCommand AddCommand(MicrosoftAccount account, GraphCalendar calendar) =>
-        new(() =>
-        {
-            _picker.Add(account, calendar);
-            RaiseItemsChanged();
-        })
-        {
-            Name = "Add",
-            Icon = new IconInfo(Glyphs.Add),
-            Result = CommandResult.ShowToast(new ToastArgs { Message = $"Added {calendar.Name}", Result = CommandResult.KeepOpen() }),
-        };
+    private sealed partial class ChoiceForm(MicrosoftCalendarChoice choice) : FormContent
+    {
+        private int _saving;
 
-    private ListItem SignInItem() =>
-        new(SignInCommand(_picker.SignInAsync))
+        public void Show()
         {
-            Title = _picker.Accounts.Count == 0 ? "Sign in" : "Add another Microsoft account",
-            Subtitle = _picker.IsSigningIn ? "Signing in…" : _picker.SignInProblem ?? "Work, school or personal Microsoft account",
-            Icon = new IconInfo(Glyphs.Contact),
-        };
+            TemplateJson = choice.Calendars is { } calendars && !choice.IsBusy ? CalendarsCard(calendars) : StatusCard();
+            DataJson = "{}";
+        }
 
-    private static AnonymousCommand SignInCommand(Func<CancellationToken, Task> signIn) =>
-        new(() => Start(signIn))
+        public override ICommandResult SubmitForm(string inputs, string data)
         {
-            Name = "Sign in",
-            Icon = new IconInfo(Glyphs.Contact),
-            Result = CommandResult.KeepOpen(),
-        };
+            if (JsonNode.Parse(data)?["action"]?.GetValue<string>() == "retry")
+            {
+                _ = Task.Run(() => choice.RetryAsync(CancellationToken.None));
+                return CommandResult.KeepOpen();
+            }
 
-    private static void Start(Func<CancellationToken, Task> action) => _ = Task.Run(() => action(CancellationToken.None));
+            if (Interlocked.Exchange(ref _saving, 1) == 1)
+            {
+                return CommandResult.KeepOpen();
+            }
+
+            try
+            {
+                return Save(Selected(inputs));
+            }
+            finally
+            {
+                Volatile.Write(ref _saving, 0);
+            }
+        }
+
+        private CommandResult Save(HashSet<string> selected)
+        {
+            var account = choice.Account?.Username ?? "this account";
+            if (selected.Count == 0)
+            {
+                return CommandResult.Confirm(new ConfirmationArgs
+                {
+                    Title = $"Sign out of {account}?",
+                    Description = "No calendars are selected, so you'll be signed out. You can add it again later.",
+                    PrimaryCommand = new AnonymousCommand(() => _ = choice.SignOutAsync(CancellationToken.None)) { Name = "Sign out", Result = CommandResult.GoBack() },
+                    IsPrimaryCommandCritical = true,
+                });
+            }
+
+            var saved = choice.Save(selected);
+            var message = (saved.Added, saved.Removed) switch
+            {
+                (0, 0) => "No changes",
+                (var added, 0) => $"Added {Calendars(added)}",
+                (0, var removed) => $"Removed {Calendars(removed)}",
+                (var added, var removed) => $"Added {Calendars(added)}, removed {Calendars(removed)}",
+            };
+            return CommandResult.ShowToast(new ToastArgs { Message = message, Result = CommandResult.GoBack() });
+        }
+
+        private HashSet<string> Selected(string inputs)
+        {
+            var values = JsonNode.Parse(inputs);
+            return (choice.Calendars ?? [])
+                .Where((_, i) => values?[$"c{i}"]?.GetValue<string>() == "true")
+                .Select(c => c.Id)
+                .ToHashSet();
+        }
+
+        private static string Calendars(int count) => count == 1 ? "1 calendar" : $"{count} calendars";
+
+        private string CalendarsCard(IReadOnlyList<GraphCalendar> calendars)
+        {
+            var toggles = calendars.Select((c, i) => (JsonNode)new JsonObject
+            {
+                ["type"] = "Input.Toggle",
+                ["id"] = $"c{i}",
+                ["title"] = Label(c),
+                ["value"] = choice.IsAdded(c) ? "true" : "false",
+                ["valueOn"] = "true",
+                ["valueOff"] = "false",
+            });
+            JsonNode[] intro = [Text($"Choose which calendars from {choice.Account?.Username} to show.", subtle: true)];
+            JsonNode[] problem = choice.Problem is { } p ? [Problem(p)] : [];
+            return Card([.. intro, .. toggles, .. problem], Action("Save", "save"));
+        }
+
+        private string StatusCard()
+        {
+            var status = choice.IsBusy
+                ? choice.Account is null ? "Signing in… Choose an account in the Windows sign-in window." : "Loading your calendars…"
+                : "Couldn't show your calendars.";
+            JsonNode[] problem = choice.Problem is { } p && !choice.IsBusy ? [Problem(p)] : [];
+            return Card([Text(status), .. problem], choice.IsBusy ? null : Action(choice.NeedsSignInAgain ? "Sign in again" : "Try again", "retry"));
+        }
+
+        private static string Label(GraphCalendar calendar) =>
+            calendar.IsDefault ? $"{calendar.Name} · your default calendar"
+            : calendar.SharedBy is { } owner ? $"{calendar.Name} · shared by {owner}"
+            : calendar.Name;
+
+        private static JsonObject Text(string text, bool subtle = false) =>
+            new() { ["type"] = "TextBlock", ["text"] = text, ["wrap"] = true, ["isSubtle"] = subtle };
+
+        private static JsonObject Problem(string text) =>
+            new() { ["type"] = "TextBlock", ["text"] = text, ["wrap"] = true, ["color"] = "Attention" };
+
+        private static JsonObject Action(string title, string action) =>
+            new() { ["type"] = "Action.Submit", ["title"] = title, ["data"] = new JsonObject { ["action"] = action } };
+
+        private static string Card(JsonNode[] body, JsonObject? action) =>
+            new JsonObject
+            {
+                ["type"] = "AdaptiveCard",
+                ["$schema"] = "http://adaptivecards.io/schemas/adaptive-card.json",
+                ["version"] = "1.5",
+                ["body"] = new JsonArray(body),
+                ["actions"] = action is null ? new JsonArray() : new JsonArray(action),
+            }.ToJsonString();
+    }
 }
