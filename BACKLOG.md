@@ -8,7 +8,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 - [ ] **Add a calendar chooser** (Graph step 1):
   - Manage calendars → Add a calendar opens a chooser with "Calendar address or file", which opens the usual form.
-  - After adding, you land back on the chooser (one step back); Esc returns to Manage calendars. Is that acceptable?
+  - After adding, you land back on the chooser (one step back; the host can't go back two); Esc returns to Manage calendars.
   - Existing calendars still load, edit, turn off and remove as before.
 
 - [ ] **Open in Outlook or Google Calendar** (opening Outlook and Google Calendar is confirmed working):
