@@ -39,7 +39,7 @@ internal sealed partial class MicrosoftCalendarsPage : ListPage
     private IListItem[] AccountItems(PickerAccount account) => account switch
     {
         { Calendars: { } calendars } => calendars.Select(c => CalendarItem(account.Account, c)).ToArray(),
-        { Error: { } error } => [new ListItem(SignInCommand()) { Title = error, Subtitle = account.Account.Username, Icon = new IconInfo(Glyphs.Error), Section = account.Account.Username }],
+        { Error: { } error } => [new ListItem(SignInCommand(c => _picker.SignInAgainAsync(account.Account, c))) { Title = error, Subtitle = account.Account.Username, Icon = new IconInfo(Glyphs.Error), Section = account.Account.Username }],
         _ => [new ListItem(new NoOpCommand()) { Title = "Loading calendars…", Section = account.Account.Username }],
     };
 
@@ -69,15 +69,15 @@ internal sealed partial class MicrosoftCalendarsPage : ListPage
         };
 
     private ListItem SignInItem() =>
-        new(SignInCommand())
+        new(SignInCommand(_picker.SignInAsync))
         {
             Title = _picker.Accounts.Count == 0 ? "Sign in" : "Add another Microsoft account",
             Subtitle = _picker.IsSigningIn ? "Signing in…" : _picker.SignInProblem ?? "Work, school or personal Microsoft account",
             Icon = new IconInfo(Glyphs.Contact),
         };
 
-    private AnonymousCommand SignInCommand() =>
-        new(() => Start(_picker.SignInAsync))
+    private static AnonymousCommand SignInCommand(Func<CancellationToken, Task> signIn) =>
+        new(() => Start(signIn))
         {
             Name = "Sign in",
             Icon = new IconInfo(Glyphs.Contact),

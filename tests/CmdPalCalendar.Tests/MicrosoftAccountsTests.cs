@@ -84,6 +84,8 @@ public sealed class MicrosoftAccountsTests : IDisposable
 
         public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
 
+        public Task<MicrosoftAccount?> SignInAnotherAccountAsync(CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
+
         public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
 
         public Task SignOutAsync(string accountId, CancellationToken cancellationToken)

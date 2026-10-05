@@ -23,12 +23,19 @@ internal sealed class WamSignIn : IMicrosoftSignIn
 
     public WamSignIn(ProtectedTokenCache cache) => cache.Bind(_app.UserTokenCache);
 
-    public async Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
+    public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
+    {
+        var request = _app.AcquireTokenInteractive(Scopes);
+        return InteractiveAsync(username is null ? request.WithPrompt(Prompt.SelectAccount) : request.WithLoginHint(username), cancellationToken);
+    }
+
+    public Task<MicrosoftAccount?> SignInAnotherAccountAsync(CancellationToken cancellationToken) =>
+        InteractiveAsync(_app.AcquireTokenInteractive(Scopes).WithPrompt(Prompt.ForceLogin), cancellationToken);
+
+    private static async Task<MicrosoftAccount?> InteractiveAsync(AcquireTokenInteractiveParameterBuilder request, CancellationToken cancellationToken)
     {
         try
         {
-            var request = _app.AcquireTokenInteractive(Scopes);
-            request = username is null ? request.WithPrompt(Prompt.SelectAccount) : request.WithLoginHint(username);
             var result = await request.ExecuteAsync(cancellationToken);
             return new MicrosoftAccount(result.Account.HomeAccountId.Identifier, result.Account.Username);
         }

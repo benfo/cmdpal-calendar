@@ -6,6 +6,7 @@ namespace CmdPalCalendar.Tests;
 public sealed class MicrosoftCalendarPickerTests : IDisposable
 {
     private static readonly MicrosoftAccount Ben = new("account-1", "ben@example.com");
+    private static readonly MicrosoftAccount Sam = new("account-2", "sam@example.com");
     private static readonly GraphCalendar Calendar = new("c1", "Calendar", null, true, CalendarColor.Teal);
     private static readonly GraphCalendar Birthdays = new("c2", "Birthdays", null, false, null);
 
@@ -66,6 +67,46 @@ public sealed class MicrosoftCalendarPickerTests : IDisposable
     }
 
     [Fact]
+    public async Task Asks_for_a_different_account_once_one_is_listed()
+    {
+        _signIn.Next = Ben;
+        var picker = Picker();
+        await picker.SignInAsync(CancellationToken.None);
+
+        _signIn.Next = Sam;
+        await picker.SignInAsync(CancellationToken.None);
+
+        Assert.Equal(1, _signIn.SignIns);
+        Assert.Equal(1, _signIn.AnotherAccountSignIns);
+        Assert.Equal([Ben, Sam], picker.Accounts.Select(a => a.Account));
+    }
+
+    [Fact]
+    public async Task Says_so_when_the_other_account_is_already_listed()
+    {
+        _signIn.Next = Ben;
+        var picker = Picker();
+        await picker.SignInAsync(CancellationToken.None);
+
+        await picker.SignInAsync(CancellationToken.None);
+
+        Assert.Equal("ben@example.com is already added", picker.SignInProblem);
+        Assert.Single(picker.Accounts);
+    }
+
+    [Fact]
+    public async Task Signs_a_listed_account_in_again_by_its_username()
+    {
+        _signIn.Next = Ben;
+        var picker = Picker();
+
+        await picker.SignInAgainAsync(Ben, CancellationToken.None);
+
+        Assert.Equal(["ben@example.com"], _signIn.Usernames);
+        Assert.Equal(0, _signIn.AnotherAccountSignIns);
+    }
+
+    [Fact]
     public void Adds_a_calendar_with_its_outlook_colour_and_marks_it_added()
     {
         var picker = Picker();
@@ -104,9 +145,20 @@ public sealed class MicrosoftCalendarPickerTests : IDisposable
 
         public int SignIns { get; private set; }
 
+        public int AnotherAccountSignIns { get; private set; }
+
+        public List<string?> Usernames { get; } = [];
+
         public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
         {
             SignIns++;
+            Usernames.Add(username);
+            return Task.FromResult(Next);
+        }
+
+        public Task<MicrosoftAccount?> SignInAnotherAccountAsync(CancellationToken cancellationToken)
+        {
+            AnotherAccountSignIns++;
             return Task.FromResult(Next);
         }
 

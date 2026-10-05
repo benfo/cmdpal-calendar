@@ -10,6 +10,8 @@ internal interface IMicrosoftSignIn
 {
     Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken);
 
+    Task<MicrosoftAccount?> SignInAnotherAccountAsync(CancellationToken cancellationToken);
+
     Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken);
 
     Task SignOutAsync(string accountId, CancellationToken cancellationToken);

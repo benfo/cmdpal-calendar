@@ -15,7 +15,7 @@ internal sealed record PickerAccount(MicrosoftAccount Account, IReadOnlyList<Gra
 internal sealed class MicrosoftCalendarPicker(IMicrosoftSignIn signIn, IGraphCalendars graph, CalendarFeedStore store)
 {
     private readonly Lock _lock = new();
-    private IReadOnlyList<PickerAccount> _accounts = [];
+    private List<PickerAccount> _accounts = [];
     private int _signingIn;
 
     public event EventHandler? Changed;
@@ -34,7 +34,15 @@ internal sealed class MicrosoftCalendarPicker(IMicrosoftSignIn signIn, IGraphCal
             : Task.WhenAll(known.Select(a => LoadAsync(a, cancellationToken)));
     }
 
-    public async Task SignInAsync(CancellationToken cancellationToken)
+    public Task SignInAsync(CancellationToken cancellationToken) =>
+        _accounts.Count == 0
+            ? SignInWithAsync(c => signIn.SignInAsync(null, c), isAnother: false, cancellationToken)
+            : SignInWithAsync(signIn.SignInAnotherAccountAsync, isAnother: true, cancellationToken);
+
+    public Task SignInAgainAsync(MicrosoftAccount account, CancellationToken cancellationToken) =>
+        SignInWithAsync(c => signIn.SignInAsync(account.Username, c), isAnother: false, cancellationToken);
+
+    private async Task SignInWithAsync(Func<CancellationToken, Task<MicrosoftAccount?>> signInAsync, bool isAnother, CancellationToken cancellationToken)
     {
         if (Interlocked.Exchange(ref _signingIn, 1) == 1)
         {
@@ -45,10 +53,16 @@ internal sealed class MicrosoftCalendarPicker(IMicrosoftSignIn signIn, IGraphCal
         Changed?.Invoke(this, EventArgs.Empty);
         try
         {
-            var account = await signIn.SignInAsync(null, cancellationToken);
+            var account = await signInAsync(cancellationToken);
             if (account is null)
             {
                 SignInProblem = "Sign-in was cancelled";
+                return;
+            }
+
+            if (isAnother && _accounts.Any(a => a.Account.Id == account.Id))
+            {
+                SignInProblem = $"{account.Username} is already added";
                 return;
             }
 
