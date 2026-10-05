@@ -7,9 +7,9 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
 - [ ] **Open in Outlook or Google Calendar**:
-  - On an Outlook or Google calendar, Enter on an event with nothing to join opens that day on the web; Ctrl+Enter does the same on a Teams meeting.
-  - Is the Outlook.com address (`outlook.live.com/calendar/view/day/…`) right?
-  - Ctrl+K lists "Open in …" once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
+  - On an Outlook calendar, Enter on an event with nothing to join shows "Open Outlook calendar" and opens the day view; Ctrl+Enter does the same on a Teams meeting.
+  - On a Google calendar, "Open in Google Calendar" opens the event's day.
+  - Ctrl+K lists the open command once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
   - Ctrl+B joins in the browser on a Teams or Zoom event.
   - With the new Outlook and Teams apps installed, both open straight in the browser without Windows asking which app to use.
@@ -56,7 +56,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Later
 
-- [ ] **Open the event itself**: Outlook and Google calendars open the event's *day* on the web; opening the event needs a link to it.
+- [ ] **Open the event itself**: Google calendars open the event's day on the web, and Outlook only its day view (Outlook on the web has no link to a date). Opening the event needs a link to it.
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
