@@ -16,11 +16,9 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Enter on a calendar adds it ("Added …"), marks it with a check and "Added", and the page stays open.
   - Opening the picker again lists your calendars without asking to sign in (also after Reload); "Use another account" adds a second account.
   - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
-- [ ] **Sign in again** (Graph step 6, first part):
-  - When a Microsoft sign-in has expired, Problems shows one "Sign in again to <account>" row per account, with the reason underneath (temporary, to find out why sign-ins are lost).
-  - Enter opens the Windows account prompt for that account; after signing in, the calendars refresh and the row disappears.
+- [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
+  - The row reads "Sign in again to <account>" with "Your calendars can't update until you sign in" underneath.
   - Cancelling the prompt leaves the row in place.
-  - After signing in once more, Reload no longer asks again (sign-ins kept in `msal.cache.bin` in LocalState, encrypted with DPAPI).
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
