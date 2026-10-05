@@ -12,8 +12,8 @@ namespace CmdPalCalendar.Platform;
 
 internal sealed class WamSignIn : IMicrosoftSignIn
 {
-    // Microsoft Graph Command Line Tools, used until the extension has its own app registration.
-    private const string ClientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e";
+    // "Calendar for Command Palette" app registration: work and personal accounts, broker redirect, Calendars.Read.
+    private const string ClientId = "2c35b16d-5b5c-427e-bb0b-d51aeafaa3e8";
 
     private static readonly string[] Scopes = ["Calendars.Read"];
 
