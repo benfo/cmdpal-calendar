@@ -10,14 +10,16 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Manage calendars → Add a calendar opens a chooser with "Calendar address or file", which opens the usual form.
   - After adding, you land back on the chooser (one step back; the host can't go back two); Esc returns to Manage calendars.
   - Existing calendars still load, edit, turn off and remove as before.
-- [ ] **Microsoft sign-in and choosing calendars** (signing in and listing calendars are confirmed working):
+- [ ] **Microsoft sign-in and choosing calendars** (signing in, listing calendars and adding a second account are confirmed working):
   - Add a calendar → Microsoft 365 or Outlook.com: with no Microsoft account yet, the Windows account picker offers your work account; with one already added, it asks for a fresh sign-in so you can enter another account.
-  - The form shows only that account's calendars as toggles (default first, "· your default calendar", "· shared by …"); Save adds and removes to match, says "Added 1 calendar, removed 1 calendar" and goes back.
+  - While signing in or loading, the form says "Signing in…" or "Loading your calendars…" (no "Couldn't show your calendars" flash).
+  - The form shows only the signed-in account's calendars as toggles, with already added ones on (default first, "· your default calendar", "· shared by …"); Save adds and removes to match, says "Added 1 calendar, removed 1 calendar" and goes back. Adding and Ctrl+K → Choose calendars show the same form.
   - Switching from one calendar to another (toggle one off, the other on) works in any order.
   - Save with everything off asks "Sign out of …?"; Sign out removes the account's calendars and goes back; Cancel keeps the form.
   - Cancelling the Windows sign-in shows "Sign-in was cancelled" with a Try again button.
   - Manage calendars: Ctrl+K on a Microsoft calendar starts with "Choose calendars for <account>", which opens the same form for that account without signing in.
   - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
+  - Signing in to a new account and pressing Back without saving: within about 20 minutes (15 minutes' grace, then the next refresh) the leftover sign-in is removed, so adding that account again asks for a fresh sign-in.
 - [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
   - The row reads "Sign in again to <account>" with "Your calendars can't update until you sign in" underneath.
   - Cancelling the prompt leaves the row in place.
