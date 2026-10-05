@@ -91,7 +91,7 @@ internal sealed class GraphEventReader(GraphConnection connection) : IGraphEvent
         }
     }
 
-    private async Task<GraphChanges> ReadDeltaAsync(
+    private static async Task<GraphChanges> ReadDeltaAsync(
         CalendarFeed feed, DeltaRequestBuilder delta, (string From, string To)? window, bool isFull, CancellationToken cancellationToken)
     {
         var changed = new Dictionary<string, CalendarEntry>();
