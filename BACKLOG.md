@@ -95,6 +95,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Later
 
+- [ ] **Show the year outside this year**: on a date in another year, titles like "Monday 5 Oct" don't say which year. Suggested: `DateText` adds the year ("Monday 5 Oct 2027", "Mon 5 Oct 2027 – Fri 9 Oct 2027") only when the date isn't in the current year, so everyday titles stay short.
+
 - [ ] **Open the event itself**: Google calendars open the event's day on the web, and Outlook only its day view (Outlook on the web has no link to a date). Opening the event needs a link to it.
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
