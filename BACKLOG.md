@@ -6,11 +6,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
-- [ ] **Same editing for every calendar**:
-  - Enter on any calendar in Manage calendars opens "Edit <name>": a "From <address or account> · calendar address / Microsoft 365" line, then Name, Colour, Show this calendar and Save. No address field.
-  - Ctrl+K starts with the source command: "Change address…" for address calendars, "Choose calendars for <account>…" for Microsoft ones; Ctrl+Enter runs it. Then Turn off/on, Remove, and Sign out (Microsoft only).
-  - Change address: an address-only form with the hint text; a bad address shows an error; a good one keeps the name, colour and on/off. Saving it unchanged just goes back.
-  - Add a calendar → Calendar address or file: the same address-only form; the calendar takes its own name (or the host/file name) and the next colour.
 - [ ] **Add a calendar chooser** (Graph step 1):
   - Manage calendars → Add a calendar opens a chooser with "Calendar address or file" and "Microsoft 365 or Outlook.com".
   - After adding, you land back on the chooser (one step back; the host can't go back two); Esc returns to Manage calendars.
@@ -139,6 +134,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] Tests for link detection and the layout (now/next split, empty states).
 
 ## Done
+
+- [x] Same editing for every calendar: Enter edits name, colour and visibility (with a read-only "From …" line); Ctrl+K starts with the provider's source command ("Change address…" or "Choose calendars for …"); adding only asks where a calendar comes from.
 
 - [x] Events from ICS feeds (URLs or local files), with recurrences and time zones handled by Ical.Net.
 - [x] Today page with Happening now / Up next / All day / Earlier today sections and a details pane.
