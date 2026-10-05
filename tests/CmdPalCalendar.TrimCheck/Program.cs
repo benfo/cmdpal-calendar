@@ -47,7 +47,7 @@ Expect(MeetingCredentials.Find(standup.Description) is { MeetingId: not null }, 
 Expect(DateQuery.TryParse("next fri", new DateOnly(2026, 1, 5), out _), "dates parse");
 
 var graphFeed = CalendarFeed.Create("Work", new MicrosoftSource("account", "ben@example.com", "calendar"), CalendarColor.Blue);
-var graph = new GraphClient(new FixedSignIn(), new HttpClient(new FixtureGraph(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "graph-events.json")))));
+var graph = new GraphEventReader(new GraphConnection(new FixedSignIn(), new HttpClient(new FixtureGraph(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "graph-events.json"))))));
 var graphEntries = await graph.GetEntriesAsync(graphFeed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), CancellationToken.None);
 Expect(graphEntries.Count == 2, "Graph events parse");
 var graphStandup = graphEntries.FirstOrDefault(e => e.Title == "Standup");

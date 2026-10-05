@@ -32,13 +32,14 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var reader = new IcsFeedReader();
         var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
         var signIn = new WamSignIn(new ProtectedTokenCache(Path.Combine(directory, "msal.cache.bin"), protector));
-        var graph = new GraphClient(signIn, GraphClientFactory.Create());
+        var graph = new GraphConnection(signIn, GraphClientFactory.Create());
+        var calendars = new GraphCalendarList(graph);
         var source = new CompositeCalendarSource(
             new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time),
-            new GraphCalendarSource(() => feeds.EnabledFeeds, graph, time));
+            new GraphCalendarSource(() => feeds.EnabledFeeds, new GraphEventReader(graph), time));
         var refresher = new CalendarRefresher(source);
         var check = new IcsFeedCheck(reader);
-        var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, graph, feeds));
+        var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, calendars, feeds));
         var manage = new ManageCalendarsPage(feeds, check, add);
         Func<AccountSignIn, ICommand> signInAgain = account => new SignInAgainCommand(signIn, account, () => refresher.Refresh(force: true));
 

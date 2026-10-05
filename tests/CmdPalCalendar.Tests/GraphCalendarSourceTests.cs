@@ -136,5 +136,8 @@ public sealed class GraphCalendarSourceTests
             Requests.Add((from, to));
             return Failure is null ? Task.FromResult(Entries) : Task.FromException<IReadOnlyList<CalendarEntry>>(Failure);
         }
+
+        public async Task<GraphChanges> SyncAsync(CalendarFeed feed, DateTimeOffset from, DateTimeOffset to, string? deltaLink, CancellationToken cancellationToken) =>
+            new(await GetEntriesAsync(feed, from, to, cancellationToken), new HashSet<string>(), null, IsFull: true);
     }
 }
