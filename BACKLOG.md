@@ -39,6 +39,17 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
+- [ ] **Microsoft 365 and Outlook.com (Graph)** (in progress): needed where the org blocks publishing calendars with details (StructureIt does).
+  - Tested 2026-10-05 with the Graph PowerShell client ID (`14d82eec-…`): you could consent to `Calendars.Read` yourself, and `calendarView` returned bodies and `onlineMeeting.joinUrl`. Develop with that ID; register our own multi-tenant app before release and test consent for it (unverified publisher).
+  - UX: "Add a calendar" opens a chooser of working sources (Microsoft 365 or Outlook.com; Calendar address or file). Microsoft signs in with the Windows account picker (WAM), then a picker lists the account's calendars; Enter adds one and stays open. Each calendar is its own row (name and colour from Outlook, editable), subtitled with its account.
+  - Accounts are implicit: Ctrl+K "Sign out of …" removes the account's calendars; removing its last calendar signs it out.
+  - Background refreshes never open dialogs. A broken sign-in shows one "Sign in again to …" row per account on the calendar page; Enter opens the picker.
+  - Events: ICS parity (join link from `onlineMeeting.joinUrl`), and opening the event itself via `webLink`.
+  - Data: rolling window of 2 weeks back to 3 months ahead, cached encrypted, refreshed every 5 minutes with delta; dates outside it fetched on demand.
+  - Code: `Microsoft/` (`IMicrosoftSignIn`, `GraphClient` over the Graph SDK, `GraphEntryMapper`, `GraphCalendarSource`, `GraphEventCache`), `Platform/WamSignIn` (MSAL broker, own parent window), `CompositeCalendarSource`, `CalendarFeed` gains a source. Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; add a Graph case to the trim check.
+  - Steps: 1. feed source + composite source + chooser; 2. sign-in + calendar picker; 3. events; 4. cache + delta; 5. on-demand ranges; 6. sign in again, sign out.
+  - `iCalUId` is different for each occurrence of a series.
+
 - [ ] **Back up the signing key** (user): move `Documents\CmdPalCalendar-signing\` (the `.pfx` and its password) into the password manager, then delete that folder. Until then it is the only copy outside the GitHub secrets.
 - [ ] **Release v0.1.2**: `main` has installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). Waiting for the user's go-ahead to tag.
 - [ ] **Shortcut tip** (waiting for the user's decision): there's no SDK way to give extension commands a default alias or hotkey. Suggested: the installer's closing message and the README suggest one (Calendar alias `cal`, a global hotkey for Join next meeting). Writing into Command Palette's own `settings.json` is possible but fragile, so not recommended.
@@ -58,10 +69,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Microsoft 365 (Graph)**: needed where the org blocks publishing calendars with details (StructureIt does).
-  - Tested 2026-10-05 with the Graph PowerShell client ID (`14d82eec-…`): you could consent to `Calendars.Read` yourself, and `calendarView` returned bodies and `onlineMeeting.joinUrl`. Consent for an unverified app of our own is still untested.
-  - WAM needs a parent window we create ourselves.
-  - `iCalUId` is different for each occurrence of a series.
 - [ ] **Google Calendar**:
   - Testing mode expires tokens after 7 days, so publish the app "In production" (unverified).
   - Workspace admins can block the app.
