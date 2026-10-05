@@ -6,13 +6,11 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
-- [ ] **Open in Outlook or Google Calendar**:
-  - On an Outlook calendar, Enter on an event with nothing to join shows "Open Outlook calendar" and opens the day view; Ctrl+Enter does the same on a Teams meeting.
-  - On a Google calendar, "Open in Google Calendar" opens the event's day.
+- [ ] **Open in Outlook or Google Calendar** (opening Outlook and Google Calendar is confirmed working):
   - Ctrl+K lists the open command once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
   - Ctrl+B joins in the browser on a Teams or Zoom event.
-  - With the new Outlook and Teams apps installed, both open straight in the browser without Windows asking which app to use.
+  - With the new Teams app installed, Join in browser opens straight in the browser without Windows asking which app to use.
 - [ ] **Updating a release** (once v0.1.2 is out; a fresh install of v0.1.1 is confirmed working):
   - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
   - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
