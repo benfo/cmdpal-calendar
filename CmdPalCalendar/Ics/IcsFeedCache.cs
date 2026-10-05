@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using CmdPalCalendar.Feeds;
 
@@ -12,51 +10,24 @@ internal sealed record CachedFeed(string Ics, DateTimeOffset SavedAt);
 
 internal sealed class IcsFeedCache(string directory, ISecretProtector protector, TimeProvider time)
 {
-    private const string Extension = ".ics.bin";
+    private readonly EncryptedFiles _files = new(directory, ".ics.bin", protector);
 
-    public void Save(CalendarFeed feed, string ics)
-    {
-        Directory.CreateDirectory(directory);
-        var path = PathFor(feed.Id);
-        File.WriteAllBytes(path, protector.Protect(Encoding.UTF8.GetBytes($"{feed.IcsLocation()}\n{ics}")));
-        File.SetLastWriteTimeUtc(path, time.GetUtcNow().UtcDateTime);
-    }
+    public void Save(CalendarFeed feed, string ics) =>
+        _files.Write(feed.Id, Encoding.UTF8.GetBytes($"{feed.IcsLocation()}\n{ics}"), time.GetUtcNow());
 
     public CachedFeed? Load(CalendarFeed feed)
     {
-        var path = PathFor(feed.Id);
-        if (!File.Exists(path))
+        if (_files.Read(feed.Id) is not { } file)
         {
             return null;
         }
 
-        try
-        {
-            var content = Encoding.UTF8.GetString(protector.Unprotect(File.ReadAllBytes(path)));
-            var separator = content.IndexOf('\n', StringComparison.Ordinal);
-            return separator >= 0 && content[..separator] == feed.IcsLocation()
-                ? new CachedFeed(content[(separator + 1)..], new DateTimeOffset(File.GetLastWriteTimeUtc(path), TimeSpan.Zero))
-                : null;
-        }
-        catch (Exception ex) when (ex is CryptographicException or IOException)
-        {
-            return null;
-        }
+        var content = Encoding.UTF8.GetString(file.Content);
+        var separator = content.IndexOf('\n', StringComparison.Ordinal);
+        return separator >= 0 && content[..separator] == feed.IcsLocation()
+            ? new CachedFeed(content[(separator + 1)..], file.WrittenAt)
+            : null;
     }
 
-    public void RemoveAllExcept(IEnumerable<CalendarFeed> feeds)
-    {
-        if (!Directory.Exists(directory))
-        {
-            return;
-        }
-
-        var keep = feeds.Select(f => PathFor(f.Id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var file in Directory.EnumerateFiles(directory, $"*{Extension}").Where(f => !keep.Contains(f)))
-        {
-            File.Delete(file);
-        }
-    }
-
-    private string PathFor(string feedId) => Path.Combine(directory, feedId + Extension);
+    public void RemoveAllExcept(IEnumerable<CalendarFeed> feeds) => _files.RemoveAllExcept(feeds.Select(f => f.Id));
 }
