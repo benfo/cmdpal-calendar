@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Graph;
@@ -17,13 +16,18 @@ internal sealed class WamSignIn : IMicrosoftSignIn
 
     private static readonly string[] Scopes = ["Calendars.Read"];
 
-    private readonly IPublicClientApplication _app = PublicClientApplicationBuilder.Create(ClientId)
-        .WithAuthority(AadAuthorityAudience.AzureAdAndPersonalMicrosoftAccount)
-        .WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows) { Title = "Calendar for Command Palette" })
-        .WithParentActivityOrWindow(NativeMethods.GetForegroundWindow)
-        .Build();
+    private readonly IPublicClientApplication _app;
+    private IntPtr _parent;
 
-    public WamSignIn(ProtectedTokenCache cache) => cache.Bind(_app.UserTokenCache);
+    public WamSignIn(ProtectedTokenCache cache)
+    {
+        _app = PublicClientApplicationBuilder.Create(ClientId)
+            .WithAuthority(AadAuthorityAudience.AzureAdAndPersonalMicrosoftAccount)
+            .WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows) { Title = "Calendar for Command Palette" })
+            .WithParentActivityOrWindow(() => _parent = ForegroundWindow.Current())
+            .Build();
+        cache.Bind(_app.UserTokenCache);
+    }
 
     public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken)
     {
@@ -34,7 +38,7 @@ internal sealed class WamSignIn : IMicrosoftSignIn
     public Task<MicrosoftAccount?> SignInAnotherAccountAsync(CancellationToken cancellationToken) =>
         InteractiveAsync(_app.AcquireTokenInteractive(Scopes).WithPrompt(Prompt.ForceLogin), cancellationToken);
 
-    private static async Task<MicrosoftAccount?> InteractiveAsync(AcquireTokenInteractiveParameterBuilder request, CancellationToken cancellationToken)
+    private async Task<MicrosoftAccount?> InteractiveAsync(AcquireTokenInteractiveParameterBuilder request, CancellationToken cancellationToken)
     {
         try
         {
@@ -44,6 +48,10 @@ internal sealed class WamSignIn : IMicrosoftSignIn
         catch (MsalClientException ex) when (ex.ErrorCode == MsalError.AuthenticationCanceledError)
         {
             return null;
+        }
+        finally
+        {
+            ForegroundWindow.Restore(_parent);
         }
     }
 
@@ -74,10 +82,4 @@ internal sealed class WamSignIn : IMicrosoftSignIn
         (await _app.GetAccountsAsync()).Select(a => a.HomeAccountId.Identifier).ToList();
 
     private static string FirstLine(string text) => text.Split('\n', 2)[0].Trim();
-
-    private static class NativeMethods
-    {
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetForegroundWindow();
-    }
 }
