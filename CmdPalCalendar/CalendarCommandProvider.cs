@@ -31,11 +31,13 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
         var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
-        var source = new CompositeCalendarSource(new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time));
-        var refresher = new CalendarRefresher(source);
-        var check = new IcsFeedCheck(reader);
         var signIn = new WamSignIn();
         var graph = new GraphClient(signIn, GraphClientFactory.Create());
+        var source = new CompositeCalendarSource(
+            new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time),
+            new GraphCalendarSource(() => feeds.EnabledFeeds, graph, time));
+        var refresher = new CalendarRefresher(source);
+        var check = new IcsFeedCheck(reader);
         var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, graph, feeds));
         var manage = new ManageCalendarsPage(feeds, check, add);
 
