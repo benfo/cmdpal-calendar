@@ -1,17 +1,48 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace CmdPalCalendar.Platform;
 
 internal static class ForegroundWindow
 {
+    private const int Attempts = 10;
+    private static readonly TimeSpan Pause = TimeSpan.FromMilliseconds(100);
+
     public static IntPtr Current() => NativeMethods.GetForegroundWindow();
 
-    // Windows only lets the foreground process take focus; the sign-in window's process held it,
-    // so join the current foreground thread's input briefly when the plain call is refused.
-    public static void Restore(IntPtr window)
+    // A closing sign-in window hands focus to the previous window once it's gone, so keep
+    // asking for a moment instead of once.
+    public static async Task RestoreAsync(IntPtr window, Action<string> reportFailure)
     {
-        if (window == IntPtr.Zero || NativeMethods.SetForegroundWindow(window))
+        if (window == IntPtr.Zero)
+        {
+            return;
+        }
+
+        for (var attempt = 0; attempt < Attempts; attempt++)
+        {
+            await Task.Delay(Pause);
+            if (NativeMethods.GetForegroundWindow() == window)
+            {
+                return;
+            }
+
+            BringToFront(window);
+        }
+
+        var foreground = NativeMethods.GetForegroundWindow();
+        if (foreground != window)
+        {
+            reportFailure($"wanted {Describe(window)}, got {Describe(foreground)}");
+        }
+    }
+
+    // Windows only lets the foreground process hand on focus, so join the foreground
+    // thread's input briefly when the plain call is refused.
+    private static void BringToFront(IntPtr window)
+    {
+        if (NativeMethods.SetForegroundWindow(window))
         {
             return;
         }
@@ -34,6 +65,15 @@ internal static class ForegroundWindow
         }
     }
 
+    private static string Describe(IntPtr window)
+    {
+        var title = new char[256];
+        var className = new char[256];
+        var titleLength = NativeMethods.GetWindowText(window, title, title.Length);
+        var classLength = NativeMethods.GetClassName(window, className, className.Length);
+        return $"\"{new string(title, 0, titleLength)}\" ({new string(className, 0, classLength)}, {window})";
+    }
+
     private static class NativeMethods
     {
         [DllImport("user32.dll")]
@@ -52,5 +92,11 @@ internal static class ForegroundWindow
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool AttachThreadInput(uint attach, uint attachTo, [MarshalAs(UnmanagedType.Bool)] bool doAttach);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetWindowText(IntPtr window, [Out] char[] text, int maxCount);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetClassName(IntPtr window, [Out] char[] className, int maxCount);
     }
 }

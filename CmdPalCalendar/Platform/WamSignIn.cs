@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,10 +18,12 @@ internal sealed class WamSignIn : IMicrosoftSignIn
     private static readonly string[] Scopes = ["Calendars.Read"];
 
     private readonly IPublicClientApplication _app;
+    private readonly string _focusLogPath;
     private IntPtr _parent;
 
-    public WamSignIn(ProtectedTokenCache cache)
+    public WamSignIn(ProtectedTokenCache cache, string focusLogPath)
     {
+        _focusLogPath = focusLogPath;
         _app = PublicClientApplicationBuilder.Create(ClientId)
             .WithAuthority(AadAuthorityAudience.AzureAdAndPersonalMicrosoftAccount)
             .WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows) { Title = "Calendar for Command Palette" })
@@ -51,7 +54,7 @@ internal sealed class WamSignIn : IMicrosoftSignIn
         }
         finally
         {
-            ForegroundWindow.Restore(_parent);
+            _ = ForegroundWindow.RestoreAsync(_parent, ReportFocusFailure);
         }
     }
 
@@ -80,6 +83,9 @@ internal sealed class WamSignIn : IMicrosoftSignIn
 
     public async Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken) =>
         (await _app.GetAccountsAsync()).Select(a => a.HomeAccountId.Identifier).ToList();
+
+    private void ReportFocusFailure(string message) =>
+        File.AppendAllText(_focusLogPath, $"{DateTimeOffset.Now:O} {message}{Environment.NewLine}");
 
     private static string FirstLine(string text) => text.Split('\n', 2)[0].Trim();
 }
