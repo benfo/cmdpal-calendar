@@ -47,7 +47,7 @@ internal sealed partial class CalendarPage : DynamicListPage
             next: () => GoTo(SelectedDate.AddDays(DaysShown)),
             today: () => GoTo(Today),
             refresh: () => _refresher.Refresh(force: true));
-        _rows = new CalendarRows(_navigation, manage, _live);
+        _rows = new CalendarRows(_navigation, manage, _live, time);
         _layout = new CalendarLayout(_rows);
 
         _refresher.LoadingChanged += (_, _) => OnLoadingChanged();

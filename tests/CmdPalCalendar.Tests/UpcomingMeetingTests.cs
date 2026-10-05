@@ -64,7 +64,8 @@ public sealed class UpcomingMeetingTests
     [InlineData(10, 44, false)]
     [InlineData(10, 45, true)]
     [InlineData(11, 10, true)]
-    public void Joinable_now_within_fifteen_minutes_or_once_started(int hour, int minute, bool expected)
+    [InlineData(11, 30, false)]
+    public void Joinable_now_from_fifteen_minutes_before_until_it_ends(int hour, int minute, bool expected)
     {
         var call = Meeting("Call", 11, 0, 11, 30);
 

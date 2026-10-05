@@ -22,5 +22,5 @@ internal static class UpcomingMeeting
     public static CalendarEntry? FindJoinable(IEnumerable<CalendarEntry> entries, DateTimeOffset now) =>
         Find(entries.Where(e => MeetingLink.Parse(e.Link) is { Service: not MeetingService.Other }), now);
 
-    public static bool IsJoinableNow(CalendarEntry meeting, DateTimeOffset now) => meeting.Start - now <= JoinWindow;
+    public static bool IsJoinableNow(CalendarEntry meeting, DateTimeOffset now) => meeting.Start - now <= JoinWindow && now < meeting.End;
 }

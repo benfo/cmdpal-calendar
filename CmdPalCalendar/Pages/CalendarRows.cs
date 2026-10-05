@@ -10,7 +10,7 @@ using Windows.System;
 
 namespace CmdPalCalendar.Pages;
 
-internal sealed class CalendarRows(NavigationCommands navigation, ICommand manage, LiveSubtitles live)
+internal sealed class CalendarRows(NavigationCommands navigation, ICommand manage, LiveSubtitles live, TimeProvider time)
 {
     private const int AttendeesShown = 8;
 
@@ -28,7 +28,7 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
         var open = entry.WebLink is { } web ? OpenEvent(web, entry.Site)
             : entry.Site is { } site ? OpenInCalendar(entry, site)
             : null;
-        ICommand command = link is not null ? new JoinMeetingCommand(link) : open ?? (ICommand)new NoOpCommand();
+        ICommand command = link is not null ? new JoinEventCommand(entry, link, time) : open ?? (ICommand)new NoOpCommand();
         IContextItem[] openOnCtrlEnter = link is not null && open is not null ? [new CommandContextItem(open)] : [];
 
         var item = new ListItem(command)

@@ -30,14 +30,6 @@ internal sealed partial class JoinNextMeetingCommand : InvokableCommand
             return CommandResult.ShowToast("Nothing to join today");
         }
 
-        var join = new JoinMeetingCommand(link);
-        return UpcomingMeeting.IsJoinableNow(meeting, now)
-            ? join.Invoke()
-            : CommandResult.Confirm(new ConfirmationArgs
-            {
-                Title = $"Join {meeting.Title}?",
-                Description = $"{meeting.Title} starts at {TimeText.Clock(meeting.Start)} (in {TimeText.Duration(meeting.Start - now)}). Join now?",
-                PrimaryCommand = join,
-            });
+        return new JoinEventCommand(meeting, link, _time).Invoke();
     }
 }
