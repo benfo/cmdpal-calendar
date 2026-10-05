@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
 using Microsoft.Graph.Me.Calendars.Item.CalendarView.Delta;
+using Microsoft.Graph.Models;
 using Microsoft.Graph.Models.ODataErrors;
 using GraphEvent = Microsoft.Graph.Models.Event;
 
@@ -91,10 +92,10 @@ internal sealed class GraphEventReader(GraphConnection connection) : IGraphEvent
         }
     }
 
-    private static async Task<GraphChanges> ReadDeltaAsync(
+    private async Task<GraphChanges> ReadDeltaAsync(
         CalendarFeed feed, DeltaRequestBuilder delta, (string From, string To)? window, bool isFull, CancellationToken cancellationToken)
     {
-        var changed = new Dictionary<string, CalendarEntry>();
+        var changed = new Dictionary<string, GraphEvent>();
         var removed = new HashSet<string>();
         var page = await delta.GetAsDeltaGetResponseAsync(
             r =>
@@ -126,17 +127,67 @@ internal sealed class GraphEventReader(GraphConnection connection) : IGraphEvent
                 else
                 {
                     removed.Remove(id);
-                    changed[id] = GraphEntryMapper.ToEntry(ev, feed);
+                    changed[id] = ev;
                 }
             }
 
             if (page?.OdataNextLink is not { } next)
             {
-                return new GraphChanges(changed.Values.ToList(), removed, page?.OdataDeltaLink, isFull);
+                var masters = changed.Values.Where(e => e.Type == EventType.SeriesMaster).ToDictionary(e => e.Id!, e => (GraphEvent?)e);
+                removed.UnionWith(masters.Keys);
+                var entries = new List<CalendarEntry>();
+                foreach (var ev in changed.Values.Where(e => e.Type != EventType.SeriesMaster))
+                {
+                    if (ev.Subject is null && ev.SeriesMasterId is { } masterId)
+                    {
+                        masters[masterId] = masters.GetValueOrDefault(masterId) ?? await MasterAsync(feed, masterId, cancellationToken);
+                        FillFromMaster(ev, masters[masterId]);
+                    }
+
+                    entries.Add(GraphEntryMapper.ToEntry(ev, feed));
+                }
+
+                return new GraphChanges(entries, removed, page?.OdataDeltaLink, isFull);
             }
 
             page = await delta.WithUrl(next).GetAsDeltaGetResponseAsync(r => PreferPaged(r.Headers), cancellationToken);
         }
+    }
+
+    private async Task<GraphEvent?> MasterAsync(CalendarFeed feed, string masterId, CancellationToken cancellationToken)
+    {
+        var source = (MicrosoftSource)feed.Source;
+        try
+        {
+            return await connection.For(source.AccountId).Me.Calendars[source.CalendarId].Events[masterId].GetAsync(
+                r =>
+                {
+                    r.QueryParameters.Select = EventFields;
+                    GraphConnection.PreferUtcAndHtml(r.Headers);
+                },
+                cancellationToken);
+        }
+        catch (ODataError ex) when (ex.ResponseStatusCode == 404)
+        {
+            return null;
+        }
+    }
+
+    private static void FillFromMaster(GraphEvent occurrence, GraphEvent? master)
+    {
+        if (master is null)
+        {
+            return;
+        }
+
+        occurrence.Subject = master.Subject;
+        occurrence.Body ??= master.Body;
+        occurrence.Location ??= master.Location;
+        occurrence.Organizer ??= master.Organizer;
+        occurrence.Attendees = occurrence.Attendees is { Count: > 0 } ? occurrence.Attendees : master.Attendees;
+        occurrence.OnlineMeeting ??= master.OnlineMeeting;
+        occurrence.WebLink ??= master.WebLink;
+        occurrence.IsAllDay ??= master.IsAllDay;
     }
 
     private DeltaRequestBuilder Delta(CalendarFeed feed)

@@ -151,6 +151,63 @@ public sealed class GraphEventReaderTests
     }
 
     [Fact]
+    public async Task Fills_occurrences_from_their_series_master_and_leaves_the_master_out()
+    {
+        var handler = new FakeGraph(
+            $$"""
+            { "value": [
+                {{Master("m1")}},
+                {{Occurrence("o1", "m1", "2026-10-12")}},
+                {{Occurrence("o2", "m1", "2026-10-26")}}
+            ], "@odata.deltaLink": "{{DeltaLink}}" }
+            """);
+
+        var changes = await Reader(handler).SyncAsync(Work, Monday, Monday.AddDays(30), null, CancellationToken.None);
+
+        Assert.Equal(["o1", "o2"], changes.Changed.Select(e => e.Uid));
+        Assert.All(changes.Changed, e =>
+        {
+            Assert.Equal("Sprint review", e.Title);
+            Assert.Equal("https://teams.microsoft.com/l/meetup-join/review", e.Link);
+            Assert.Equal("Jane Doe", e.Organizer);
+        });
+        Assert.Equal(new DateTimeOffset(2026, 10, 12, 13, 0, 0, TimeSpan.Zero), changes.Changed[0].Start);
+        Assert.Contains("m1", changes.Removed);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task Fetches_the_series_master_once_when_the_delta_has_only_occurrences()
+    {
+        var handler = new FakeGraph(
+            $$"""
+            { "value": [
+                {{Occurrence("o1", "m1", "2026-10-12")}},
+                {{Occurrence("o2", "m1", "2026-10-26")}}
+            ], "@odata.deltaLink": "{{DeltaLink}}2" }
+            """,
+            Master("m1"));
+
+        var changes = await Reader(handler).SyncAsync(Work, Monday, Monday.AddDays(30), DeltaLink, CancellationToken.None);
+
+        Assert.Equal(["Sprint review", "Sprint review"], changes.Changed.Select(e => e.Title));
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("/me/calendars/calendar-1/events/m1", handler.Requests[1].Url, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Keeps_an_occurrence_whose_series_master_is_gone()
+    {
+        var handler = new FakeGraph(
+            (HttpStatusCode.OK, $$"""{ "value": [ {{Occurrence("o1", "m1", "2026-10-12")}} ], "@odata.deltaLink": "{{DeltaLink}}2" }"""),
+            (HttpStatusCode.NotFound, """{ "error": { "code": "ErrorItemNotFound", "message": "Not found" } }"""));
+
+        var changes = await Reader(handler).SyncAsync(Work, Monday, Monday.AddDays(30), DeltaLink, CancellationToken.None);
+
+        Assert.Equal("(No title)", Assert.Single(changes.Changed).Title);
+    }
+
+    [Fact]
     public void Applies_changes_to_the_previous_entries()
     {
         IReadOnlyList<CalendarEntry> previous = [Entry("e1", "Standup"), Entry("e2", "Review"), Entry("e3", "Lunch")];
@@ -165,6 +222,25 @@ public sealed class GraphEventReaderTests
         { "id": "{{id}}", "subject": "{{subject}}",
           "start": { "dateTime": "2026-10-05T07:00:00.0000000", "timeZone": "UTC" },
           "end": { "dateTime": "2026-10-05T07:15:00.0000000", "timeZone": "UTC" } }
+        """;
+
+    private static string Master(string id) =>
+        $$"""
+        { "id": "{{id}}", "type": "seriesMaster", "subject": "Sprint review",
+          "start": { "dateTime": "2026-03-16T13:00:00.0000000", "timeZone": "UTC" },
+          "end": { "dateTime": "2026-03-16T13:30:00.0000000", "timeZone": "UTC" },
+          "body": { "contentType": "html", "content": "<p>Demo</p>" },
+          "organizer": { "emailAddress": { "name": "Jane Doe", "address": "jane@example.com" } },
+          "attendees": [ { "emailAddress": { "address": "sam@example.com" } } ],
+          "onlineMeeting": { "joinUrl": "https://teams.microsoft.com/l/meetup-join/review" },
+          "webLink": "https://outlook.office365.com/owa/?itemid={{id}}&exvsurl=1&path=/calendar/item" }
+        """;
+
+    private static string Occurrence(string id, string masterId, string date) =>
+        $$"""
+        { "id": "{{id}}", "type": "occurrence", "seriesMasterId": "{{masterId}}",
+          "start": { "dateTime": "{{date}}T13:00:00.0000000", "timeZone": "UTC" },
+          "end": { "dateTime": "{{date}}T13:30:00.0000000", "timeZone": "UTC" } }
         """;
 
     private static CalendarEntry Entry(string id, string title) =>

@@ -49,12 +49,16 @@ Expect(DateQuery.TryParse("next fri", new DateOnly(2026, 1, 5), out _), "dates p
 var graphFeed = CalendarFeed.Create("Work", new MicrosoftSource("account", "ben@example.com", "calendar"), CalendarColor.Blue);
 var graph = new GraphEventReader(new GraphConnection(new FixedSignIn(), new HttpClient(new FixtureGraph(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "graph-events.json"))))));
 var graphEntries = await graph.GetEntriesAsync(graphFeed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), CancellationToken.None);
-Expect(graphEntries.Count == 2, "Graph events parse");
+Expect(graphEntries.Count == 4, "Graph events parse");
 var graphStandup = graphEntries.FirstOrDefault(e => e.Title == "Standup");
 Expect(graphStandup?.Link == "https://teams.microsoft.com/l/meetup-join/abc", "Graph join link is read");
 Expect(graphStandup?.Notes?.Contains("**Daily**", StringComparison.Ordinal) == true, "Graph HTML body becomes Markdown");
 Expect(graphStandup?.WebLink is not null && graphStandup.Organizer == "Jane Doe", "Graph web link and organizer are read");
 Expect(graphEntries.Any(e => e.IsAllDay), "Graph all-day event");
+var graphChanges = await graph.SyncAsync(graphFeed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), null, CancellationToken.None);
+var occurrence = graphChanges.Changed.FirstOrDefault(e => e.Uid == "o1");
+Expect(occurrence?.Title == "Sprint review" && occurrence.Link == "https://teams.microsoft.com/l/meetup-join/review", "Graph occurrences take their series master's details");
+Expect(graphChanges.Removed.Contains("m1") && graphChanges.Changed.All(e => e.Uid != "m1"), "Graph series masters are left out");
 
 var graphCache = new GraphEventCache(cacheDirectory, new PlainProtector());
 graphCache.Save(graphFeed, new GraphCalendarCopy(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), "delta", graphEntries, DateTimeOffset.UtcNow));

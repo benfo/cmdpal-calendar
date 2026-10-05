@@ -20,6 +20,21 @@
       "isAllDay": true,
       "start": { "dateTime": "2026-01-05T00:00:00.0000000", "timeZone": "UTC" },
       "end": { "dateTime": "2026-01-06T00:00:00.0000000", "timeZone": "UTC" }
+    },
+    {
+      "id": "m1",
+      "type": "seriesMaster",
+      "subject": "Sprint review",
+      "start": { "dateTime": "2026-01-05T13:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-01-05T13:30:00.0000000", "timeZone": "UTC" },
+      "onlineMeeting": { "joinUrl": "https://teams.microsoft.com/l/meetup-join/review" }
+    },
+    {
+      "id": "o1",
+      "type": "occurrence",
+      "seriesMasterId": "m1",
+      "start": { "dateTime": "2026-01-19T13:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-01-19T13:30:00.0000000", "timeZone": "UTC" }
     }
   ]
 }
