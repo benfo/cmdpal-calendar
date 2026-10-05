@@ -1,10 +1,11 @@
 using System;
+using System.Globalization;
 
 namespace CmdPalCalendar.Events;
 
 internal static class TimeText
 {
-    public static string Clock(DateTimeOffset time) => $"{time:HH:mm}";
+    public static string Clock(DateTimeOffset time) => time.ToString("t", CultureInfo.CurrentCulture);
 
     public static string Range(CalendarEntry entry) => $"{Clock(entry.Start)}–{Clock(entry.End)}";
 

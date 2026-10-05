@@ -120,7 +120,7 @@ internal sealed class CalendarRows(
         }
 
         var date = DateOnly.FromDateTime(next.Start.DateTime);
-        var time = next.IsAllDay ? "all day" : $"{next.Start:HH:mm}";
+        var time = next.IsAllDay ? "all day" : TimeText.Clock(next.Start);
         var go = new AnonymousCommand(() => goTo(date)) { Name = $"Go to {DateText.Short(date, today)}", Result = CommandResult.KeepOpen() };
 
         return Message(title, $"Next: {DateText.Relative(date, today)} · {next.Title} {time}", go);

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +54,7 @@ internal sealed class GraphCalendarSource : ICalendarSource
                 .Where(l => l.Error is not null)
                 .Select(l => new Failure(l.Feed.Name, l.Error!, l.SignIn, l.Copy?.SavedAt))
                 .Concat(_months.Failures.Select(f =>
-                    new Failure($"{f.Feed.Name} for {MonthName(f.Month)}", GraphErrors.Describe(f.Error), SignInFor(f.Feed, f.Error), f.ShowingCopyFrom)))
+                    new Failure($"{f.Feed.Name} for {DateText.Month(f.Month)}", GraphErrors.Describe(f.Error), SignInFor(f.Feed, f.Error), f.ShowingCopyFrom)))
                 .ToList();
 
             var signIns = failed
@@ -136,8 +135,6 @@ internal sealed class GraphCalendarSource : ICalendarSource
 
     private static AccountSignIn? SignInFor(CalendarFeed feed, Exception error) =>
         error is SignInRequiredException && feed.Source is MicrosoftSource ms ? new AccountSignIn(ms.AccountId, ms.Account) : null;
-
-    private static string MonthName(DateOnly month) => month.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
 
     private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
 
