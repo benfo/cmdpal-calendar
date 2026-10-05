@@ -83,8 +83,9 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Background refreshes never open dialogs. A broken sign-in shows one "Sign in again to …" row per account on the calendar page; Enter opens the picker.
   - Events: ICS parity (join link from `onlineMeeting.joinUrl`), and opening the event itself via `webLink`.
   - Data: rolling window of 2 weeks back to 3 months ahead, cached encrypted, refreshed every 5 minutes with delta; dates outside it fetched on demand.
-  - Code: `Microsoft/` (`IMicrosoftSignIn`, `GraphClient` over the Graph SDK, `GraphEntryMapper`, `GraphCalendarSource`, `GraphEventCache`), `Platform/WamSignIn` (MSAL broker, own parent window), `CompositeCalendarSource`, `CalendarFeed` gains a source. Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; add a Graph case to the trim check.
-  - Steps: 1. feed source + composite source + chooser; 2. sign-in + calendar picker; 3. events; 4. cache + delta; 5. on-demand ranges; 6. sign in again, sign out.
+  - Code lives in `Graph/` and `Platform/` (see CLAUDE.md). Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; the trim check covers Graph.
+  - Done: chooser and feed sources; sign-in and choosing calendars (one form for adding and changing); events, join links and opening the event; encrypted cache and delta sync; sign in again, sign out, cleanup of unused sign-ins.
+  - Left: **step 5, dates beyond the window** fetched on demand (kept in memory); **our own app registration** (multi-tenant, work and personal accounts), then test consent with an unverified publisher and swap the client ID in `WamSignIn`.
   - `iCalUId` is different for each occurrence of a series.
 
 - [ ] **Back up the signing key** (user): move `Documents\CmdPalCalendar-signing\` (the `.pfx` and its password) into the password manager, then delete that folder. Until then it is the only copy outside the GitHub secrets.
