@@ -10,11 +10,13 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Manage calendars → Add a calendar opens a chooser with "Calendar address or file", which opens the usual form.
   - After adding, you land back on the chooser (one step back; the host can't go back two); Esc returns to Manage calendars.
   - Existing calendars still load, edit, turn off and remove as before.
-- [ ] **Microsoft sign-in and calendar picker** (Graph step 2; events don't show yet):
-  - Add a calendar → Microsoft 365 or Outlook.com opens the Windows account picker over Command Palette, then lists your calendars (default first, shared ones "Shared by …").
-  - Cancelling the account picker shows "Sign-in was cancelled" on the Sign in row; Enter tries again.
-  - Enter on a calendar adds it ("Added …"), marks it with a check and "Added", and the page stays open.
-  - Opening the picker again lists your calendars without asking to sign in (also after Reload); "Add another Microsoft account" (the first row) asks for an account to sign in with (not the one already listed), and the second account's calendars appear in their own section. Signing in with an account that's already listed says "… is already added".
+- [ ] **Microsoft sign-in and choosing calendars** (signing in and listing calendars are confirmed working):
+  - Add a calendar → Microsoft 365 or Outlook.com: with no Microsoft account yet, the Windows account picker offers your work account; with one already added, it asks for a fresh sign-in so you can enter another account.
+  - The form shows only that account's calendars as toggles (default first, "· your default calendar", "· shared by …"); Save adds and removes to match, says "Added 1 calendar, removed 1 calendar" and goes back.
+  - Switching from one calendar to another (toggle one off, the other on) works in any order.
+  - Save with everything off asks "Sign out of …?"; Sign out removes the account's calendars and goes back; Cancel keeps the form.
+  - Cancelling the Windows sign-in shows "Sign-in was cancelled" with a Try again button.
+  - Manage calendars: Ctrl+K on a Microsoft calendar starts with "Choose calendars for <account>", which opens the same form for that account without signing in.
   - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
 - [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
   - The row reads "Sign in again to <account>" with "Your calendars can't update until you sign in" underneath.
@@ -74,11 +76,9 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
-- [ ] **Change which Microsoft calendars are shown**: after adding, there's no clear way to change the selection. Today you can only add more through Add a calendar → Microsoft (added ones show ✓ but Enter does nothing) and drop one with Remove in Manage calendars. Suggested: in the picker, Enter on an added calendar removes it (a toggle, with the last-calendar sign-out warning); and Ctrl+K on a Microsoft calendar in Manage calendars offers "Choose calendars for <account>", opening the picker for that account.
-
 - [ ] **Microsoft 365 and Outlook.com (Graph)** (in progress): needed where the org blocks publishing calendars with details (StructureIt does).
   - Tested 2026-10-05 with the Graph PowerShell client ID (`14d82eec-…`): you could consent to `Calendars.Read` yourself, and `calendarView` returned bodies and `onlineMeeting.joinUrl`. Develop with that ID; register our own multi-tenant app before release and test consent for it (unverified publisher).
-  - UX: "Add a calendar" opens a chooser of working sources (Microsoft 365 or Outlook.com; Calendar address or file). Microsoft signs in with the Windows account picker (WAM), then a picker lists the account's calendars; Enter adds one and stays open. Each calendar is its own row (name and colour from Outlook, editable), subtitled with its account.
+  - UX: "Add a calendar" opens a chooser of working sources (Microsoft 365 or Outlook.com; Calendar address or file). Microsoft signs in with the Windows account picker (WAM; a fresh sign-in once an account exists), then a form shows that account's calendars as toggles with Save (Save with none asks to sign out). Ctrl+K "Choose calendars for …" in Manage calendars opens the same form. Each calendar is its own row (name and colour from Outlook, editable), subtitled with its account.
   - Accounts are implicit: Ctrl+K "Sign out of …" removes the account's calendars; removing its last calendar signs it out.
   - Background refreshes never open dialogs. A broken sign-in shows one "Sign in again to …" row per account on the calendar page; Enter opens the picker.
   - Events: ICS parity (join link from `onlineMeeting.joinUrl`), and opening the event itself via `webLink`.
