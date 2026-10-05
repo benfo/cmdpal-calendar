@@ -65,7 +65,7 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
 
         private CommandResult Save(Fields fields)
         {
-            var addressChanged = _feed is null || !string.Equals(fields.Location, Location(_feed), StringComparison.Ordinal);
+            var addressChanged = IsIcs && (_feed is null || !string.Equals(fields.Location, Location(_feed), StringComparison.Ordinal));
             var result = addressChanged ? Check(fields) : null;
             if (result is { IsValid: false })
             {
@@ -82,7 +82,8 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
             }
             else
             {
-                _store.Update(_feed with { Name = name, Source = new IcsSource(fields.Location), Color = fields.Color, Enabled = fields.Enabled });
+                var source = IsIcs ? new IcsSource(fields.Location) : _feed.Source;
+                _store.Update(_feed with { Name = name, Source = source, Color = fields.Color, Enabled = fields.Enabled });
             }
 
             var verb = _feed is null ? "Added" : "Saved";
@@ -115,6 +116,8 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
                 Value(values, "enabled") != "false");
         }
 
+        private bool IsIcs => _feed is null or { Source: IcsSource };
+
         private static string? Location(CalendarFeed? feed) => (feed?.Source as IcsSource)?.Location;
 
         private static string Value(JsonNode? values, string key) => (values?[key]?.GetValue<string>() ?? string.Empty).Trim();
@@ -124,6 +127,7 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
             {
                 ["name"] = fields.Name,
                 ["location"] = fields.Location,
+                ["isIcs"] = IsIcs,
                 ["color"] = fields.Color.ToString(),
                 ["enabled"] = fields.Enabled ? "true" : "false",
                 ["error"] = error,
@@ -145,6 +149,7 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
                     {
                         "type": "Input.Text",
                         "id": "location",
+                        "$when": "${isIcs}",
                         "label": "Calendar address",
                         "value": "${location}",
                         "placeholder": "https://… or webcal://… or C:\\path\\calendar.ics",
@@ -153,7 +158,8 @@ internal sealed partial class CalendarFeedFormPage : ContentPage
                     },
                     {
                         "type": "TextBlock",
-                        "text": "In Outlook: Settings > Calendar > Shared calendars > Publish a calendar. In Google: your calendar's settings > Secret address in iCal format.",
+                        "$when": "${isIcs}",
+                        "text": "In Outlook:Settings > Calendar > Shared calendars > Publish a calendar. In Google: your calendar's settings > Secret address in iCal format.",
                         "wrap": true,
                         "isSubtle": true,
                         "size": "Small"
