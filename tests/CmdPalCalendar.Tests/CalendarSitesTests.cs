@@ -24,11 +24,11 @@ public sealed class CalendarSitesTests
     }
 
     [Theory]
-    [InlineData("Outlook", "https://outlook.office.com/calendar/view/day/2026/10/3")]
-    [InlineData("OutlookCom", "https://outlook.live.com/calendar/view/day/2026/10/3")]
+    [InlineData("Outlook", "https://outlook.office.com/calendar/view/day")]
+    [InlineData("OutlookCom", "https://outlook.live.com/calendar/view/day")]
     [InlineData("Google", "https://calendar.google.com/calendar/r/day/2026/10/3")]
-    public void Opens_the_day(string site, string expected)
+    public void Opens_the_calendar_on_the_day_where_the_site_allows(string site, string expected)
     {
-        Assert.Equal(expected, CalendarSites.DayAddress(Enum.Parse<CalendarSite>(site), new DateOnly(2026, 10, 3)));
+        Assert.Equal(expected, CalendarSites.Address(Enum.Parse<CalendarSite>(site), new DateOnly(2026, 10, 3)));
     }
 }

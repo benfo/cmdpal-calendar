@@ -4,10 +4,10 @@ namespace CmdPalCalendar.Pages;
 
 internal static class CalendarSiteText
 {
-    public static string Name(CalendarSite site) => site switch
+    public static string OpenLabel(CalendarSite site) => site switch
     {
-        CalendarSite.Outlook => "Outlook",
-        CalendarSite.OutlookCom => "Outlook.com",
-        _ => "Google Calendar",
+        CalendarSite.Outlook => "Open Outlook calendar",
+        CalendarSite.OutlookCom => "Open Outlook.com calendar",
+        _ => "Open in Google Calendar",
     };
 }

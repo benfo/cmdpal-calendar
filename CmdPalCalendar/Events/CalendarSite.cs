@@ -28,14 +28,10 @@ internal static class CalendarSites
         };
     }
 
-    public static string DayAddress(CalendarSite site, DateOnly day)
+    public static string Address(CalendarSite site, DateOnly day) => site switch
     {
-        var path = day.ToString("yyyy/M/d", CultureInfo.InvariantCulture);
-        return site switch
-        {
-            CalendarSite.Outlook => $"https://outlook.office.com/calendar/view/day/{path}",
-            CalendarSite.OutlookCom => $"https://outlook.live.com/calendar/view/day/{path}",
-            _ => $"https://calendar.google.com/calendar/r/day/{path}",
-        };
-    }
+        CalendarSite.Outlook => "https://outlook.office.com/calendar/view/day",
+        CalendarSite.OutlookCom => "https://outlook.live.com/calendar/view/day",
+        _ => $"https://calendar.google.com/calendar/r/day/{day.ToString("yyyy/M/d", CultureInfo.InvariantCulture)}",
+    };
 }
