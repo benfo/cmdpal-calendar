@@ -74,6 +74,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
+- [ ] **Change which Microsoft calendars are shown**: after adding, there's no clear way to change the selection. Today you can only add more through Add a calendar → Microsoft (added ones show ✓ but Enter does nothing) and drop one with Remove in Manage calendars. Suggested: in the picker, Enter on an added calendar removes it (a toggle, with the last-calendar sign-out warning); and Ctrl+K on a Microsoft calendar in Manage calendars offers "Choose calendars for <account>", opening the picker for that account.
+
 - [ ] **Microsoft 365 and Outlook.com (Graph)** (in progress): needed where the org blocks publishing calendars with details (StructureIt does).
   - Tested 2026-10-05 with the Graph PowerShell client ID (`14d82eec-…`): you could consent to `Calendars.Read` yourself, and `calendarView` returned bodies and `onlineMeeting.joinUrl`. Develop with that ID; register our own multi-tenant app before release and test consent for it (unverified publisher).
   - UX: "Add a calendar" opens a chooser of working sources (Microsoft 365 or Outlook.com; Calendar address or file). Microsoft signs in with the Windows account picker (WAM), then a picker lists the account's calendars; Enter adds one and stays open. Each calendar is its own row (name and colour from Outlook, editable), subtitled with its account.
