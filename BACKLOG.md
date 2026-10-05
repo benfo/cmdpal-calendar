@@ -40,6 +40,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] **Microsoft events** (Graph step 3):
   - Events from added Microsoft calendars show on the calendar page, at the right times, all-day events on the right day.
   - Teams meetings join with Enter; notes show the agenda formatted without the Teams footer; Copy meeting ID and passcode works.
+  - Recurring meetings (e.g. the fortnightly one on 12 Oct) show their title, notes, organizer and join link, not "(No title)"; the series doesn't also show on the day it started.
   - Ctrl+Enter (or Enter on events with nothing to join) is "Open in Outlook" and opens that event itself in the browser.
   - Renaming or recolouring a Microsoft calendar updates its event tags straight away.
   - With the network off, events stay and "Couldn't refresh …" shows.
