@@ -56,9 +56,24 @@ Expect(graphStandup?.Notes?.Contains("**Daily**", StringComparison.Ordinal) == t
 Expect(graphStandup?.WebLink is not null && graphStandup.Organizer == "Jane Doe", "Graph web link and organizer are read");
 Expect(graphEntries.Any(e => e.IsAllDay), "Graph all-day event");
 
+var graphCache = new GraphEventCache(cacheDirectory, new PlainProtector());
+graphCache.Save(graphFeed, new GraphCalendarCopy(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), "delta", graphEntries, DateTimeOffset.UtcNow));
+var cachedCopy = graphCache.Load(graphFeed);
+Expect(cachedCopy?.DeltaLink == "delta" && cachedCopy.Entries.SequenceEqual(graphEntries, new EntryComparer()), "Graph events survive the cache");
+
 Directory.Delete(cacheDirectory, recursive: true);
 Console.WriteLine(failures.Count == 0 ? "Trimmed build works." : $"{failures.Count} check(s) failed.");
 return failures.Count == 0 ? 0 : 1;
+
+internal sealed class EntryComparer : IEqualityComparer<CalendarEntry>
+{
+    public bool Equals(CalendarEntry? x, CalendarEntry? y) =>
+        x is not null && y is not null &&
+        (x with { Attendees = [] }) == (y with { Attendees = [] }) &&
+        x.Attendees.SequenceEqual(y.Attendees);
+
+    public int GetHashCode(CalendarEntry obj) => obj.Uid.GetHashCode(StringComparison.Ordinal);
+}
 
 internal sealed class FixedSignIn : IMicrosoftSignIn
 {
