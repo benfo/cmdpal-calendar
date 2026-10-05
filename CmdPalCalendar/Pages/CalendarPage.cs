@@ -116,7 +116,7 @@ internal sealed partial class CalendarPage : DynamicListPage
 
     private ListItem? GoToRow() =>
         DateQuery.TryParse(SearchText, Today, out var date)
-            ? _rows.GoTo(date, EntriesOn(date).Count, () => GoTo(date, clearSearch: true))
+            ? _rows.GoTo(date, Today, EntriesOn(date).Count, () => GoTo(date, clearSearch: true))
             : null;
 
     private IReadOnlyList<CalendarEntry> EntriesOn(DateOnly date) => _source.GetEntries(date, date.AddDays(1));
@@ -137,7 +137,7 @@ internal sealed partial class CalendarPage : DynamicListPage
     private void UpdateTitle() =>
         Title = DaysShown == 1
             ? DateText.Title(SelectedDate, Today)
-            : DateText.Span(SelectedDate, SelectedDate.AddDays(DaysShown - 1));
+            : DateText.Span(SelectedDate, SelectedDate.AddDays(DaysShown - 1), Today);
 
     private void OnFeedsChanged()
     {

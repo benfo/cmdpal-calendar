@@ -44,7 +44,7 @@ internal sealed partial class JoinEventCommand : InvokableCommand
             0 => string.Empty,
             1 => "tomorrow ",
             -1 => "yesterday ",
-            _ => $"on {DateText.Short(day)} ",
+            _ => $"on {DateText.Short(day, today)} ",
         };
         return $"{date}at {TimeText.Clock(time)}";
     }

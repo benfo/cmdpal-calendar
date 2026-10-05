@@ -27,7 +27,7 @@ internal sealed class CalendarLayout(CalendarRows rows)
     {
         if (!content.IsFiltered)
         {
-            return [PointToNext($"Nothing on {DateText.Span(content.Days[0].Date, content.Days[^1].Date)}", content)];
+            return [PointToNext($"Nothing on {DateText.Span(content.Days[0].Date, content.Days[^1].Date, DateOnly.FromDateTime(content.Now.DateTime))}", content)];
         }
 
         return content.GoTo is null ? [rows.Message($"No events match '{content.Query.Trim()}'")] : [];

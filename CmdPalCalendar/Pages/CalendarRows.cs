@@ -47,7 +47,7 @@ internal sealed class CalendarRows(
             [
                 .. openOnCtrlEnter,
                 .. MeetingCommands(link, MeetingCredentials.Find(entry.Description)),
-                Copy("Copy event", EventText.Summary(entry)),
+                Copy("Copy event", EventText.Summary(entry, DateOnly.FromDateTime(time.GetLocalNow().DateTime))),
                 new Separator(),
                 .. _pageCommands,
             ],
@@ -121,15 +121,15 @@ internal sealed class CalendarRows(
 
         var date = DateOnly.FromDateTime(next.Start.DateTime);
         var time = next.IsAllDay ? "all day" : $"{next.Start:HH:mm}";
-        var go = new AnonymousCommand(() => goTo(date)) { Name = $"Go to {DateText.Short(date)}", Result = CommandResult.KeepOpen() };
+        var go = new AnonymousCommand(() => goTo(date)) { Name = $"Go to {DateText.Short(date, today)}", Result = CommandResult.KeepOpen() };
 
         return Message(title, $"Next: {DateText.Relative(date, today)} · {next.Title} {time}", go);
     }
 
-    public ListItem GoTo(DateOnly date, int eventCount, Action go) =>
+    public ListItem GoTo(DateOnly date, DateOnly today, int eventCount, Action go) =>
         new(new AnonymousCommand(go) { Name = "Go", Result = CommandResult.KeepOpen() })
         {
-            Title = $"Go to {DateText.Long(date)}",
+            Title = $"Go to {DateText.Long(date, today)}",
             Subtitle = eventCount switch { 0 => "No events", 1 => "1 event", _ => $"{eventCount} events" },
             Icon = GoToIcon,
             MoreCommands = _pageCommands,
