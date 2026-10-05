@@ -6,6 +6,11 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
+- [ ] **Add a calendar chooser** (Graph step 1):
+  - Manage calendars → Add a calendar opens a chooser with "Calendar address or file", which opens the usual form.
+  - After adding, you land back on the chooser (one step back); Esc returns to Manage calendars. Is that acceptable?
+  - Existing calendars still load, edit, turn off and remove as before.
+
 - [ ] **Open in Outlook or Google Calendar** (opening Outlook and Google Calendar is confirmed working):
   - Ctrl+K lists the open command once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
