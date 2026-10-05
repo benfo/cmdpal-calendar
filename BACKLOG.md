@@ -14,7 +14,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Add a calendar → Microsoft 365 or Outlook.com opens the Windows account picker over Command Palette, then lists your calendars (default first, shared ones "Shared by …").
   - Cancelling the account picker shows "Sign-in was cancelled" on the Sign in row; Enter tries again.
   - Enter on a calendar adds it ("Added …"), marks it with a check and "Added", and the page stays open.
-  - Opening the picker again lists your calendars without asking to sign in (also after Reload); "Use another account" adds a second account.
+  - Opening the picker again lists your calendars without asking to sign in (also after Reload); "Add another Microsoft account" (the first row) opens the Windows account picker, and the second account's calendars appear in their own section.
   - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
 - [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
   - The row reads "Sign in again to <account>" with "Your calendars can't update until you sign in" underneath.
