@@ -33,6 +33,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - An empty far-off day still points to the next event after it.
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
+- [ ] **Year on dates in another year**:
+  - Typing "10 mar" shows "Go to Wednesday 10 Mar 2027", and the page title then reads "Wednesday 10 Mar 2027"; dates this year stay short ("Monday 12 Oct").
+  - Schedule view across new year reads "Mon 28 Dec 2026 – Sun 3 Jan 2027"; a week next year reads "Mon 8 – Sun 14 Mar 2027".
+  - "Next: …" on empty days, Copy event and the join prompt ("starts on Wed 10 Mar 2027 at 09:00") show the year too.
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
@@ -114,8 +118,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] **Extension Gallery**: once it's on the Store, add `extensions/benfo/cmdpal-calendar/extension.json` via a PR to `microsoft/CmdPal-Extensions`.
 
 ## Later
-
-- [ ] **Show the year outside this year**: on a date in another year, titles like "Monday 5 Oct" don't say which year. Suggested: `DateText` adds the year ("Monday 5 Oct 2027", "Mon 5 Oct 2027 – Fri 9 Oct 2027") only when the date isn't in the current year, so everyday titles stay short.
 
 - [ ] **Open the event itself**: Google calendars open the event's day on the web, and Outlook only its day view (Outlook on the web has no link to a date). Opening the event needs a link to it.
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
