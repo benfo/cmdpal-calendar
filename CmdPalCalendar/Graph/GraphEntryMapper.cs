@@ -40,13 +40,9 @@ internal static class GraphEntryMapper
     private static DateTimeOffset ToLocal(DateTimeTimeZone? value, bool isAllDay)
     {
         var parsed = DateTime.Parse(value?.DateTime ?? string.Empty, CultureInfo.InvariantCulture, DateTimeStyles.None);
-        if (isAllDay)
-        {
-            var wallClock = DateTime.SpecifyKind(parsed.Date, DateTimeKind.Unspecified);
-            return new DateTimeOffset(wallClock, TimeZoneInfo.Local.GetUtcOffset(wallClock));
-        }
-
-        return new DateTimeOffset(DateTime.SpecifyKind(parsed, DateTimeKind.Utc)).ToLocalTime();
+        return isAllDay
+            ? LocalTime.FromWallClock(parsed.Date)
+            : new DateTimeOffset(DateTime.SpecifyKind(parsed, DateTimeKind.Utc)).ToLocalTime();
     }
 
     private static string? NameOrAddress(EmailAddress? email) => NullIfBlank(email?.Name) ?? NullIfBlank(email?.Address);

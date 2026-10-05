@@ -35,8 +35,7 @@ internal static class IcsEntryMapper
     {
         if (value.IsFloating || !value.HasTime)
         {
-            var wallClock = DateTime.SpecifyKind(value.Value, DateTimeKind.Unspecified);
-            return new DateTimeOffset(wallClock, TimeZoneInfo.Local.GetUtcOffset(wallClock));
+            return LocalTime.FromWallClock(value.Value);
         }
 
         return new DateTimeOffset(value.AsUtc).ToLocalTime();

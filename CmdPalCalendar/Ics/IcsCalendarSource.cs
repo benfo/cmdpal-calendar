@@ -55,8 +55,8 @@ internal sealed class IcsCalendarSource(
 
     public IReadOnlyList<CalendarEntry> GetEntries(DateOnly from, DateOnly toExclusive)
     {
-        var rangeStart = StartOfDay(from);
-        var rangeEnd = StartOfDay(toExclusive);
+        var rangeStart = LocalTime.StartOfDay(from);
+        var rangeEnd = LocalTime.StartOfDay(toExclusive);
         var expandFrom = new CalDateTime(rangeStart.Subtract(LongestEvent).UtcDateTime);
         var expandTo = new CalDateTime(rangeEnd.UtcDateTime);
 
@@ -128,12 +128,6 @@ internal sealed class IcsCalendarSource(
 
     private static HashSet<(string Id, FeedSource Source)> Addresses(IEnumerable<CalendarFeed> feeds) =>
         feeds.Select(f => (f.Id, f.Source)).ToHashSet();
-
-    private static DateTimeOffset StartOfDay(DateOnly date)
-    {
-        var midnight = date.ToDateTime(TimeOnly.MinValue);
-        return new DateTimeOffset(midnight, TimeZoneInfo.Local.GetUtcOffset(midnight));
-    }
 
     private static bool IsCancelled(CalendarEvent ev) =>
         string.Equals(ev.Status, "CANCELLED", StringComparison.OrdinalIgnoreCase);
