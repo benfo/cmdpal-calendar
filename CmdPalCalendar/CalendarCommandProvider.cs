@@ -29,7 +29,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
         var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
-        var source = new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time);
+        var source = new CompositeCalendarSource(new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time));
         var refresher = new CalendarRefresher(source);
         var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));
 
