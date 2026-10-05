@@ -20,6 +20,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - When a Microsoft sign-in has expired, Problems shows one "Sign in again to <account>" row per account, with the reason underneath (temporary, to find out why sign-ins are lost).
   - Enter opens the Windows account prompt for that account; after signing in, the calendars refresh and the row disappears.
   - Cancelling the prompt leaves the row in place.
+  - After signing in once more, Reload no longer asks again (sign-ins kept in `msal.cache.bin` in LocalState, encrypted with DPAPI).
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
