@@ -12,7 +12,7 @@ internal sealed record PickerAccount(MicrosoftAccount Account, IReadOnlyList<Gra
     public bool IsLoading => Calendars is null && Error is null;
 }
 
-internal sealed class MicrosoftCalendarPicker(IMicrosoftSignIn signIn, IGraphClient graph, CalendarFeedStore store)
+internal sealed class MicrosoftCalendarPicker(IMicrosoftSignIn signIn, IGraphCalendars graph, CalendarFeedStore store)
 {
     private readonly Lock _lock = new();
     private IReadOnlyList<PickerAccount> _accounts = [];

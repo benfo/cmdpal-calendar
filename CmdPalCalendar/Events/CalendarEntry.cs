@@ -18,7 +18,8 @@ internal sealed record CalendarEntry(
     string Source,
     string? Notes = null,
     CalendarColor Color = CalendarColor.Grey,
-    CalendarSite? Site = null)
+    CalendarSite? Site = null,
+    Uri? WebLink = null)
 {
     public bool Matches(string query) =>
         string.IsNullOrWhiteSpace(query) ||

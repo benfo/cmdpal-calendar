@@ -113,7 +113,7 @@ public sealed class MicrosoftCalendarPickerTests : IDisposable
         public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
     }
 
-    private sealed class FakeGraph : IGraphClient
+    private sealed class FakeGraph : IGraphCalendars
     {
         public Exception? Failure { get; set; }
 
