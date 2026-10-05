@@ -10,11 +10,13 @@ internal sealed partial class ManageCalendarsPage : ListPage
 {
     private readonly CalendarFeedStore _store;
     private readonly IcsFeedCheck _check;
+    private readonly AddCalendarPage _add;
 
     public ManageCalendarsPage(CalendarFeedStore store, IcsFeedCheck check)
     {
         _store = store;
         _check = check;
+        _add = new AddCalendarPage(store, check);
         _store.Changed += (_, _) => RaiseItemsChanged();
 
         Id = "CmdPalCalendar.ManageCalendars";
@@ -26,10 +28,10 @@ internal sealed partial class ManageCalendarsPage : ListPage
 
     public override IListItem[] GetItems() =>
     [
-        new ListItem(new CalendarFeedFormPage(_store, _check, feed: null))
+        new ListItem(_add)
         {
             Title = "Add a calendar",
-            Subtitle = "A published calendar address (ICS) or an .ics file",
+            Subtitle = "Choose where your calendar comes from",
             Icon = new IconInfo(Glyphs.Add),
         },
         .. _store.Feeds.Select(FeedItem),
