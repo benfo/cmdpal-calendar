@@ -80,12 +80,11 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
         return [.. browser, .. copyLink, .. copyCredentials];
     }
 
-    private static OpenUrlCommand OpenInCalendar(CalendarEntry entry, CalendarSite site) =>
-        new(CalendarSites.DayAddress(site, DateOnly.FromDateTime(entry.Start.DateTime)))
+    private static OpenInBrowserCommand OpenInCalendar(CalendarEntry entry, CalendarSite site) =>
+        new(new Uri(CalendarSites.DayAddress(site, DateOnly.FromDateTime(entry.Start.DateTime))))
         {
             Name = $"Open in {CalendarSiteText.Name(site)}",
             Icon = CalendarIcon,
-            Result = CommandResult.Dismiss(),
         };
 
     private static CommandContextItem Copy(string name, string text) => new(new CopyTextCommand(text) { Name = name });
