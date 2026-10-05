@@ -131,11 +131,13 @@ internal sealed partial class MicrosoftCalendarsPage : ContentPage
 
         private string StatusCard()
         {
-            var status = choice.IsBusy
-                ? choice.Account is null ? "Signing in… Choose an account in the Windows sign-in window." : "Loading your calendars…"
-                : "Couldn't show your calendars.";
-            JsonNode[] problem = choice.Problem is { } p && !choice.IsBusy ? [Problem(p)] : [];
-            return Card([Text(status), .. problem], choice.IsBusy ? null : Action(choice.NeedsSignInAgain ? "Sign in again" : "Try again", "retry"));
+            if (choice.IsBusy || choice.Problem is not { } problem)
+            {
+                var waiting = choice.Account is null ? "Signing in… Choose an account in the Windows sign-in window." : "Loading your calendars…";
+                return Card([Text(waiting)], null);
+            }
+
+            return Card([Text("Couldn't show your calendars."), Problem(problem)], Action(choice.NeedsSignInAgain ? "Sign in again" : "Try again", "retry"));
         }
 
         private static string Label(GraphCalendar calendar) =>
