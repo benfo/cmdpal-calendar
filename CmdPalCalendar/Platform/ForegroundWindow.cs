@@ -57,7 +57,10 @@ internal static class ForegroundWindow
         NativeMethods.AttachThreadInput(currentThread, foregroundThread, true);
         try
         {
-            NativeMethods.SetForegroundWindow(window);
+            if (!NativeMethods.SetForegroundWindow(window))
+            {
+                NativeMethods.SwitchToThisWindow(window, true);
+            }
         }
         finally
         {
@@ -92,6 +95,9 @@ internal static class ForegroundWindow
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool AttachThreadInput(uint attach, uint attachTo, [MarshalAs(UnmanagedType.Bool)] bool doAttach);
+
+        [DllImport("user32.dll")]
+        public static extern void SwitchToThisWindow(IntPtr window, [MarshalAs(UnmanagedType.Bool)] bool altTab);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int GetWindowText(IntPtr window, [Out] char[] text, int maxCount);
