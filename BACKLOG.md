@@ -27,6 +27,11 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Removing a Microsoft calendar that is its account's last says "…and you'll be signed out of <account>"; afterwards, Add a calendar → Microsoft asks you to sign in again.
   - Removing one of several calendars of an account keeps you signed in.
   - The removed calendars' `.graph.bin` files disappear from `cache/` after the next refresh.
+- [ ] **Our own app registration** (`2c35b16d-…`):
+  - After Reload, existing Microsoft calendars show "Sign in again to …" (tokens belonged to the old app); signing in keeps the calendars.
+  - Work account: the Windows sign-in shows "Calendar for Command Palette" (unverified) and most likely asks for admin approval; what it says, and whether the request reaches the admin, is the thing to note. After approval, sign-in and events work.
+  - Outlook.com account: consent screen asks only to read calendars; after accepting, calendars list and events load.
+  - Calendars shared with you still load. If not, the app also needs `Calendars.Read.Shared`.
 - [ ] **Microsoft dates beyond the window** (Graph step 5; showing far-off dates is confirmed working):
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
@@ -87,7 +92,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Data: rolling window of 2 weeks back to 3 months ahead, cached encrypted, refreshed every 5 minutes with delta; dates outside it fetched on demand.
   - Code lives in `Graph/` and `Platform/` (see CLAUDE.md). Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; the trim check covers Graph.
   - Done: chooser and feed sources; sign-in and choosing calendars (one form for adding and changing); events, join links and opening the event; encrypted cache and delta sync; sign in again, sign out, cleanup of unused sign-ins; dates beyond the window fetched by whole month on demand (`GraphMonths`, in memory, refetched after 5 minutes or on Refresh).
-  - Left: **our own app registration** (user, in progress), then swap the client ID in `WamSignIn` and test consent.
+  - Left: **test consent with our own app registration** (`2c35b16d-…`, registered 2026-10-05 and now in `WamSignIn`; see To test).
     - Where: a free Azure account on the personal Microsoft account gives a "Default Directory" tenant (card check, no charge). Apps can no longer be registered outside a tenant; not the employer's tenant.
     - Settings: multi-tenant plus personal accounts; Mobile and desktop redirect `ms-appx-web://Microsoft.AAD.BrokerPlugin/<client-id>`; delegated `Calendars.Read` only; no secret.
     - Publisher verification is out of reach: it needs an organisation's verified AI Cloud Partner Program account and a custom domain, and not a personal-account registration. The app shows as "unverified".
