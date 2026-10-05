@@ -36,7 +36,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var calendars = new GraphCalendarList(graph);
         var source = new CompositeCalendarSource(
             new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time),
-            new GraphCalendarSource(() => feeds.EnabledFeeds, new GraphEventReader(graph), time));
+            new GraphCalendarSource(() => feeds.EnabledFeeds, new GraphEventReader(graph), new GraphEventCache(Path.Combine(directory, "cache"), protector), time));
         var refresher = new CalendarRefresher(source);
         var check = new IcsFeedCheck(reader);
         var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, calendars, feeds));
