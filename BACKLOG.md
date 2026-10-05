@@ -28,7 +28,13 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Teams meetings join with Enter; notes show the agenda formatted without the Teams footer; Copy meeting ID and passcode works.
   - Ctrl+Enter (or Enter on events with nothing to join) is "Open in Outlook" and opens that event itself in the browser.
   - Renaming or recolouring a Microsoft calendar updates its event tags straight away.
-  - With the network off, events stay and "Couldn't refresh …" shows (until Reload; the cache comes in step 4).
+  - With the network off, events stay and "Couldn't refresh …" shows.
+- [ ] **Microsoft cache and delta** (Graph step 4):
+  - After Reload, Microsoft events show straight away, before the network catches up.
+  - With the network off and a Reload, events still show, with "Couldn't refresh … · showing data from … ago".
+  - A meeting added, moved or deleted in Outlook shows up within about 5 minutes (Refresh to force).
+  - Shared or secondary calendars (not your default) also update; if delta isn't supported for them, they still load.
+  - `cache/` holds one `.graph.bin` per Microsoft calendar, unreadable as text; removing a calendar deletes its file.
 
 - [ ] **Open in Outlook or Google Calendar** (opening Outlook and Google Calendar is confirmed working):
   - Ctrl+K lists the open command once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
