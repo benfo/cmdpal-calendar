@@ -33,7 +33,7 @@ internal sealed partial class MicrosoftCalendarsPage : ListPage
         }
 
         IsLoading = _picker.IsSigningIn || _picker.Accounts.Any(a => a.IsLoading);
-        return [.. _picker.Accounts.SelectMany(AccountItems), SignInItem()];
+        return [SignInItem(), .. _picker.Accounts.SelectMany(AccountItems)];
     }
 
     private IListItem[] AccountItems(PickerAccount account) => account switch
@@ -71,7 +71,7 @@ internal sealed partial class MicrosoftCalendarsPage : ListPage
     private ListItem SignInItem() =>
         new(SignInCommand())
         {
-            Title = _picker.Accounts.Count == 0 ? "Sign in" : "Use another account",
+            Title = _picker.Accounts.Count == 0 ? "Sign in" : "Add another Microsoft account",
             Subtitle = _picker.IsSigningIn ? "Signing in…" : _picker.SignInProblem ?? "Work, school or personal Microsoft account",
             Icon = new IconInfo(Glyphs.Contact),
         };
