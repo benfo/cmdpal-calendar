@@ -33,12 +33,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - An empty far-off day still points to the next event after it.
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
-- [ ] **Dates and times from your regional settings** (Windows Settings → Time & language → Region; Reload after changing):
-  - Dates follow the region's long date format, with the year only outside this year: for en-ZA "Monday, 12 Oct", "Today · Mon, 5 Oct", and typing "10 mar" shows "Go to Wednesday, 10 Mar 2027".
-  - Schedule view: "Mon, 12 Oct – Sun, 18 Oct"; next year "Mon, 8 Mar – Sun, 14 Mar 2027"; across new year "Mon, 28 Dec 2026 – Sun, 3 Jan 2027".
-  - Times follow the region's short time: switching to a 12-hour clock shows "2:00 PM" on rows, in the details, "Next: …", the join prompt and the Calendar subtitle.
-  - Copy event gives "Sat, 3 Oct · 09:30–10:00 · Standup · Room 4"; the join prompt reads "starts on Wed, 10 Mar 2027 at 09:00".
-  - Changing the region to English (United States) shows "Monday, Oct 12".
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
@@ -145,6 +139,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Done
 
+- [x] Dates and times follow the Windows regional settings (date shape from the long date format, 12- or 24-hour clock), with the year shown only outside the current year.
 - [x] Signing key backed up: the `.pfx` and its password are in the password manager and the GitHub secrets only; the local folder is deleted.
 
 - [x] Same editing for every calendar: Enter edits name, colour and visibility (with a read-only "From …" line); Ctrl+K starts with the provider's source command ("Change address…" or "Choose calendars for …"); adding only asks where a calendar comes from.
