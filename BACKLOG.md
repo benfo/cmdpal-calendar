@@ -122,6 +122,9 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Engineering
 
+- [ ] **Shared base for calendar sources**: `IcsCalendarSource` and `GraphCalendarSource` repeat the same bookkeeping (loaded calendars, 5-minute staleness, last good copy, problems). Move it into one tested class.
+- [ ] **Testable page state**: move `CalendarPage`'s selected date, view and typed-date handling into a plain `CalendarPageState`, like `MicrosoftCalendarPicker`, so it can be unit-tested.
+- [ ] **Safe background work from commands**: replace `_ = Task.Run(...)` with a helper that runs the work and shows failures as a toast, so exceptions aren't lost.
 - [ ] **Logging to a file** in LocalState: sign-in failures, Graph errors, refresh timings; no personal data. `Microsoft.Extensions.Logging` abstractions with a small file writer of our own (trim-safe; Serilog's configuration uses reflection).
 - [ ] **Calendar provider abstraction** before adding Google: one `ICalendarProvider` per kind (ICS, Microsoft, Google) bundling its source, chooser entry and editing, so a new provider doesn't touch the store, chooser, form, Manage page and wiring.
 - [ ] **Store calendar sources with System.Text.Json polymorphism** (`[JsonDerivedType]`, source-generated) instead of mapping each kind by hand (`StoredMicrosoft`). Pairs with the provider abstraction.
