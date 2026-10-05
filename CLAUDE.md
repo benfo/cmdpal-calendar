@@ -21,11 +21,11 @@ Always check exit status before committing: piping build/test output through `gr
 
 - `CmdPalCalendar/` (extension)
   - `CalendarCommandProvider.cs`: composition root. Wires the store, source, cache, refresher, pages and ticker. Top-level commands: **Calendar** (`CmdPalCalendar.Calendar`) and **Join next meeting** (`CmdPalCalendar.JoinNext`).
-  - `Events/`: domain, no Command Palette dependencies, unit-tested. `CalendarEntry`, `ICalendarSource`, `CalendarRefresher`, `DateQuery` (Todoist-style dates), `MeetingLink` (Teams/Zoom/Meet/Webex, native `msteams://`/`zoommtg://` rewrites), `LinkUnwrapper`, `MeetingCredentials`, `UpcomingMeeting`, `MeetingPhases`, `HtmlToMarkdown`, `EventNotes`, `MarkdownText`.
+  - `Events/`: domain, no Command Palette dependencies, unit-tested. `CalendarEntry`, `ICalendarSource`, `CalendarRefresher`, `DateQuery` (Todoist-style dates), `MeetingLink` (Teams/Zoom/Meet/Webex, native `msteams://`/`zoommtg://` rewrites), `LinkUnwrapper`, `MeetingCredentials`, `UpcomingMeeting`, `MeetingPhases`, `HtmlToMarkdown`, `EventNotes`, `MarkdownText`, `CalendarSite` (Outlook/Outlook.com/Google detected from the feed address, and their web addresses).
   - `Ics/`: ICS provider. `IcsCalendarSource` (cache-first load, keeps last good copy, `Updated` event), `IcsFeedReader`, `IcsEntryMapper`, `IcsFeedCheck` (form validation), `IcsFeedCache` (encrypted copies in `cache/`).
   - `Feeds/`: `CalendarFeed`, `CalendarFeedStore` (`calendars.json`, addresses DPAPI-encrypted), `LegacyFeedImport`, `ISecretProtector`.
   - `Platform/`: `DpapiSecretProtector`.
-  - `Pages/`: Command Palette UI. `CalendarPage` (state, Day/Schedule views, typed dates, 30 s ticking), `CalendarLayout`, `CalendarRows`, `NavigationCommands`, `ManageCalendarsPage`, `CalendarFeedFormPage`, `JoinMeetingCommand`, `JoinNextMeetingItem`/`Command`, `NextMeetingTicker`, `LiveSubtitles`, `Glyphs`, `CalendarColors`.
+  - `Pages/`: Command Palette UI. `CalendarPage` (state, Day/Schedule views, typed dates, 30 s ticking), `CalendarLayout`, `CalendarRows` (Enter joins, else opens the calendar site; Ctrl+K order sets Ctrl+Enter), `NavigationCommands`, `OpenInBrowserCommand`, `CalendarSiteText`, `EventText`, `ManageCalendarsPage`, `CalendarFeedFormPage`, `JoinMeetingCommand`, `JoinNextMeetingItem`/`Command`, `NextMeetingTicker`, `LiveSubtitles`, `Glyphs`, `CalendarColors`.
 - `tests/CmdPalCalendar.Tests` links `Events/`, `Ics/`, `Feeds/` as source (no WinRT). Keep logic out of `Pages/` so it can be tested.
 - Runtime data (package LocalState): `calendars.json`, `cache/*.ics.bin`. Both are encrypted per Windows user.
 
@@ -47,6 +47,9 @@ Always check exit status before committing: piping build/test output through `gr
 - `DynamicListPage` updates `SearchText` without notifying; clear it with `SetSearchNoUpdate("")` + `OnPropertyChanged(nameof(SearchText))`.
 - Form `SubmitForm` runs on a background task per click: guard against repeat submits and show progress (`IsLoading` + status text).
 - Rebuilding a list resets selection; update existing items in place for live values (`LiveSubtitles`).
+- Ctrl+Enter runs the first visible command in `MoreCommands` (separators skipped), and the footer shows its name. The item's own command is also listed in Ctrl+K, so don't repeat it first or it shows twice.
+- New Outlook and Teams claim `outlook.office.com`/`outlook.office365.com`/`teams.microsoft.com` as app URI handlers, so `OpenUrlCommand` shows a "select an app" picker. Use `OpenInBrowserCommand` (`IgnoreAppUriHandlers`) for links meant for the browser.
+- Outlook on the web has no link to a given date (`/calendar/view/day/2026/10/3` opens today); Google Calendar's `/r/day/yyyy/M/d` works.
 - No API for default aliases or hotkeys for extension commands.
 - After deploying, Command Palette may keep the old extension until **Reload** or a restart.
 
