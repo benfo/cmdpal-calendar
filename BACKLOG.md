@@ -27,6 +27,12 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Removing a Microsoft calendar that is its account's last says "…and you'll be signed out of <account>"; afterwards, Add a calendar → Microsoft asks you to sign in again.
   - Removing one of several calendars of an account keeps you signed in.
   - The removed calendars' `.graph.bin` files disappear from `cache/` after the next refresh.
+- [ ] **Microsoft dates beyond the window** (Graph step 5):
+  - Going to a date more than 3 months ahead (e.g. type "10 mar") or more than 2 weeks back shows the spinner briefly, then that day's Microsoft events; ICS events show as before.
+  - Moving to other days in the same month shows events straight away, without the spinner.
+  - An empty far-off day still points to the next event after it.
+  - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
+  - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
@@ -84,8 +90,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Events: ICS parity (join link from `onlineMeeting.joinUrl`), and opening the event itself via `webLink`.
   - Data: rolling window of 2 weeks back to 3 months ahead, cached encrypted, refreshed every 5 minutes with delta; dates outside it fetched on demand.
   - Code lives in `Graph/` and `Platform/` (see CLAUDE.md). Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; the trim check covers Graph.
-  - Done: chooser and feed sources; sign-in and choosing calendars (one form for adding and changing); events, join links and opening the event; encrypted cache and delta sync; sign in again, sign out, cleanup of unused sign-ins.
-  - Left: **step 5, dates beyond the window** fetched on demand (kept in memory); **our own app registration** (multi-tenant, work and personal accounts), then test consent with an unverified publisher and swap the client ID in `WamSignIn`.
+  - Done: chooser and feed sources; sign-in and choosing calendars (one form for adding and changing); events, join links and opening the event; encrypted cache and delta sync; sign in again, sign out, cleanup of unused sign-ins; dates beyond the window fetched by whole month on demand (`GraphMonths`, in memory, refetched after 5 minutes or on Refresh).
+  - Left: **our own app registration** (multi-tenant, work and personal accounts), then test consent with an unverified publisher and swap the client ID in `WamSignIn`.
   - `iCalUId` is different for each occurrence of a series.
 
 - [ ] **Calendar provider abstraction** (after Graph step 5, before Google): adding a provider shouldn't touch the store, chooser, form, Manage page and wiring.
