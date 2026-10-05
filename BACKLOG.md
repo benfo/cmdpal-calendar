@@ -12,6 +12,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Ctrl+K lists "Open in …" once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
   - Ctrl+B joins in the browser on a Teams or Zoom event.
+  - With the new Outlook and Teams apps installed, both open straight in the browser without Windows asking which app to use.
 - [ ] **Updating a release** (once v0.1.2 is out; a fresh install of v0.1.1 is confirmed working):
   - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
   - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
