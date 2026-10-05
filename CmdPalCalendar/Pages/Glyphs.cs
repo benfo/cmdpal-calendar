@@ -15,4 +15,6 @@ internal static class Glyphs
     public const string Add = "\uE710";
     public const string Edit = "\uE70F";
     public const string Delete = "\uE74D";
+    public const string Accept = "\uE73E";
+    public const string Contact = "\uE77B";
 }

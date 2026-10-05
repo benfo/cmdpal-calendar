@@ -2,11 +2,13 @@ using System;
 using System.IO;
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
+using CmdPalCalendar.Graph;
 using CmdPalCalendar.Ics;
 using CmdPalCalendar.Pages;
 using CmdPalCalendar.Platform;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Graph;
 
 namespace CmdPalCalendar;
 
@@ -31,7 +33,11 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
         var source = new CompositeCalendarSource(new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time));
         var refresher = new CalendarRefresher(source);
-        var manage = new ManageCalendarsPage(feeds, new IcsFeedCheck(reader));
+        var check = new IcsFeedCheck(reader);
+        var signIn = new WamSignIn();
+        var graph = new GraphClient(signIn, GraphClientFactory.Create());
+        var add = new AddCalendarPage(feeds, check, () => new MicrosoftCalendarPicker(signIn, graph, feeds));
+        var manage = new ManageCalendarsPage(feeds, check, add);
 
         var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time))
         {

@@ -12,11 +12,11 @@ internal sealed partial class ManageCalendarsPage : ListPage
     private readonly IcsFeedCheck _check;
     private readonly AddCalendarPage _add;
 
-    public ManageCalendarsPage(CalendarFeedStore store, IcsFeedCheck check)
+    public ManageCalendarsPage(CalendarFeedStore store, IcsFeedCheck check, AddCalendarPage add)
     {
         _store = store;
         _check = check;
-        _add = new AddCalendarPage(store, check);
+        _add = add;
         _store.Changed += (_, _) => RaiseItemsChanged();
 
         Id = "CmdPalCalendar.ManageCalendars";

@@ -1,4 +1,6 @@
+using System;
 using CmdPalCalendar.Feeds;
+using CmdPalCalendar.Graph;
 using CmdPalCalendar.Ics;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -9,11 +11,13 @@ internal sealed partial class AddCalendarPage : ListPage
 {
     private readonly CalendarFeedStore _store;
     private readonly IcsFeedCheck _check;
+    private readonly Func<MicrosoftCalendarPicker> _newPicker;
 
-    public AddCalendarPage(CalendarFeedStore store, IcsFeedCheck check)
+    public AddCalendarPage(CalendarFeedStore store, IcsFeedCheck check, Func<MicrosoftCalendarPicker> newPicker)
     {
         _store = store;
         _check = check;
+        _newPicker = newPicker;
 
         Id = "CmdPalCalendar.AddCalendar";
         Name = "Add";
@@ -24,6 +28,12 @@ internal sealed partial class AddCalendarPage : ListPage
 
     public override IListItem[] GetItems() =>
     [
+        new ListItem(new MicrosoftCalendarsPage(_newPicker()))
+        {
+            Title = "Microsoft 365 or Outlook.com",
+            Subtitle = "Sign in with your Microsoft account",
+            Icon = new IconInfo(Glyphs.Contact),
+        },
         new ListItem(new CalendarFeedFormPage(_store, _check, feed: null))
         {
             Title = "Calendar address or file",
