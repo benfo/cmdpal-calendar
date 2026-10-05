@@ -1,5 +1,5 @@
 using System.Globalization;
-using CmdPalCalendar.Pages;
+using CmdPalCalendar.Events;
 
 namespace CmdPalCalendar.Tests;
 

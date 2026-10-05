@@ -13,7 +13,6 @@
     <Compile Include="..\..\CmdPalCalendar\Ics\**\*.cs" Link="Source\Ics\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\CmdPalCalendar\Feeds\**\*.cs" Link="Source\Feeds\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\CmdPalCalendar\Graph\**\*.cs" Link="Source\Graph\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\..\CmdPalCalendar\Pages\DateText.cs" Link="Source\Pages\DateText.cs" />
     <None Include="..\..\samples\sample.ics" Link="sample.ics" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

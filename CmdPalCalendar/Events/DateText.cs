@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace CmdPalCalendar.Pages;
+namespace CmdPalCalendar.Events;
 
 internal static class DateText
 {

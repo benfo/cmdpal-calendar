@@ -1,7 +1,6 @@
 using System;
-using CmdPalCalendar.Events;
 
-namespace CmdPalCalendar.Pages;
+namespace CmdPalCalendar.Events;
 
 internal static class TimeText
 {
