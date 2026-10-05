@@ -47,6 +47,8 @@
   <ItemGroup>
     <PackageReference Include="Ical.Net" />
     <PackageReference Include="Microsoft.CommandPalette.Extensions" />
+    <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Shmuelie.WinRTServer" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
