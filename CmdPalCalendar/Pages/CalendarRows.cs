@@ -25,7 +25,9 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
     public ListItem Entry(CalendarEntry entry, DateTimeOffset? now, bool showCalendar)
     {
         var link = MeetingLink.Parse(entry.Link);
-        var open = entry.Site is { } site ? OpenInCalendar(entry, site) : null;
+        var open = entry.WebLink is { } web ? OpenEvent(web, entry.Site)
+            : entry.Site is { } site ? OpenInCalendar(entry, site)
+            : null;
         ICommand command = link is not null ? new JoinMeetingCommand(link) : open ?? (ICommand)new NoOpCommand();
         IContextItem[] openOnCtrlEnter = link is not null && open is not null ? [new CommandContextItem(open)] : [];
 
@@ -79,6 +81,13 @@ internal sealed class CalendarRows(NavigationCommands navigation, ICommand manag
 
         return [.. browser, .. copyLink, .. copyCredentials];
     }
+
+    private static OpenInBrowserCommand OpenEvent(Uri web, CalendarSite? site) =>
+        new(web)
+        {
+            Name = CalendarSiteText.OpenEventLabel(site),
+            Icon = CalendarIcon,
+        };
 
     private static OpenInBrowserCommand OpenInCalendar(CalendarEntry entry, CalendarSite site) =>
         new(new Uri(CalendarSites.Address(site, DateOnly.FromDateTime(entry.Start.DateTime))))
