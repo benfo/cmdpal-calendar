@@ -27,11 +27,9 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Removing a Microsoft calendar that is its account's last says "…and you'll be signed out of <account>"; afterwards, Add a calendar → Microsoft asks you to sign in again.
   - Removing one of several calendars of an account keeps you signed in.
   - The removed calendars' `.graph.bin` files disappear from `cache/` after the next refresh.
-- [ ] **Our own app registration** (`2c35b16d-…`):
+- [ ] **Our own app registration** (`2c35b16d-…`; signing in to a personal Outlook.com calendar is confirmed working):
   - After Reload, existing Microsoft calendars show "Sign in again to …" (tokens belonged to the old app); signing in keeps the calendars.
-  - Work account: the Windows sign-in shows "Calendar for Command Palette" (unverified) and most likely asks for admin approval; what it says, and whether the request reaches the admin, is the thing to note. After approval, sign-in and events work.
-  - Outlook.com account: consent screen asks only to read calendars; after accepting, calendars list and events load.
-  - Calendars shared with you still load. If not, the app also needs `Calendars.Read.Shared`.
+  - Work account: the Windows sign-in shows "Calendar for Command Palette" (unverified) and most likely asks for admin approval; what it says, and whether the request reaches the admin, is the thing to note. After approval, sign-in and events work.  - Calendars shared with you still load. If not, the app also needs `Calendars.Read.Shared`.
 - [ ] **Microsoft dates beyond the window** (Graph step 5; showing far-off dates is confirmed working):
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
