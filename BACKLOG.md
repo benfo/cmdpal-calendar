@@ -122,6 +122,11 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Engineering
 
+- [ ] **Logging to a file** in LocalState: sign-in failures, Graph errors, refresh timings; no personal data. `Microsoft.Extensions.Logging` abstractions with a small file writer of our own (trim-safe; Serilog's configuration uses reflection).
+- [ ] **Calendar provider abstraction** before adding Google: one `ICalendarProvider` per kind (ICS, Microsoft, Google) bundling its source, chooser entry and editing, so a new provider doesn't touch the store, chooser, form, Manage page and wiring.
+- [ ] **Store calendar sources with System.Text.Json polymorphism** (`[JsonDerivedType]`, source-generated) instead of mapping each kind by hand (`StoredMicrosoft`). Pairs with the provider abstraction.
+- [ ] **Test helpers**: `FakeTimeProvider` (`Microsoft.Extensions.TimeProvider.Testing`) instead of `ManualTimeProvider`, which also fires timers so the ticker and `NextMeetingTicker` become testable; Verify snapshot tests for `HtmlToMarkdown` and `EventNotes`. Test-only dependencies.
+- [ ] **`Microsoft.VisualStudio.Threading.Analyzers`**: catches fire-and-forget tasks, `async void` and similar at build time.
 - [ ] Tests for link detection and the layout (now/next split, empty states).
 
 ## Done
