@@ -16,6 +16,12 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Enter on a calendar adds it ("Added …"), marks it with a check and "Added", and the page stays open.
   - Opening the picker again lists your calendars without asking to sign in (also after Reload); "Use another account" adds a second account.
   - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
+- [ ] **Microsoft events** (Graph step 3):
+  - Events from added Microsoft calendars show on the calendar page, at the right times, all-day events on the right day.
+  - Teams meetings join with Enter; notes show the agenda formatted without the Teams footer; Copy meeting ID and passcode works.
+  - Ctrl+Enter (or Enter on events with nothing to join) is "Open in Outlook" and opens that event itself in the browser.
+  - Renaming or recolouring a Microsoft calendar updates its event tags straight away.
+  - With the network off, events stay and "Couldn't refresh …" shows (until Reload; the cache comes in step 4).
 
 - [ ] **Open in Outlook or Google Calendar** (opening Outlook and Google Calendar is confirmed working):
   - Ctrl+K lists the open command once, and **Copy event** copies "Sat 3 Oct, 09:30–10:00 · Standup · Room 4".
