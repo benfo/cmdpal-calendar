@@ -88,6 +88,14 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Left: **step 5, dates beyond the window** fetched on demand (kept in memory); **our own app registration** (multi-tenant, work and personal accounts), then test consent with an unverified publisher and swap the client ID in `WamSignIn`.
   - `iCalUId` is different for each occurrence of a series.
 
+- [ ] **Calendar provider abstraction** (after Graph step 5, before Google): adding a provider shouldn't touch the store, chooser, form, Manage page and wiring.
+  - One `ICalendarProvider` per kind (ICS, Microsoft, later Google) bundling its source, chooser entry, "change source" command and storage.
+  - Shared base for calendar sources: `IcsCalendarSource` and `GraphCalendarSource` repeat the same bookkeeping (loaded calendars, 5-minute staleness, last good copy, problems). Move it into one tested class.
+  - Store calendar sources with System.Text.Json polymorphism (`[JsonDerivedType]`, source-generated) instead of mapping each kind by hand (`StoredMicrosoft`).
+- [ ] **Google Calendar** (after the provider abstraction):
+  - Testing mode expires tokens after 7 days, so publish the app "In production" (unverified).
+  - Workspace admins can block the app.
+
 - [ ] **Release v0.1.2**: `main` has installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). Waiting for the user's go-ahead to tag.
 - [ ] **Shortcut tip** (waiting for the user's decision): there's no SDK way to give extension commands a default alias or hotkey. Suggested: the installer's closing message and the README suggest one (Calendar alias `cal`, a global hotkey for Join next meeting). Writing into Command Palette's own `settings.json` is possible but fragile, so not recommended.
 - [ ] **Dock band** (recommended next feature): "Standup · 7m" in the Command Palette Dock; clicking it joins. Reuse `UpcomingMeeting`/`NextMeetingTicker` logic; copy the built-in `NowDockBand` timer pattern (`GetDockBands()`, band command with a non-empty `Id`). Watch PowerToys #50367: bands can stop updating after an RDP or session switch.
@@ -108,9 +116,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Google Calendar**:
-  - Testing mode expires tokens after 7 days, so publish the app "In production" (unverified).
-  - Workspace admins can block the app.
 - [ ] **Merge calendars**: show the same meeting once. Match on start and end plus the join link, UID or title.
 
 ## Ideas
@@ -122,12 +127,9 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Engineering
 
-- [ ] **Shared base for calendar sources**: `IcsCalendarSource` and `GraphCalendarSource` repeat the same bookkeeping (loaded calendars, 5-minute staleness, last good copy, problems). Move it into one tested class.
 - [ ] **Testable page state**: move `CalendarPage`'s selected date, view and typed-date handling into a plain `CalendarPageState`, like `MicrosoftCalendarPicker`, so it can be unit-tested.
 - [ ] **Safe background work from commands**: replace `_ = Task.Run(...)` with a helper that runs the work and shows failures as a toast, so exceptions aren't lost.
 - [ ] **Logging to a file** in LocalState: sign-in failures, Graph errors, refresh timings; no personal data. `Microsoft.Extensions.Logging` abstractions with a small file writer of our own (trim-safe; Serilog's configuration uses reflection).
-- [ ] **Calendar provider abstraction** before adding Google: one `ICalendarProvider` per kind (ICS, Microsoft, Google) bundling its source, chooser entry and editing, so a new provider doesn't touch the store, chooser, form, Manage page and wiring.
-- [ ] **Store calendar sources with System.Text.Json polymorphism** (`[JsonDerivedType]`, source-generated) instead of mapping each kind by hand (`StoredMicrosoft`). Pairs with the provider abstraction.
 - [ ] **Test helpers**: `FakeTimeProvider` (`Microsoft.Extensions.TimeProvider.Testing`) instead of `ManualTimeProvider`, which also fires timers so the ticker and `NextMeetingTicker` become testable; Verify snapshot tests for `HtmlToMarkdown` and `EventNotes`. Test-only dependencies.
 - [ ] **`Microsoft.VisualStudio.Threading.Analyzers`**: catches fire-and-forget tasks, `async void` and similar at build time.
 - [ ] Tests for link detection and the layout (now/next split, empty states).
