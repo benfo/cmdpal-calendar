@@ -63,6 +63,7 @@ Always check exit status before committing: piping build/test output through `gr
 ## How we work
 
 - Small, focused commits, one logical change each, single-line messages, no attribution (global rule). Commit after each step; update README/BACKLOG in their own commit.
+- Until the first release with Microsoft 365 (v0.2.0), commit straight to `main`. From then on: one branch per backlog item (`feature/…`, `fix/…`), merged into `main` through a PR so CI runs first, without squashing. Tags only from `main`.
 - Plan features before building: ask decisions one at a time, each with a recommendation first. Look up facts (source in the PowerToys repo, the SDK, this machine) rather than asking.
 - Reuse what the sibling extension `../../bookmarx` already solved (build, deploy, patterns) before proposing new setup.
 - Anything not tried by hand in Command Palette goes on BACKLOG **To test**; never claim it works until the user confirms. The user ticks items off.
