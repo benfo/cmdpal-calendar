@@ -58,8 +58,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Microsoft 365 (Graph)**:
-  - The default tenant policy needs admin consent for `Calendars.Read`; test that first.
+- [ ] **Microsoft 365 (Graph)**: needed where the org blocks publishing calendars with details (StructureIt does).
+  - Tested 2026-10-05 with the Graph PowerShell client ID (`14d82eec-…`): you could consent to `Calendars.Read` yourself, and `calendarView` returned bodies and `onlineMeeting.joinUrl`. Consent for an unverified app of our own is still untested.
   - WAM needs a parent window we create ourselves.
   - `iCalUId` is different for each occurrence of a series.
 - [ ] **Google Calendar**:
