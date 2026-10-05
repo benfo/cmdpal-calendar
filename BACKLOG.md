@@ -27,10 +27,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Removing a Microsoft calendar that is its account's last says "…and you'll be signed out of <account>"; afterwards, Add a calendar → Microsoft asks you to sign in again.
   - Removing one of several calendars of an account keeps you signed in.
   - The removed calendars' `.graph.bin` files disappear from `cache/` after the next refresh.
-- [ ] **Microsoft dates beyond the window** (Graph step 5):
-  - Going to a date more than 3 months ahead (e.g. type "10 mar") or more than 2 weeks back shows the spinner briefly, then that day's Microsoft events; ICS events show as before.
-  - Moving to other days in the same month shows events straight away, without the spinner.
-  - An empty far-off day still points to the next event after it.
+- [ ] **Microsoft dates beyond the window** (Graph step 5; showing far-off dates is confirmed working):
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
 - [ ] **Join guard on calendar rows**:
