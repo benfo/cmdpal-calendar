@@ -6,8 +6,13 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
+- [ ] **Same editing for every calendar**:
+  - Enter on any calendar in Manage calendars opens "Edit <name>": a "From <address or account> · calendar address / Microsoft 365" line, then Name, Colour, Show this calendar and Save. No address field.
+  - Ctrl+K starts with the source command: "Change address…" for address calendars, "Choose calendars for <account>…" for Microsoft ones; Ctrl+Enter runs it. Then Turn off/on, Remove, and Sign out (Microsoft only).
+  - Change address: an address-only form with the hint text; a bad address shows an error; a good one keeps the name, colour and on/off. Saving it unchanged just goes back.
+  - Add a calendar → Calendar address or file: the same address-only form; the calendar takes its own name (or the host/file name) and the next colour.
 - [ ] **Add a calendar chooser** (Graph step 1):
-  - Manage calendars → Add a calendar opens a chooser with "Calendar address or file", which opens the usual form.
+  - Manage calendars → Add a calendar opens a chooser with "Calendar address or file" and "Microsoft 365 or Outlook.com".
   - After adding, you land back on the chooser (one step back; the host can't go back two); Esc returns to Manage calendars.
   - Existing calendars still load, edit, turn off and remove as before.
 - [ ] **Microsoft sign-in and choosing calendars** (signing in, listing calendars and adding a second account are confirmed working):
@@ -18,7 +23,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Save with everything off asks "Sign out of …?"; Sign out removes the account's calendars and goes back; Cancel keeps the form.
   - Cancelling the Windows sign-in shows "Sign-in was cancelled" with a Try again button.
   - Manage calendars: Ctrl+K on a Microsoft calendar starts with "Choose calendars for <account>", which opens the same form for that account without signing in.
-  - Manage calendars shows Microsoft calendars with the account as subtitle; editing shows only name, colour and on/off.
+  - Manage calendars shows Microsoft calendars with the account as subtitle.
   - Signing in to a new account and pressing Back without saving: within about 20 minutes (15 minutes' grace, then the next refresh) the leftover sign-in is removed, so adding that account again asks for a fresh sign-in.
 - [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
   - The row reads "Sign in again to <account>" with "Your calendars can't update until you sign in" underneath.
@@ -70,11 +75,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - `cache/` in the extension's LocalState holds one `.ics.bin` per calendar, unreadable as text.
 - [ ] **Manage calendars**:
   - After Reload, the three feeds from the old settings text box show up as calendars (named after their host, coloured blue, purple and green), and the Settings page is gone.
-  - Adding a calendar: a bad address shows an error in the form; a blank name uses the calendar's own name.
   - Editing a name or colour updates the event tags straight away; turning a calendar off hides its events.
   - Removing a calendar asks first.
   - With several calendars on, each row shows a coloured calendar tag; with one, only the details pane does.
-  - The form's colour dropdown and on/off toggle show the saved values when editing.
+  - The edit form's colour dropdown and on/off toggle show the saved values.
 
 ## Next up
 
