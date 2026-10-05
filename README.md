@@ -40,12 +40,12 @@ Calendars refresh in the background every 5 minutes (Microsoft calendars fetch o
 
 Everything is stored in the extension's settings folder and encrypted for your Windows account: `calendars.json` (published-calendar addresses work like passwords), `msal.cache.bin` (which Microsoft accounts you signed in with; Windows keeps the sign-in itself) and `cache/`.
 
-Microsoft sign-in currently uses the Microsoft Graph PowerShell app's client ID, so personal Outlook.com accounts may not work yet. The extension will get its own app registration before release.
+Work accounts usually need your IT admin to approve the app once: Microsoft's default settings don't let people give third-party apps access to their calendar themselves. The first sign-in then asks you to request approval; once an admin approves **Calendar for Command Palette**, everyone in your organisation can use it. Outlook.com accounts sign in straight away. The app is published by an individual, so Microsoft lists its publisher as unverified. It only asks to read your calendars (`Calendars.Read`).
 
 ## Plan
 
 The extension reads published calendars (ICS) and Microsoft 365 / Outlook.com accounts. The next steps are:
-- its own Microsoft app registration, then a release;
+- a release with Microsoft 365 and Outlook.com;
 - a Dock item that counts down to the next meeting ("Standup · 7m") and joins it when clicked;
 - Google Calendar accounts, and showing a meeting that's in several calendars once.
 
