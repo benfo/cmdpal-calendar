@@ -71,7 +71,7 @@ internal sealed partial class ManageCalendarsPage : ListPage
 
     private ContentPage ChangeSourcePage(CalendarFeed feed) => feed.Source switch
     {
-        MicrosoftSource source => new MicrosoftCalendarsPage(_newChoice(new MicrosoftAccount(source.AccountId, source.Account)))
+        MicrosoftSource source => new MicrosoftCalendarsPage(() => _newChoice(new MicrosoftAccount(source.AccountId, source.Account)))
         {
             Name = $"Choose calendars for {source.Account}…",
             Icon = new IconInfo(Glyphs.Calendar),

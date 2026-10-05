@@ -28,7 +28,7 @@ internal sealed partial class AddCalendarPage : ListPage
 
     public override IListItem[] GetItems() =>
     [
-        new ListItem(new MicrosoftCalendarsPage(_newChoice(null)))
+        new ListItem(new MicrosoftCalendarsPage(() => _newChoice(null)))
         {
             Title = "Microsoft 365 or Outlook.com",
             Subtitle = "Sign in with your Microsoft account",

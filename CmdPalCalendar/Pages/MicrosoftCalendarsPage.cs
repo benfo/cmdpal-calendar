@@ -12,15 +12,12 @@ namespace CmdPalCalendar.Pages;
 
 internal sealed partial class MicrosoftCalendarsPage : ContentPage
 {
-    private readonly MicrosoftCalendarChoice _choice;
-    private readonly ChoiceForm _form;
-    private int _opened;
+    private readonly Func<MicrosoftCalendarChoice> _newChoice;
+    private MicrosoftCalendarChoice? _choice;
 
-    public MicrosoftCalendarsPage(MicrosoftCalendarChoice choice)
+    public MicrosoftCalendarsPage(Func<MicrosoftCalendarChoice> newChoice)
     {
-        _choice = choice;
-        _form = new ChoiceForm(choice);
-        _choice.Changed += (_, _) => Refresh();
+        _newChoice = newChoice;
 
         Name = "Choose";
         Title = "Choose calendars";
@@ -29,19 +26,26 @@ internal sealed partial class MicrosoftCalendarsPage : ContentPage
 
     public override IContent[] GetContent()
     {
-        if (Interlocked.Exchange(ref _opened, 1) == 0)
+        var choice = _newChoice();
+        var form = new ChoiceForm(choice);
+        choice.Changed += (sender, _) =>
         {
-            _ = Task.Run(() => _choice.OpenAsync(CancellationToken.None));
-        }
+            if (ReferenceEquals(sender, _choice))
+            {
+                Refresh(choice, form);
+            }
+        };
+        _choice = choice;
 
-        Refresh();
-        return [_form];
+        _ = Task.Run(() => choice.OpenAsync(CancellationToken.None));
+        Refresh(choice, form);
+        return [form];
     }
 
-    private void Refresh()
+    private void Refresh(MicrosoftCalendarChoice choice, ChoiceForm form)
     {
-        IsLoading = _choice.IsBusy;
-        _form.Show();
+        IsLoading = choice.IsBusy;
+        form.Show();
     }
 
     private sealed partial class ChoiceForm(MicrosoftCalendarChoice choice) : FormContent
