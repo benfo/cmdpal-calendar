@@ -40,7 +40,15 @@ Calendars refresh in the background every 5 minutes (Microsoft calendars fetch o
 
 Everything is stored in the extension's settings folder and encrypted for your Windows account: `calendars.json` (published-calendar addresses work like passwords), `msal.cache.bin` (which Microsoft accounts you signed in with; Windows keeps the sign-in itself) and `cache/`.
 
-Work accounts usually need your IT admin to approve the app once: Microsoft's default settings don't let people give third-party apps access to their calendar themselves. The first sign-in then asks you to request approval; once an admin approves **Calendar for Command Palette**, everyone in your organisation can use it. Outlook.com accounts sign in straight away. The app is published by an individual, so Microsoft lists its publisher as unverified. It only asks to read your calendars (`Calendars.Read`).
+### Work accounts and admin approval
+
+Work accounts usually need your IT admin to approve the app once: Microsoft's default settings don't let people give third-party apps access to their calendar themselves. Outlook.com accounts sign in straight away.
+
+- If the sign-in shows **Approval required**, add a short reason and select **Request approval**. Your admin sees it in Microsoft Entra under **Enterprise applications → Admin consent requests**. Once approved, sign in again.
+- If it shows **Need admin approval** without a request button, send your admin this link. Opening it lets an admin approve the app for the whole organisation, then returns to this page:
+  `https://login.microsoftonline.com/organizations/v2.0/adminconsent?client_id=2c35b16d-5b5c-427e-bb0b-d51aeafaa3e8&scope=https://graph.microsoft.com/Calendars.Read&redirect_uri=https://github.com/benfo/cmdpal-calendar`
+
+The app only asks to read calendars (`Calendars.Read`); it can't change anything, and your data never leaves your PC except to and from Microsoft. Microsoft lists the publisher as unverified because it's published by an individual. See [PRIVACY.md](PRIVACY.md) for exactly what it reads and stores.
 
 ## Plan
 
