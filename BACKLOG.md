@@ -16,7 +16,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - The form shows only the signed-in account's calendars as toggles, with already added ones on (default first, "· your default calendar", "· shared by …"); Save adds and removes to match, says "Added 1 calendar, removed 1 calendar" and goes back. Adding and Ctrl+K → Choose calendars show the same form.
   - Switching from one calendar to another (toggle one off, the other on) works in any order.
   - Save with everything off asks "Sign out of …?"; Sign out removes the account's calendars and goes back; Cancel keeps the form.
-  - Cancelling the Windows sign-in shows "Sign-in was cancelled" with a Try again button; going back and opening Microsoft 365 again starts a new sign-in (also for Ctrl+K → Choose calendars opened a second time).  - Manage calendars: Ctrl+K on a Microsoft calendar starts with "Choose calendars for <account>", which opens the same form for that account without signing in.
+  - Cancelling the Windows sign-in shows "Sign-in was cancelled" with a Try again button; going back and opening Microsoft 365 again starts a new sign-in (also for Ctrl+K → Choose calendars opened a second time).
+  - Manage calendars: Ctrl+K on a Microsoft calendar starts with "Choose calendars for <account>", which opens the same form for that account without signing in.
   - Manage calendars shows Microsoft calendars with the account as subtitle.
   - Signing in to a new account and pressing Back without saving: within about 20 minutes (15 minutes' grace, then the next refresh) the leftover sign-in is removed, so adding that account again asks for a fresh sign-in.
 - [ ] **Sign in again** (Graph step 6, first part; signing in again and keeping the sign-in across Reload are confirmed working):
@@ -27,9 +28,11 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Removing a Microsoft calendar that is its account's last says "…and you'll be signed out of <account>"; afterwards, Add a calendar → Microsoft asks you to sign in again.
   - Removing one of several calendars of an account keeps you signed in.
   - The removed calendars' `.graph.bin` files disappear from `cache/` after the next refresh.
-- [ ] **Our own app registration** (`2c35b16d-…`; signing in to a personal Outlook.com calendar is confirmed working):
+- [ ] **Our own app registration** (`2c35b16d-…`; signing in to a personal Outlook.com calendar is confirmed working; the work account shows "Approval required", unverified, with a justification box and **Request approval**):
   - After Reload, existing Microsoft calendars show "Sign in again to …" (tokens belonged to the old app); signing in keeps the calendars.
-  - Work account: the Windows sign-in shows "Calendar for Command Palette" (unverified) and most likely asks for admin approval; what it says, and whether the request reaches the admin, is the thing to note. After approval, sign-in and events work.  - Calendars shared with you still load. If not, the app also needs `Calendars.Read.Shared`.
+  - Work account (after the portal polish and a push, see Next up): send the approval request; note what Command Palette shows afterwards, and after **Cancel** (title, text, any `AADSTS…` code). Once the admin approves, sign-in and events work.
+  - Calendars shared with you still load. If not, the app also needs `Calendars.Read.Shared`.
+  - The admin consent link in the README (needs the Web redirect to the repo) opens the approval page for an admin and returns to the repo.
 - [ ] **Microsoft dates beyond the window** (Graph step 5; showing far-off dates is confirmed working):
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
@@ -39,7 +42,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Within 15 minutes of the start, or during the meeting, Enter joins straight away. Join next meeting behaves as before.
 - [ ] **Microsoft events** (Graph step 3):
   - Events from added Microsoft calendars show on the calendar page, at the right times, all-day events on the right day.
-  - Teams meetings join with Enter; notes show the agenda formatted without the Teams footer; Copy meeting ID and passcode works.  - Ctrl+Enter (or Enter on events with nothing to join) is "Open in Outlook" and opens that event itself in the browser.
+  - Teams meetings join with Enter; notes show the agenda formatted without the Teams footer; Copy meeting ID and passcode works.
+  - Ctrl+Enter (or Enter on events with nothing to join) is "Open in Outlook" and opens that event itself in the browser.
   - Renaming or recolouring a Microsoft calendar updates its event tags straight away.
   - With the network off, events stay and "Couldn't refresh …" shows.
 - [ ] **Microsoft cache and delta** (Graph step 4):
@@ -54,7 +58,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
   - Ctrl+B joins in the browser on a Teams or Zoom event.
   - With the new Teams app installed, Join in browser opens straight in the browser without Windows asking which app to use.
-- [ ] **Updating a release** (once v0.1.2 is out; a fresh install of v0.1.1 is confirmed working):
+- [ ] **Updating a release** (once v0.2.0 is out; a fresh install of v0.1.1 is confirmed working):
   - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
   - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
   - Running it again says "already installed and up to date".
@@ -82,7 +86,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 ## Next up
 
 - [ ] **Microsoft 365 and Outlook.com (Graph)** (in progress): needed where the org blocks publishing calendars with details (StructureIt does).
-  - Tested 2026-10-05 with the Graph PowerShell client ID (`14d82eec-…`): you could consent to `Calendars.Read` yourself, and `calendarView` returned bodies and `onlineMeeting.joinUrl`. Develop with that ID; register our own multi-tenant app before release and test consent for it (unverified publisher).
+  - Developed with the Graph PowerShell client ID (`14d82eec-…`), which users can consent to themselves because it's a Microsoft app; switched to our own registration on 2026-10-05.
   - UX: "Add a calendar" opens a chooser of working sources (Microsoft 365 or Outlook.com; Calendar address or file). Microsoft signs in with the Windows account picker (WAM; a fresh sign-in once an account exists), then a form shows that account's calendars as toggles with Save (Save with none asks to sign out). Ctrl+K "Choose calendars for …" in Manage calendars opens the same form. Each calendar is its own row (name and colour from Outlook, editable), subtitled with its account.
   - Accounts are implicit: Ctrl+K "Sign out of …" removes the account's calendars; removing its last calendar signs it out.
   - Background refreshes never open dialogs. A broken sign-in shows one "Sign in again to …" row per account on the calendar page; Enter opens the picker.
@@ -90,16 +94,20 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Data: rolling window of 2 weeks back to 3 months ahead, cached encrypted, refreshed every 5 minutes with delta; dates outside it fetched on demand.
   - Code lives in `Graph/` and `Platform/` (see CLAUDE.md). Trimmed, the Graph SDK adds ~0.3 MB and the broker's `msalruntime.dll` ~3 MB; the trim check covers Graph.
   - Done: chooser and feed sources; sign-in and choosing calendars (one form for adding and changing); events, join links and opening the event; encrypted cache and delta sync; sign in again, sign out, cleanup of unused sign-ins; dates beyond the window fetched by whole month on demand (`GraphMonths`, in memory, refetched after 5 minutes or on Refresh).
-  - Left: **test consent with our own app registration** (`2c35b16d-…`, registered 2026-10-05 and now in `WamSignIn`; see To test).
-    - Where: a free Azure account on the personal Microsoft account gives a "Default Directory" tenant (card check, no charge). Apps can no longer be registered outside a tenant; not the employer's tenant.
-    - Settings: multi-tenant plus personal accounts; Mobile and desktop redirect `ms-appx-web://Microsoft.AAD.BrokerPlugin/<client-id>`; delegated `Calendars.Read` only; no secret.
-    - Publisher verification is out of reach: it needs an organisation's verified AI Cloud Partner Program account and a custom domain, and not a personal-account registration. The app shows as "unverified".
-    - Consent: since Nov 2025 Microsoft's managed default consent policy (most tenants) requires admin approval for third-party apps asking for calendar, mail or Teams permissions (MC1163922), verified or not. Work accounts will usually need their admin to approve once; Outlook.com users consent themselves. Graph PowerShell isn't affected because it's a Microsoft app.
-    - README must say that work accounts usually need an admin to approve the app once; the sign-in flow should make the approval request clear.
-    - Later, only if needed: let an organisation enter its own client ID.
+  - App registration (done 2026-10-05): "Calendar for Command Palette", client ID `2c35b16d-5b5c-427e-bb0b-d51aeafaa3e8`, in the Default Directory of a free Azure account on the user's personal Microsoft account (apps can no longer be registered outside a tenant; not the employer's tenant). Multi-tenant plus personal accounts; Mobile and desktop redirect `ms-appx-web://microsoft.aad.brokerplugin/<client-id>` (MSAL WAM docs); delegated `Calendars.Read` only; no secret.
+  - Consent: since Nov 2025 Microsoft's managed default consent policy (most tenants) requires admin approval for third-party apps asking for calendar, mail or Teams permissions (MC1163922), verified or not. Work accounts usually need their admin to approve once (via the "Request approval" form where the admin consent workflow is on, else the admin consent link in the README); Outlook.com users consent themselves.
+  - Publisher verification: decided against (2026-10-06). It needs a registered business (AI Cloud Partner Program enrolment with formation documents, a South African tax number, business email and domain), a custom domain, and an app registered with a work account (new client ID). It wouldn't remove admin approval. The app stays "unverified"; polish instead.
+  - Done for the polish: `PRIVACY.md`; README section "Work accounts and admin approval" with the admin consent link; a 215×215 logo for the portal.
+  - Left, in order:
+    1. **Push `main` to GitHub** (103 commits ahead of `origin`; waiting for the user's OK) so the README, `PRIVACY.md` and branding links show the current state.
+    2. **Portal polish** (user), under Branding & properties: logo, home page `https://github.com/benfo/cmdpal-calendar`, privacy statement `…/blob/main/PRIVACY.md`, terms `…/blob/main/LICENSE` (optional). Under Authentication, add a **Web** redirect `https://github.com/benfo/cmdpal-calendar` (required by the admin consent link).
+    3. **Send the approval request** from the work account and run the To test checks.
+    4. **Admin approval in the sign-in flow** (needs the error from step 3): today any failure shows "Sign-in was cancelled" or a raw error. Show "Your organisation's admin needs to approve Calendar for Command Palette", with Try again and **Copy approval link** (the admin consent link); the same on the calendar page's "Sign in again" row.
+    5. **Release** (see Release v0.2.0).
+  - Later, only if needed: let an organisation enter its own client ID.
   - `iCalUId` is different for each occurrence of a series.
 
-- [ ] **Calendar provider abstraction** (after Graph step 5, before Google): adding a provider shouldn't touch the store, chooser, form, Manage page and wiring.
+- [ ] **Calendar provider abstraction** (after the Microsoft 365 release, before Google): adding a provider shouldn't touch the store, chooser, form, Manage page and wiring.
   - One `ICalendarProvider` per kind (ICS, Microsoft, later Google) bundling its source, chooser entry, "change source" command and storage.
   - Shared base for calendar sources: `IcsCalendarSource` and `GraphCalendarSource` repeat the same bookkeeping (loaded calendars, 5-minute staleness, last good copy, problems). Move it into one tested class.
   - Store calendar sources with System.Text.Json polymorphism (`[JsonDerivedType]`, source-generated) instead of mapping each kind by hand (`StoredMicrosoft`).
@@ -107,14 +115,14 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Testing mode expires tokens after 7 days, so publish the app "In production" (unverified).
   - Workspace admins can block the app.
 
-- [ ] **Release v0.1.2**: `main` has installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). Waiting for the user's go-ahead to tag.
+- [ ] **Release v0.2.0** (after the admin approval flow; waiting for the user's go-ahead to tag): Microsoft 365 and Outlook.com calendars, regional date and time formats, and the installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). From then on, work in branches (see CLAUDE.md).
 - [ ] **Shortcut tip** (waiting for the user's decision): there's no SDK way to give extension commands a default alias or hotkey. Suggested: the installer's closing message and the README suggest one (Calendar alias `cal`, a global hotkey for Join next meeting). Writing into Command Palette's own `settings.json` is possible but fragile, so not recommended.
 - [ ] **Dock band** (recommended next feature): "Standup · 7m" in the Command Palette Dock; clicking it joins. Reuse `UpcomingMeeting`/`NextMeetingTicker` logic; copy the built-in `NowDockBand` timer pattern (`GetDockBands()`, band command with a non-empty `Id`). Watch PowerToys #50367: bands can stop updating after an RDP or session switch.
 - [ ] **Microsoft Store** (blocked on the user creating the developer account) (unlisted at first, public later; replaces the self-signed sideload):
   - Register a free individual developer account at storedeveloper.microsoft.com (ID and selfie check).
   - Reserve the app name in Partner Center; "Calendar" is likely taken, so something like "Calendar for Command Palette".
   - Put the identity Partner Center assigns (package name and `CN=…` publisher) into a Store build: an unsigned `.msixupload` for x64 and ARM64, made alongside the sideload packages.
-  - First submission by hand, unlisted (available by direct link only); a short privacy statement (calendar data stays on the PC).
+  - First submission by hand, unlisted (available by direct link only); privacy statement URL: `PRIVACY.md` on GitHub.
   - Then automate submissions on each tag with the `msstore` CLI (needs an Entra app linked to Partner Center).
   - Friends move from the sideload to the Store version: uninstall, install from the Store link, re-add calendars (different package identity).
 - [ ] **Extension Gallery**: once it's on the Store, add `extensions/benfo/cmdpal-calendar/extension.json` via a PR to `microsoft/CmdPal-Extensions`.
