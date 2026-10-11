@@ -36,7 +36,6 @@ internal sealed partial class CalendarPage : DynamicListPage
         CalendarRefresher refresher,
         ManageCalendarsPage manage,
         TimeProvider time,
-        Func<AccountSignIn, ICommand> signInAgain,
         string id = DefaultId)
     {
         _feeds = feeds;
@@ -48,7 +47,7 @@ internal sealed partial class CalendarPage : DynamicListPage
             next: () => GoTo(SelectedDate.AddDays(DaysShown)),
             today: () => GoTo(Today),
             refresh: () => _refresher.Refresh(force: true));
-        _rows = new CalendarRows(_navigation, manage, _live, time, signInAgain);
+        _rows = new CalendarRows(_navigation, manage, _live, time);
         _layout = new CalendarLayout(_rows);
 
         _refresher.LoadingChanged += (_, _) => OnLoadingChanged();

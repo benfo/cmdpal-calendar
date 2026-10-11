@@ -40,16 +40,6 @@ public sealed class CalendarFeedStoreTests : IDisposable
     }
 
     [Fact]
-    public void Saves_and_reloads_microsoft_calendars()
-    {
-        var work = CalendarFeed.Create("Calendar", new MicrosoftSource("account-1", "ben@example.com", "calendar-1"), CalendarColor.Teal);
-
-        new CalendarFeedStore(_path, new PlainProtector()).Add(work);
-
-        Assert.Equal(work, Assert.Single(new CalendarFeedStore(_path, new PlainProtector()).Feeds));
-    }
-
-    [Fact]
     public void Updates_and_removes_by_id()
     {
         var store = new CalendarFeedStore(_path, new PlainProtector());

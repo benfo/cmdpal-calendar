@@ -15,13 +15,10 @@
     <Compile Include="..\..\CmdPalCalendar\Events\**\*.cs" Link="Source\Events\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\CmdPalCalendar\Ics\**\*.cs" Link="Source\Ics\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\CmdPalCalendar\Feeds\**\*.cs" Link="Source\Feeds\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\..\CmdPalCalendar\Graph\**\*.cs" Link="Source\Graph\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\rich.ics" Link="rich.ics" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <None Include="..\fixtures\graph-events.json" Link="graph-events.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Ical.Net" />
-    <PackageReference Include="Microsoft.Graph" />
   </ItemGroup>
 </Project>

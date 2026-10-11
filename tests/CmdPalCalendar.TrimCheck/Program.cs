@@ -1,6 +1,5 @@
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
-using CmdPalCalendar.Graph;
 using CmdPalCalendar.Ics;
 
 var failures = new List<string>();
@@ -46,60 +45,9 @@ Expect(MeetingLink.Parse(standup.Link)?.Service == MeetingService.Teams, "Teams 
 Expect(MeetingCredentials.Find(standup.Description) is { MeetingId: not null }, "meeting ID is found");
 Expect(DateQuery.TryParse("next fri", new DateOnly(2026, 1, 5), out _), "dates parse");
 
-var graphFeed = CalendarFeed.Create("Work", new MicrosoftSource("account", "ben@example.com", "calendar"), CalendarColor.Blue);
-var graph = new GraphEventReader(new GraphConnection(new FixedSignIn(), new HttpClient(new FixtureGraph(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "graph-events.json"))))));
-var graphEntries = await graph.GetEntriesAsync(graphFeed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), CancellationToken.None);
-Expect(graphEntries.Count == 4, "Graph events parse");
-var graphStandup = graphEntries.FirstOrDefault(e => e.Title == "Standup");
-Expect(graphStandup?.Link == "https://teams.microsoft.com/l/meetup-join/abc", "Graph join link is read");
-Expect(graphStandup?.Notes?.Contains("**Daily**", StringComparison.Ordinal) == true, "Graph HTML body becomes Markdown");
-Expect(graphStandup?.WebLink is not null && graphStandup.Organizer == "Jane Doe", "Graph web link and organizer are read");
-Expect(graphEntries.Any(e => e.IsAllDay), "Graph all-day event");
-var graphChanges = await graph.SyncAsync(graphFeed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), null, CancellationToken.None);
-var occurrence = graphChanges.Changed.FirstOrDefault(e => e.Uid == "o1");
-Expect(occurrence?.Title == "Sprint review" && occurrence.Link == "https://teams.microsoft.com/l/meetup-join/review", "Graph occurrences take their series master's details");
-Expect(graphChanges.Removed.Contains("m1") && graphChanges.Changed.All(e => e.Uid != "m1"), "Graph series masters are left out");
-
-var graphCache = new GraphEventCache(cacheDirectory, new PlainProtector());
-graphCache.Save(graphFeed, new GraphCalendarCopy(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), "delta", graphEntries, DateTimeOffset.UtcNow));
-var cachedCopy = graphCache.Load(graphFeed);
-Expect(cachedCopy?.DeltaLink == "delta" && cachedCopy.Entries.SequenceEqual(graphEntries, new EntryComparer()), "Graph events survive the cache");
-
 Directory.Delete(cacheDirectory, recursive: true);
 Console.WriteLine(failures.Count == 0 ? "Trimmed build works." : $"{failures.Count} check(s) failed.");
 return failures.Count == 0 ? 0 : 1;
-
-internal sealed class EntryComparer : IEqualityComparer<CalendarEntry>
-{
-    public bool Equals(CalendarEntry? x, CalendarEntry? y) =>
-        x is not null && y is not null &&
-        (x with { Attendees = [] }) == (y with { Attendees = [] }) &&
-        x.Attendees.SequenceEqual(y.Attendees);
-
-    public int GetHashCode(CalendarEntry obj) => obj.Uid.GetHashCode(StringComparison.Ordinal);
-}
-
-internal sealed class FixedSignIn : IMicrosoftSignIn
-{
-    public Task<MicrosoftAccount?> SignInAsync(string? username, CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
-
-    public Task<MicrosoftAccount?> SignInAnotherAccountAsync(CancellationToken cancellationToken) => Task.FromResult<MicrosoftAccount?>(null);
-
-    public Task<string> GetTokenAsync(string accountId, CancellationToken cancellationToken) => Task.FromResult("token");
-
-    public Task SignOutAsync(string accountId, CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public Task<IReadOnlyList<string>> GetSignedInAccountIdsAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<string>>([]);
-}
-
-internal sealed class FixtureGraph(string json) : HttpMessageHandler
-{
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-        Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
-        });
-}
 
 internal sealed class PlainProtector : ISecretProtector
 {
