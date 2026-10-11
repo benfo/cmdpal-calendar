@@ -26,3 +26,10 @@ internal sealed record IcsSource(string Location) : FeedSource
         return Path.GetFileName(location) is { Length: > 0 } file ? file : location;
     }
 }
+
+internal sealed record MicrosoftSource(string AccountId, string Account, string CalendarId) : FeedSource
+{
+    public override string Label => Account;
+
+    public override string Provider => "Microsoft 365";
+}

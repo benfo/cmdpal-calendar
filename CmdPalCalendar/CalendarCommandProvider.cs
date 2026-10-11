@@ -1,12 +1,15 @@
 using System;
 using System.IO;
+using System.Threading;
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
+using CmdPalCalendar.Graph;
 using CmdPalCalendar.Ics;
 using CmdPalCalendar.Pages;
 using CmdPalCalendar.Platform;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Graph;
 
 namespace CmdPalCalendar;
 
@@ -29,13 +32,28 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         var time = TimeProvider.System;
         var reader = new IcsFeedReader();
         var cache = new IcsFeedCache(Path.Combine(directory, "cache"), protector, time);
+        var signIn = new WamSignIn(new ProtectedTokenCache(Path.Combine(directory, "msal.cache.bin"), protector));
+        var graph = new GraphConnection(signIn, GraphClientFactory.Create());
+        var calendars = new GraphCalendarList(graph);
         var source = new CompositeCalendarSource(
-            new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time));
+            new IcsCalendarSource(() => feeds.EnabledFeeds, reader, cache, time),
+            new GraphCalendarSource(() => feeds.EnabledFeeds, new GraphEventReader(graph), new GraphEventCache(Path.Combine(directory, "cache"), protector), time));
         var refresher = new CalendarRefresher(source);
         var check = new IcsFeedCheck(reader);
-        var manage = new ManageCalendarsPage(feeds, check);
+        var accounts = new MicrosoftAccounts(signIn, feeds, time);
+        refresher.LoadingChanged += (_, _) =>
+        {
+            if (!refresher.IsLoading)
+            {
+                _ = accounts.SignOutUnusedAsync(CancellationToken.None);
+            }
+        };
+        Func<MicrosoftAccount?, MicrosoftCalendarChoice> newChoice = account => new MicrosoftCalendarChoice(signIn, calendars, feeds, accounts, account);
+        var add = new AddCalendarPage(feeds, check, newChoice);
+        var manage = new ManageCalendarsPage(feeds, check, add, accounts, newChoice);
+        Func<AccountSignIn, ICommand> signInAgain = account => new SignInAgainCommand(signIn, account, () => refresher.Refresh(force: true));
 
-        var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time))
+        var calendar = new CommandItem(new CalendarPage(feeds, source, refresher, manage, time, signInAgain))
         {
             Title = "Calendar",
             Subtitle = "Your events, day by day",
@@ -43,7 +61,7 @@ public sealed partial class CalendarCommandProvider : CommandProvider
         };
         var joinNext = new JoinNextMeetingItem(
             new JoinNextMeetingCommand(source, time),
-            new CalendarPage(feeds, source, refresher, manage, time, JoinNextMeetingItem.CommandId));
+            new CalendarPage(feeds, source, refresher, manage, time, signInAgain, JoinNextMeetingItem.CommandId));
         _ticker = new NextMeetingTicker(calendar, joinNext, feeds, source, refresher, time);
         _commands = [calendar, joinNext];
     }

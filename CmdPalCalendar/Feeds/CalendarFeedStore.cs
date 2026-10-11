@@ -69,11 +69,16 @@ internal sealed partial class CalendarFeedStore
     private StoredFeed ToStored(CalendarFeed feed) => feed.Source switch
     {
         IcsSource ics => new(feed.Id, feed.Name, Location: null, Protect(ics.Location), feed.Enabled, feed.Color),
+        MicrosoftSource ms => new(feed.Id, feed.Name, Location: null, ProtectedLocation: null, feed.Enabled, feed.Color, new StoredMicrosoft(ms.AccountId, ms.Account, ms.CalendarId)),
         _ => throw new NotSupportedException($"Unknown calendar source {feed.Source.GetType().Name}"),
     };
 
     private CalendarFeed ToFeed(StoredFeed stored) =>
-        new(stored.Id, stored.Name, new IcsSource(stored.Location ?? Unprotect(stored.ProtectedLocation)), stored.Enabled, stored.Color);
+        new(stored.Id, stored.Name, ToSource(stored), stored.Enabled, stored.Color);
+
+    private FeedSource ToSource(StoredFeed stored) => stored.Microsoft is { } ms
+        ? new MicrosoftSource(ms.AccountId, ms.Account, ms.CalendarId)
+        : new IcsSource(stored.Location ?? Unprotect(stored.ProtectedLocation));
 
     private string Protect(string location) => Convert.ToBase64String(_protector.Protect(Encoding.UTF8.GetBytes(location)));
 
@@ -106,7 +111,9 @@ internal sealed partial class CalendarFeedStore
         }
     }
 
-    private sealed record StoredFeed(string Id, string Name, string? Location, string? ProtectedLocation, bool Enabled, CalendarColor Color);
+    private sealed record StoredFeed(string Id, string Name, string? Location, string? ProtectedLocation, bool Enabled, CalendarColor Color, StoredMicrosoft? Microsoft = null);
+
+    private sealed record StoredMicrosoft(string AccountId, string Account, string CalendarId);
 
     [JsonSourceGenerationOptions(
         WriteIndented = true,
