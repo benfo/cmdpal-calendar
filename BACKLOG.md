@@ -6,6 +6,7 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
+- [ ] **A meeting in two calendars**: the 15:00 Morningstar meeting shows with DealX on as well (before, a meeting with the same UID in two published calendars showed only once). It now shows twice, once per calendar tag, until Merge calendars.
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
@@ -69,7 +70,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Merge calendars**: show the same meeting once. Match on start and end plus the join link, UID or title.
+- [ ] **Merge calendars**: show the same meeting once, with every calendar's tag (it shows once per calendar now). Match on start and end plus the join link, UID or title. Happens with invites between DealX and Morningstar: the invite's UID is the same in both calendars.
 
 ## Ideas
 
