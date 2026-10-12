@@ -55,7 +55,7 @@ The app only asks to read calendars (`Calendars.Read`); it can't change anything
 The extension reads published calendars (ICS) and Microsoft 365 / Outlook.com accounts. The next steps are:
 - a release with Microsoft 365 and Outlook.com;
 - a Dock item that counts down to the next meeting ("Standup · 7m") and joins it when clicked;
-- Google Calendar accounts, and showing a meeting that's in several calendars once.
+- Google Calendar accounts.
 
 See [BACKLOG.md](BACKLOG.md) for the details.
 

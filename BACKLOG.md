@@ -36,6 +36,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] **Microsoft dates beyond the window** (Graph step 5; showing far-off dates is confirmed working):
   - A meeting changed in Outlook for that month shows up after about 5 minutes, or straight away with Refresh.
   - With the network off, a month not fetched before shows "Couldn't load Work for March 2027"; one fetched before keeps its events with "Couldn't refresh …". (That row stays under Problems until the month loads again.)
+- [ ] **A meeting in two calendars**: the 15:00 Morningstar meeting shows with DealX on as well (before, a meeting with the same UID in two published calendars showed only once). It now shows twice, each row with its own calendar tag.
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
@@ -58,7 +59,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
   - Ctrl+B joins in the browser on a Teams or Zoom event.
   - With the new Teams app installed, Join in browser opens straight in the browser without Windows asking which app to use.
-- [ ] **Updating a release** (once v0.2.0 is out; a fresh install of v0.1.1 is confirmed working):
+- [ ] **Updating a release** (v0.2.0 is out; a fresh install of v0.1.1 is confirmed working):
   - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
   - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
   - Running it again says "already installed and up to date".
@@ -99,11 +100,11 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Publisher verification: decided against (2026-10-06). It needs a registered business (AI Cloud Partner Program enrolment with formation documents, a South African tax number, business email and domain), a custom domain, and an app registered with a work account (new client ID). It wouldn't remove admin approval. The app stays "unverified"; polish instead.
   - Done for the polish: `PRIVACY.md`; README section "Work accounts and admin approval" with the admin consent link; a 215×215 logo for the portal.
   - Left, in order:
-    1. **Push `main` to GitHub** (103 commits ahead of `origin`; waiting for the user's OK) so the README, `PRIVACY.md` and branding links show the current state.
-    2. **Portal polish** (user), under Branding & properties: logo, home page `https://github.com/benfo/cmdpal-calendar`, privacy statement `…/blob/main/PRIVACY.md`, terms `…/blob/main/LICENSE` (optional). Under Authentication, add a **Web** redirect `https://github.com/benfo/cmdpal-calendar` (required by the admin consent link).
-    3. **Send the approval request** from the work account and run the To test checks.
-    4. **Admin approval in the sign-in flow** (needs the error from step 3): today any failure shows "Sign-in was cancelled" or a raw error. Show "Your organisation's admin needs to approve Calendar for Command Palette", with Try again and **Copy approval link** (the admin consent link); the same on the calendar page's "Sign in again" row.
-    5. **Release** (see Release v0.2.0).
+    1. **Portal polish** (user), under Branding & properties: logo, home page `https://github.com/benfo/cmdpal-calendar`, privacy statement `…/blob/main/PRIVACY.md`, terms `…/blob/main/LICENSE` (optional). Under Authentication, add a **Web** redirect `https://github.com/benfo/cmdpal-calendar` (required by the admin consent link).
+    2. **Send the approval request** from the work account and run the To test checks.
+    3. **Admin approval in the sign-in flow** (needs the error from step 2): today any failure shows "Sign-in was cancelled" or a raw error. Show "Your organisation's admin needs to approve Calendar for Command Palette", with Try again and **Copy approval link** (the admin consent link); the same on the calendar page's "Sign in again" row.
+    4. **Decide the route for work tenants without approval** (open question): e.g. a Power Automate flow writing an `.ics` file to OneDrive, read as a local file.
+    5. **Ship**: merge this branch into `main` through a PR, then tag the next release (v0.3.0).
   - Later, only if needed: let an organisation enter its own client ID.
   - `iCalUId` is different for each occurrence of a series.
 
@@ -115,7 +116,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Testing mode expires tokens after 7 days, so publish the app "In production" (unverified).
   - Workspace admins can block the app.
 
-- [ ] **Release v0.2.0** (after the admin approval flow; waiting for the user's go-ahead to tag): Microsoft 365 and Outlook.com calendars, regional date and time formats, and the installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). From then on, work in branches (see CLAUDE.md).
 - [ ] **Shortcut tip** (waiting for the user's decision): there's no SDK way to give extension commands a default alias or hotkey. Suggested: the installer's closing message and the README suggest one (Calendar alias `cal`, a global hotkey for Join next meeting). Writing into Command Palette's own `settings.json` is possible but fragile, so not recommended.
 - [ ] **Dock band** (recommended next feature): "Standup · 7m" in the Command Palette Dock; clicking it joins. Reuse `UpcomingMeeting`/`NextMeetingTicker` logic; copy the built-in `NowDockBand` timer pattern (`GetDockBands()`, band command with a non-empty `Id`). Watch PowerToys #50367: bands can stop updating after an RDP or session switch.
 - [ ] **Microsoft Store** (blocked on the user creating the developer account) (unlisted at first, public later; replaces the self-signed sideload):
@@ -133,10 +133,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Merge calendars**: show the same meeting once. Match on start and end plus the join link, UID or title.
 
 ## Ideas
 
+- [ ] Merge calendars: show a meeting that's in several calendars once, with every calendar's tag. Parked (2026-10-12): it shows once per calendar, each row with its own tag, which doesn't look broken; merging would have to choose a copy, and a limited one (e.g. Morningstar's) could win. Revisit only if duplicates bother in daily use. Happens with invites between DealX and Morningstar (the invite's UID is the same in both).
 - [ ] Windows reminder with a Join button. Needs the Windows App SDK; possibly redundant with Outlook and Teams reminders.
 - [ ] Coloured service tags: brand-coloured backgrounds with white text for Teams (~`#5B5FC7`), Zoom (~`#0B5CFF`), Meet (~`#00897B`) and Webex, via `Tag.Background`/`Foreground` and `ColorHelpers.FromRgb`. Colours are fixed (not theme-aware), so stick to coloured backgrounds with white text. Check that colours survive row reuse (bookmarx lost tag icons that way), and keep other tags (feed, Tentative) neutral so the service stands out.
 - [ ] Ask PowerToys (GitHub issue) for an SDK way to suggest a default alias or hotkey for an extension's top-level commands.
@@ -152,6 +152,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] Tests for link detection and the layout (now/next split, empty states).
 
 ## Done
+
+- [x] Released v0.2.0 (2026-10-12): regional date and time formats, the join guard on calendar rows, opening events in Outlook or Google Calendar, a meeting in several published calendars shown in each, and installer fixes (asks for admin rights, stops the running extension before updating, clearer messages). Work happens in branches from now on.
 
 - [x] Dates and times follow the Windows regional settings (date shape from the long date format, 12- or 24-hour clock), with the year shown only outside the current year.
 - [x] Signing key backed up: the `.pfx` and its password are in the password manager and the GitHub secrets only; the local folder is deleted.
