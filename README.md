@@ -43,7 +43,7 @@ Everything is stored in the extension's settings folder and encrypted for your W
 The extension reads published calendars (ICS). The next steps are:
 - signing in to Microsoft 365 and Outlook.com accounts, for work tenants that block publishing (in progress on the `feature/microsoft-365` branch);
 - a Dock item that counts down to the next meeting ("Standup · 7m") and joins it when clicked;
-- Google Calendar accounts, and showing a meeting that's in several calendars once.
+- Google Calendar accounts.
 
 See [BACKLOG.md](BACKLOG.md) for the details.
 
