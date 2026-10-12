@@ -16,7 +16,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
   - Ctrl+B joins in the browser on a Teams or Zoom event.
   - With the new Teams app installed, Join in browser opens straight in the browser without Windows asking which app to use.
-- [ ] **Updating a release** (once v0.2.0 is out; a fresh install of v0.1.1 is confirmed working):
+- [ ] **Updating a release** (v0.2.0 is out; a fresh install of v0.1.1 is confirmed working):
   - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
   - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
   - Running it again says "already installed and up to date".
@@ -43,7 +43,6 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Next up
 
-- [ ] **Release v0.2.0** (waiting for the user's go-ahead to tag): regional date and time formats, the join guard on calendar rows, opening events in Outlook or Google Calendar, and the installer fixes not yet released (ask for admin rights instead of failing; stop the running extension before updating; "already up to date" and "Updated from X to Y" messages). Needs the To test items above first. From then on, work in branches (see CLAUDE.md).
 - [ ] **Microsoft 365 and Outlook.com (Graph)**: lives on the `feature/microsoft-365` branch (`main` plus a revert of its removal), with its own backlog: sign-in, choosing calendars, events, cache and delta, our app registration, admin approval. Ships only once polished. Open question: work tenants need an admin to approve the app; consider a route without approval for them (a Power Automate flow writing an `.ics` file to OneDrive, read as a local file).
 - [ ] **Calendar provider abstraction** (after the Microsoft 365 release, before Google): adding a provider shouldn't touch the store, chooser, form, Manage page and wiring.
   - One `ICalendarProvider` per kind (ICS, Microsoft, later Google) bundling its source, chooser entry, "change source" command and storage.
@@ -89,6 +88,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] Tests for link detection and the layout (now/next split, empty states).
 
 ## Done
+
+- [x] Released v0.2.0 (2026-10-12): regional date and time formats, the join guard on calendar rows, opening events in Outlook or Google Calendar, a meeting in several published calendars shown in each, and installer fixes (asks for admin rights, stops the running extension before updating, clearer messages). Work happens in branches from now on.
 
 - [x] Dates and times follow the Windows regional settings (date shape from the long date format, 12- or 24-hour clock), with the year shown only outside the current year.
 - [x] Signing key backed up: the `.pfx` and its password are in the password manager and the GitHub secrets only; the local folder is deleted.
