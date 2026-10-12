@@ -6,7 +6,7 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
-- [ ] **A meeting in two calendars**: the 15:00 Morningstar meeting shows with DealX on as well (before, a meeting with the same UID in two published calendars showed only once). It now shows twice, once per calendar tag, until Merge calendars.
+- [ ] **A meeting in two calendars**: the 15:00 Morningstar meeting shows with DealX on as well (before, a meeting with the same UID in two published calendars showed only once). It now shows twice, each row with its own calendar tag.
 - [ ] **Join guard on calendar rows**:
   - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
   - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
@@ -70,10 +70,10 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
   - Graph gives `webLink` and Google `htmlLink`. ICS feeds usually have no link back to the event (only a `URL` property, sometimes), so this mostly arrives with the Graph and Google providers.
 - [ ] **Copy dial-in**: the one-tap phone number (`tel:+1...,,123#`) from the invite, in Ctrl+K.
 - [ ] **Hide declined, tag tentative**: needs your email address(es) to find yourself among the attendees.
-- [ ] **Merge calendars**: show the same meeting once, with every calendar's tag (it shows once per calendar now). Match on start and end plus the join link, UID or title. Happens with invites between DealX and Morningstar: the invite's UID is the same in both calendars.
 
 ## Ideas
 
+- [ ] Merge calendars: show a meeting that's in several calendars once, with every calendar's tag. Parked (2026-10-12): it shows once per calendar, each row with its own tag, which doesn't look broken; merging would have to choose a copy, and a limited one (e.g. Morningstar's) could win. Revisit only if duplicates bother in daily use. Happens with invites between DealX and Morningstar (the invite's UID is the same in both).
 - [ ] Windows reminder with a Join button. Needs the Windows App SDK; possibly redundant with Outlook and Teams reminders.
 - [ ] Coloured service tags: brand-coloured backgrounds with white text for Teams (~`#5B5FC7`), Zoom (~`#0B5CFF`), Meet (~`#00897B`) and Webex, via `Tag.Background`/`Foreground` and `ColorHelpers.FromRgb`. Colours are fixed (not theme-aware), so stick to coloured backgrounds with white text. Check that colours survive row reuse (bookmarx lost tag icons that way), and keep other tags (feed, Tentative) neutral so the service stands out.
 - [ ] Ask PowerToys (GitHub issue) for an SDK way to suggest a default alias or hotkey for an extension's top-level commands.
