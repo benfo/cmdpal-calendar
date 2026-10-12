@@ -65,6 +65,17 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task The_same_meeting_shows_in_each_calendar_it_is_in()
+    {
+        var meeting = Event("review", "Review", "20261005T150000", "20261005T160000");
+        var source = Source(WriteFeed(meeting), WriteFeed(meeting));
+
+        await source.LoadAsync(CancellationToken.None);
+
+        Assert.Equal(2, source.GetEntries(Monday, Monday.AddDays(1)).Count);
+    }
+
+    [Fact]
     public async Task Broken_feed_is_reported_without_hiding_others()
     {
         var good = WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500"));

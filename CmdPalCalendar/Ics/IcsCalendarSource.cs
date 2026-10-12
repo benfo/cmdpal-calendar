@@ -69,9 +69,9 @@ internal sealed class IcsCalendarSource(
                 .SelectMany(c => c.Loaded.Calendar!.GetOccurrences<CalendarEvent>(expandFrom)
                     .TakeWhileBefore(expandTo)
                     .Where(o => o.Source is CalendarEvent ev && !IsCancelled(ev))
-                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, c.Feed)))
+                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, c.Feed))
+                    .DistinctBy(e => (e.Uid, e.Start)))
                 .Where(e => e.Start < rangeEnd && e.End > rangeStart)
-                .DistinctBy(e => (e.Uid, e.Start))
                 .OrderBy(e => e.Start)
                 .ThenBy(e => e.Title, StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
