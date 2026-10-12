@@ -6,20 +6,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
-- [ ] **A meeting in two calendars**: the 15:00 Morningstar meeting shows with DealX on as well (before, a meeting with the same UID in two published calendars showed only once). It now shows twice, each row with its own calendar tag.
-- [ ] **Join guard on calendar rows**:
-  - Enter on a meeting more than 15 minutes away asks "Join …? … starts tomorrow at 09:00 (in 22 h). Join now?"; Join joins, Esc cancels.
-  - Enter on a meeting that has ended asks "… ended at 10:30. Join anyway?".
-  - Within 15 minutes of the start, or during the meeting, Enter joins straight away. Join next meeting behaves as before.
-- [ ] **Open in Outlook or Google Calendar** (opening Outlook and Google Calendar is confirmed working):
-  - Ctrl+K lists the open command once, and **Copy event** copies "Sat, 3 Oct · 09:30–10:00 · Standup · Room 4".
-  - Other calendars: Enter still does nothing on events with nothing to join; Ctrl+Enter copies the event.
-  - Ctrl+B joins in the browser on a Teams or Zoom event.
-  - With the new Teams app installed, Join in browser opens straight in the browser without Windows asking which app to use.
-- [ ] **Updating a release** (v0.2.0 is out; a fresh install of v0.1.1 is confirmed working):
-  - Running the install command in a normal (non-admin) PowerShell asks for admin rights and continues in an admin window.
-  - Running it with an older version installed stops the running extension, says "Updated … from X to Y", and keeps the calendars.
-  - Running it again says "already installed and up to date".
 - [ ] **Formatted notes**:
   - An Outlook invite with a long agenda shows in full, formatted, without the Teams footer.
   - A Google invite with bold text and links shows them formatted and clickable.
