@@ -62,7 +62,7 @@ Always check exit status before committing: piping build/test output through `gr
 ## How we work
 
 - Small, focused commits, one logical change each, single-line messages, no attribution (global rule). Commit after each step; update README/BACKLOG in their own commit.
-- Until v0.2.0, commit straight to `main`. From then on: one branch per backlog item (`feature/…`, `fix/…`), merged into `main` through a PR so CI runs first, without squashing. Tags only from `main`.
+- Code changes: one branch per backlog item (`feature/…`, `fix/…`), merged into `main` through a PR so CI runs first, without squashing. Docs-only changes (README, BACKLOG, CLAUDE.md, `docs/`) go straight to `main`. Tags only from `main`.
 - The Microsoft 365 / Outlook.com provider (Graph, WAM sign-in, our app registration) lives on `feature/microsoft-365`: `main` plus a revert of its removal (`fba9d8f`). Merge `main` into it to keep it current; it comes back to `main` through a PR when it ships. Its own CLAUDE.md and BACKLOG describe it.
 - Plan features before building: ask decisions one at a time, each with a recommendation first. Look up facts (source in the PowerToys repo, the SDK, this machine) rather than asking.
 - Reuse what the sibling extension `../../bookmarx` already solved (build, deploy, patterns) before proposing new setup.
