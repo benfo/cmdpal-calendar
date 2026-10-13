@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Events;
@@ -43,11 +45,12 @@ internal sealed class IcsCalendarSource(
     {
         if (!HasData)
         {
-            Replace(IcsCalendars().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Events, null, null) : null).OfType<LoadedFeed>().ToList());
+            Replace(IcsCalendars().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Events, copy.Hash, null, null) : null).OfType<LoadedFeed>().ToList());
         }
 
         var current = IcsCalendars();
-        Replace(await Task.WhenAll(current.Select(f => LoadFeedAsync(f, cancellationToken))), loadedAt: time.GetUtcNow());
+        var previous = _loaded.ToDictionary(f => f.Feed.Id);
+        Replace(await Task.WhenAll(current.Select(f => LoadFeedAsync(f, previous.GetValueOrDefault(f.Id), cancellationToken))), loadedAt: time.GetUtcNow());
         cache.RemoveAllExcept(current);
     }
 
@@ -77,28 +80,31 @@ internal sealed class IcsCalendarSource(
             .Select(f => (f, loaded[f.Id]));
     }
 
-    private async Task<LoadedFeed> LoadFeedAsync(CalendarFeed feed, CancellationToken cancellationToken)
+    private async Task<LoadedFeed> LoadFeedAsync(CalendarFeed feed, LoadedFeed? previous, CancellationToken cancellationToken)
     {
         try
         {
             var text = await reader.ReadAsync(feed.IcsLocation(), cancellationToken);
-            var events = IcsEvents.From(IcsFeedReader.Parse(text));
+            var hash = Hash(text);
+            var events = previous is { Events: { } unchanged } && previous.Hash == hash
+                ? unchanged
+                : IcsEvents.From(IcsFeedReader.Parse(text));
             cache.Save(feed, text);
-            return new LoadedFeed(feed, events, null, null);
+            return new LoadedFeed(feed, events, hash, null, null);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             return FromCache(feed) is { } copy
-                ? new LoadedFeed(feed, copy.Events, ex.Message, copy.SavedAt)
-                : new LoadedFeed(feed, null, ex.Message, null);
+                ? new LoadedFeed(feed, copy.Events, copy.Hash, ex.Message, copy.SavedAt)
+                : new LoadedFeed(feed, null, null, ex.Message, null);
         }
     }
 
-    private (IcsEvents Events, DateTimeOffset SavedAt)? FromCache(CalendarFeed feed)
+    private (IcsEvents Events, string Hash, DateTimeOffset SavedAt)? FromCache(CalendarFeed feed)
     {
         try
         {
-            return cache.Load(feed) is { } copy ? (IcsEvents.From(IcsFeedReader.Parse(copy.Ics)), copy.SavedAt) : null;
+            return cache.Load(feed) is { } copy ? (IcsEvents.From(IcsFeedReader.Parse(copy.Ics)), Hash(copy.Ics), copy.SavedAt) : null;
         }
         catch (InvalidDataException)
         {
@@ -117,8 +123,10 @@ internal sealed class IcsCalendarSource(
         Updated?.Invoke(this, EventArgs.Empty);
     }
 
+    private static string Hash(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+
     private static HashSet<(string Id, FeedSource Source)> Addresses(IEnumerable<CalendarFeed> feeds) =>
         feeds.Select(f => (f.Id, f.Source)).ToHashSet();
 
-    private sealed record LoadedFeed(CalendarFeed Feed, IcsEvents? Events, string? Error, DateTimeOffset? CopyFrom);
+    private sealed record LoadedFeed(CalendarFeed Feed, IcsEvents? Events, string? Hash, string? Error, DateTimeOffset? CopyFrom);
 }
