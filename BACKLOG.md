@@ -6,6 +6,7 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
+- [ ] **Memory with a large calendar**: with the large calendar (a 14 MB feed), Task Manager shows the extension at about 160 MB a minute after starting (it was about 650 MB), with a short peak while a changed feed is parsed. Recurring meetings, moved instances, notes and attendees look the same as before.
 - [ ] **Formatted notes**:
   - An Outlook invite with a long agenda shows in full, formatted, without the Teams footer.
   - A Google invite with bold text and links shows them formatted and clickable.
