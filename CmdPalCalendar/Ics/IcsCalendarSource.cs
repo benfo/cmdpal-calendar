@@ -23,6 +23,7 @@ internal sealed class IcsCalendarSource(
     private readonly Lock _lock = new();
     private IReadOnlyList<LoadedFeed> _loaded = [];
     private DateTimeOffset? _loadedAt;
+    private volatile bool _parsed;
 
     public bool IsStale =>
         _loadedAt is not { } loadedAt ||
@@ -52,6 +53,7 @@ internal sealed class IcsCalendarSource(
         var previous = _loaded.ToDictionary(f => f.Feed.Id);
         Replace(await Task.WhenAll(current.Select(f => LoadFeedAsync(f, previous.GetValueOrDefault(f.Id), cancellationToken))), loadedAt: time.GetUtcNow());
         cache.RemoveAllExcept(current);
+        ReleaseParsingMemory();
     }
 
     public IReadOnlyList<CalendarEntry> GetEntries(DateOnly from, DateOnly toExclusive)
@@ -88,7 +90,7 @@ internal sealed class IcsCalendarSource(
             var hash = Hash(text);
             var events = previous is { Events: { } unchanged } && previous.Hash == hash
                 ? unchanged
-                : IcsEvents.From(IcsFeedReader.Parse(text));
+                : Parse(text);
             cache.Save(feed, text);
             return new LoadedFeed(feed, events, hash, null, null);
         }
@@ -104,11 +106,27 @@ internal sealed class IcsCalendarSource(
     {
         try
         {
-            return cache.Load(feed) is { } copy ? (IcsEvents.From(IcsFeedReader.Parse(copy.Ics)), Hash(copy.Ics), copy.SavedAt) : null;
+            return cache.Load(feed) is { } copy ? (Parse(copy.Ics), Hash(copy.Ics), copy.SavedAt) : null;
         }
         catch (InvalidDataException)
         {
             return null;
+        }
+    }
+
+    private IcsEvents Parse(string text)
+    {
+        _parsed = true;
+        return IcsEvents.From(IcsFeedReader.Parse(text));
+    }
+
+    // Parsing a large feed briefly takes hundreds of MB; without this the process keeps it for minutes.
+    private void ReleaseParsingMemory()
+    {
+        if (_parsed)
+        {
+            _parsed = false;
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
         }
     }
 
