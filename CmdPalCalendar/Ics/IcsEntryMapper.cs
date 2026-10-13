@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
 using Ical.Net.CalendarComponents;
@@ -9,29 +8,27 @@ namespace CmdPalCalendar.Ics;
 
 internal static class IcsEntryMapper
 {
-    public static CalendarEntry ToEntry(CalendarEvent ev, Period period, CalendarFeed feed)
-    {
-        var start = period.StartTime;
-        var end = period.EffectiveEndTime ?? start;
+    public static CalendarEntry ToEntry(CalendarEvent ev, Period period, CalendarFeed feed) =>
+        ToEntry(IcsEventDetails.From(ev), period.StartTime, period.EffectiveEndTime ?? period.StartTime, feed);
 
-        return new CalendarEntry(
+    public static CalendarEntry ToEntry(IcsEventDetails ev, CalDateTime start, CalDateTime end, CalendarFeed feed) =>
+        new(
             Uid: ev.Uid ?? Guid.NewGuid().ToString(),
-            Title: NullIfBlank(ev.Summary) ?? "(No title)",
+            Title: IcsText.NullIfBlank(ev.Summary) ?? "(No title)",
             Start: ToLocal(start),
             End: ToLocal(end),
             IsAllDay: !start.HasTime,
-            Location: NullIfBlank(ev.Location),
-            Description: NullIfBlank(ev.Description),
-            Organizer: ev.Organizer is { } organizer ? NameOrAddress(organizer.CommonName, organizer.Value) : null,
-            Attendees: ev.Attendees.Select(a => NameOrAddress(a.CommonName, a.Value)).OfType<string>().ToList(),
-            Link: MeetingLinkFinder.Find(ev.Location, ev.Url?.ToString(), ev.Description),
+            Location: IcsText.NullIfBlank(ev.Location),
+            Description: IcsText.NullIfBlank(ev.Description),
+            Organizer: ev.Organizer,
+            Attendees: ev.Attendees,
+            Link: MeetingLinkFinder.Find(ev.Location, ev.Url, ev.Description),
             Source: feed.Name,
-            Notes: EventNotes.From(ev.Description, ev.Properties.Get<string>("X-ALT-DESC")),
+            Notes: EventNotes.From(ev.Description, ev.HtmlDescription),
             Color: feed.Color,
             Site: CalendarSites.Detect(feed.IcsLocation()));
-    }
 
-    private static DateTimeOffset ToLocal(CalDateTime value)
+    public static DateTimeOffset ToLocal(CalDateTime value)
     {
         if (value.IsFloating || !value.HasTime)
         {
@@ -40,9 +37,4 @@ internal static class IcsEntryMapper
 
         return new DateTimeOffset(value.AsUtc).ToLocalTime();
     }
-
-    private static string? NameOrAddress(string? name, Uri? address) =>
-        NullIfBlank(name) ?? NullIfBlank(address?.OriginalString.Replace("mailto:", string.Empty, StringComparison.OrdinalIgnoreCase));
-
-    private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

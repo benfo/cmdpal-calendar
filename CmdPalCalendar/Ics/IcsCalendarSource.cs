@@ -6,9 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CmdPalCalendar.Events;
 using CmdPalCalendar.Feeds;
-using Ical.Net;
-using Ical.Net.CalendarComponents;
-using Ical.Net.DataTypes;
 
 namespace CmdPalCalendar.Ics;
 
@@ -20,7 +17,6 @@ internal sealed class IcsCalendarSource(
     : ICalendarSource
 {
     private static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan LongestEvent = TimeSpan.FromDays(14);
 
     private readonly Lock _lock = new();
     private IReadOnlyList<LoadedFeed> _loaded = [];
@@ -47,7 +43,7 @@ internal sealed class IcsCalendarSource(
     {
         if (!HasData)
         {
-            Replace(IcsCalendars().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Calendar, null, null) : null).OfType<LoadedFeed>().ToList());
+            Replace(IcsCalendars().Select(f => FromCache(f) is { } copy ? new LoadedFeed(f, copy.Events, null, null) : null).OfType<LoadedFeed>().ToList());
         }
 
         var current = IcsCalendars();
@@ -59,19 +55,12 @@ internal sealed class IcsCalendarSource(
     {
         var rangeStart = LocalTime.StartOfDay(from);
         var rangeEnd = LocalTime.StartOfDay(toExclusive);
-        var expandFrom = new CalDateTime(rangeStart.Subtract(LongestEvent).UtcDateTime);
-        var expandTo = new CalDateTime(rangeEnd.UtcDateTime);
 
         lock (_lock)
         {
             return Current()
-                .Where(c => c.Loaded.Calendar is not null)
-                .SelectMany(c => c.Loaded.Calendar!.GetOccurrences<CalendarEvent>(expandFrom)
-                    .TakeWhileBefore(expandTo)
-                    .Where(o => o.Source is CalendarEvent ev && !IsCancelled(ev))
-                    .Select(o => IcsEntryMapper.ToEntry((CalendarEvent)o.Source, o.Period, c.Feed))
-                    .DistinctBy(e => (e.Uid, e.Start)))
-                .Where(e => e.Start < rangeEnd && e.End > rangeStart)
+                .Where(c => c.Loaded.Events is not null)
+                .SelectMany(c => c.Loaded.Events!.Overlapping(rangeStart, rangeEnd, c.Feed))
                 .OrderBy(e => e.Start)
                 .ThenBy(e => e.Title, StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
@@ -93,23 +82,23 @@ internal sealed class IcsCalendarSource(
         try
         {
             var text = await reader.ReadAsync(feed.IcsLocation(), cancellationToken);
-            var calendar = IcsFeedReader.Parse(text);
+            var events = IcsEvents.From(IcsFeedReader.Parse(text));
             cache.Save(feed, text);
-            return new LoadedFeed(feed, calendar, null, null);
+            return new LoadedFeed(feed, events, null, null);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             return FromCache(feed) is { } copy
-                ? new LoadedFeed(feed, copy.Calendar, ex.Message, copy.SavedAt)
+                ? new LoadedFeed(feed, copy.Events, ex.Message, copy.SavedAt)
                 : new LoadedFeed(feed, null, ex.Message, null);
         }
     }
 
-    private (Calendar Calendar, DateTimeOffset SavedAt)? FromCache(CalendarFeed feed)
+    private (IcsEvents Events, DateTimeOffset SavedAt)? FromCache(CalendarFeed feed)
     {
         try
         {
-            return cache.Load(feed) is { } copy ? (IcsFeedReader.Parse(copy.Ics), copy.SavedAt) : null;
+            return cache.Load(feed) is { } copy ? (IcsEvents.From(IcsFeedReader.Parse(copy.Ics)), copy.SavedAt) : null;
         }
         catch (InvalidDataException)
         {
@@ -131,8 +120,5 @@ internal sealed class IcsCalendarSource(
     private static HashSet<(string Id, FeedSource Source)> Addresses(IEnumerable<CalendarFeed> feeds) =>
         feeds.Select(f => (f.Id, f.Source)).ToHashSet();
 
-    private static bool IsCancelled(CalendarEvent ev) =>
-        string.Equals(ev.Status, "CANCELLED", StringComparison.OrdinalIgnoreCase);
-
-    private sealed record LoadedFeed(CalendarFeed Feed, Calendar? Calendar, string? Error, DateTimeOffset? CopyFrom);
+    private sealed record LoadedFeed(CalendarFeed Feed, IcsEvents? Events, string? Error, DateTimeOffset? CopyFrom);
 }

@@ -57,6 +57,16 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task One_off_and_recurring_events_show_together()
+    {
+        var source = await LoadAsync(
+            Event("standup", "Standup", "20260101T090000", "20260101T091500", "RRULE:FREQ=DAILY"),
+            Event("review", "Review", "20261005T150000", "20261005T160000"));
+
+        Assert.Equal(["Standup", "Review"], source.GetEntries(Monday, Monday.AddDays(1)).Select(e => e.Title));
+    }
+
+    [Fact]
     public async Task Cancelled_events_are_hidden()
     {
         var source = await LoadAsync(Event("gone", "Gone", "20261005T090000", "20261005T100000", "STATUS:CANCELLED"));
@@ -167,6 +177,19 @@ public sealed class IcsCalendarSourceTests : IDisposable
         await source.LoadAsync(CancellationToken.None);
 
         Assert.Equal(["Cached standup", "Fresh standup"], seen);
+    }
+
+    [Fact]
+    public async Task A_changed_download_replaces_the_events()
+    {
+        var path = WriteFeed(Event("standup", "Standup", "20261005T090000", "20261005T091500"));
+        var source = Source(path);
+        await source.LoadAsync(CancellationToken.None);
+
+        File.WriteAllText(path, Calendar(Event("standup", "Standup (moved)", "20261005T100000", "20261005T101500")));
+        await source.LoadAsync(CancellationToken.None);
+
+        Assert.Equal("Standup (moved)", Assert.Single(source.GetEntries(Monday, Monday.AddDays(1))).Title);
     }
 
     [Fact]
