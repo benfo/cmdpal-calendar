@@ -40,6 +40,19 @@ public sealed class IcsCalendarSourceTests : IDisposable
     }
 
     [Fact]
+    public async Task Recurring_events_keep_their_details()
+    {
+        var source = await LoadAsync(
+            Event("standup", "Standup", "20260101T090000", "20260101T091500", "RRULE:FREQ=DAILY\nDESCRIPTION:Daily notes\nATTENDEE;CN=Ann:mailto:ann@example.com"),
+            Event("standup", "Standup (moved)", "20261005T100000", "20261005T101500", "RECURRENCE-ID:20261005T090000\nDESCRIPTION:Moved notes"));
+
+        var entries = source.GetEntries(Monday, Monday.AddDays(2));
+
+        Assert.Equal(["Moved notes", "Daily notes"], entries.Select(e => e.Description));
+        Assert.Equal(["Ann"], entries[1].Attendees);
+    }
+
+    [Fact]
     public async Task All_day_event_only_shows_on_its_day()
     {
         var source = await LoadAsync(Event("holiday", "Holiday", "20261005", "20261006", valueType: "DATE"));
