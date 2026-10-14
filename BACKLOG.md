@@ -6,7 +6,6 @@ Ordered roughly by priority. Move items to **Done** when they ship. The original
 
 Built but not yet checked by hand in Command Palette. Tick or remove each one after trying it.
 
-- [ ] **Memory with a large calendar**: with the large calendar (a 14 MB feed), Task Manager shows the extension at about 160 MB a minute after starting (it was about 650 MB), with a short peak while a changed feed is parsed. Recurring meetings, moved instances, notes and attendees look the same as before.
 - [ ] **Formatted notes**:
   - An Outlook invite with a long agenda shows in full, formatted, without the Teams footer.
   - A Google invite with bold text and links shows them formatted and clickable.
@@ -75,6 +74,8 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 - [ ] Tests for link detection and the layout (now/next split, empty states).
 
 ## Done
+
+- [x] Lower memory use with large ICS feeds: one-off events bypass Ical.Net, recurring events keep only recurrence fields, unchanged downloads skip re-parsing, and GC memory is trimmed back to Windows after refresh (~160 MB for a 14 MB feed, down from ~650 MB).
 
 - [x] Released v0.2.0 (2026-10-12): regional date and time formats, the join guard on calendar rows, opening events in Outlook or Google Calendar, a meeting in several published calendars shown in each, and installer fixes (asks for admin rights, stops the running extension before updating, clearer messages). Work happens in branches from now on.
 
