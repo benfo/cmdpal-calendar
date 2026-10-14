@@ -75,7 +75,7 @@ Built but not yet checked by hand in Command Palette. Tick or remove each one af
 
 ## Done
 
-- [x] Lower memory use with large ICS feeds: one-off events bypass Ical.Net, recurring events keep only recurrence fields, unchanged downloads skip re-parsing, and GC memory is trimmed back to Windows after refresh (~160 MB for a 14 MB feed, down from ~650 MB).
+- [x] Released v0.2.1 (2026-10-14): lower memory use with large ICS feeds (one-off events bypass Ical.Net, recurring events keep only recurrence fields, unchanged downloads skip re-parsing, and GC memory is trimmed back to Windows after refresh).
 
 - [x] Released v0.2.0 (2026-10-12): regional date and time formats, the join guard on calendar rows, opening events in Outlook or Google Calendar, a meeting in several published calendars shown in each, and installer fixes (asks for admin rights, stops the running extension before updating, clearer messages). Work happens in branches from now on.
 
